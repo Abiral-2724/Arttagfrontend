@@ -155,9 +155,7 @@ const Navbar = ({ page }: any) => {
                       <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
                       <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
                     </g>
-                    <text className="st0" transform="translate(84.95 40.38)">
-                      <tspan x="0" y="0">Arttag</tspan>
-                    </text>
+                    
                   </svg>
                 </div>
               </div>
@@ -166,7 +164,7 @@ const Navbar = ({ page }: any) => {
             {/* Desktop Navigation */}
             {page !== "cart" && (
               <nav className="hidden xl:flex items-center gap-4 2xl:gap-6">
-                {navItems.map((item, idx) => (
+                {navItems.map((item, idx) : any => (
                   item.items.length > 0 ? (
                     <DropdownMenu key={idx}>
                       <DropdownMenuTrigger
@@ -219,7 +217,7 @@ const Navbar = ({ page }: any) => {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
-                    <Link key={idx} href={item.link || '/allcategory'}>
+                    <Link key={idx} href={item.link  || '/allcategory'}>
                       <button className="text-[13px] 2xl:text-[14px] font-medium text-gray-700 tracking-wide hover:text-teal-600 transition-all relative after:absolute after:bottom-[-8px] after:left-0 after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-teal-600 after:to-cyan-600 after:transition-all hover:after:w-full">
                         {item.name}
                       </button>

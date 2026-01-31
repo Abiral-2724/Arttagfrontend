@@ -74,8 +74,8 @@ export default function DailyObjectsReplica() {
   const [api, setApi]: any = useState(null);
   const router = useRouter();
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const categorySliderRef = useRef<HTMLDivElement>(null);
-  const topCategorySliderRef = useRef<HTMLDivElement>(null);
+  const categorySliderRef : any = useRef<HTMLDivElement>(null);
+  const topCategorySliderRef : any = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -234,10 +234,9 @@ export default function DailyObjectsReplica() {
 
       {/* Shop by Category Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-4 sm:mb-5 tracking-tight uppercase">
-          SHOP BY CATEGORY
-        </h2>
-
+      <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+  SHOP BY CATEGORY
+</h2>
         {/* Mobile Horizontal Slider */}
         <div className="sm:hidden relative group">
           <button
@@ -291,31 +290,32 @@ export default function DailyObjectsReplica() {
         </div>
 
         {/* Desktop Grid */}
-        <div className="hidden sm:grid sm:grid-cols-3">
-          {shopByCategories.map((category, index) => (
-            <Link key={index} href={category.link}>
-              <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-                <div className="aspect-[4.5/5] sm:aspect-[3.3/5] lg:aspect-[3/5] relative overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-
-                  <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-16 sm:right-20 md:right-24 flex items-center justify-between">
-                    <h3 className="text-white text-lg sm:text-xl md:text-[25px] font-black uppercase tracking-tight">
-                      {category.title}
-                    </h3>
-                    <button className="absolute -right-12 sm:-right-14 md:-right-16 rounded-full border-1 border-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                      <ArrowRight className='text-white w-4 h-4 sm:w-5 sm:h-5' />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+        <div className="hidden sm:grid sm:grid-cols-3 gap-6">
+  {shopByCategories.map((category, index) => (
+    <Link key={index} href={category.link}>
+      <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
+        <div className="aspect-[3/4] sm:aspect-[2/3] lg:aspect-[2.8/4] relative overflow-hidden">
+          <img
+            src={category.image}
+            alt={category.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-3 sm:left-4 md:left-5 right-3 sm:right-4 md:right-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white text-base sm:text-lg md:text-xl font-black uppercase tracking-tight pr-3">
+                {category.title}
+              </h3>
+              <button className="rounded-full border border-white w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
+                <ArrowRight className="text-white w-3 h-3 sm:w-4 sm:h-4" />
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
+    </Link>
+  ))}
+</div>
       </section>
 
       {/* Promotional Banner */}
@@ -479,7 +479,7 @@ export default function DailyObjectsReplica() {
             }
           ].map((collection, index) => (
             <Link key={index} href={collection.link}>
-              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/5]">
+              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3.5/5] ml-6">
                 <img
                   src={collection.image}
                   alt={collection.title}
