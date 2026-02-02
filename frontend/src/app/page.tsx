@@ -23,32 +23,32 @@ const carouselSlides = [
   {
     title: 'POP ADAPTERS',
     subtitle: "India's 1st Foldable Pin Adapter.",
-    image: 'https://images.dailyobjects.com/marche/assets/images/other-2/Pop-cable-carousal-banner-desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967739/6_nissci.svg',
     link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'
   },
   {
     title: 'STACK COLLECTION',
     subtitle: 'Organize Your Space.',
-    image: 'https://images.dailyobjects.com/marche/colllectionPage/stack-collection/stack_collection_hero_banner_desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967756/5_osfu1j.svg',
     link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'
   },
   {
     title: '',
     subtitle: '',
-    image: 'https://images.dailyobjects.com/marche/colllectionPage/puft/PUFT-UNIT_Desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967712/3_o9ejzq.svg',
     link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
   },
   {
     title: 'WATCHBANDS',
     subtitle: 'Upgrade your watch drobe with our latest styles.',
-    image: 'https://images.dailyobjects.com/marche/assets/images/other-2/watchbands-carousals-banner-desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967536/2_bgjulo.svg',
     link: 'product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
   },
   {
 
     title: 'LOOP POWER BANKS',
     subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
-    image: 'https://images.dailyobjects.com/marche/assets/images/other-2/desktop_herobanner_loop.jpg?tr=cm-pad_crop,v-3,w-360,dpr-4',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967747/4_lovdny.svg',
     link: '/product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'
   },
 ];

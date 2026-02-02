@@ -129,12 +129,12 @@ const Navbar = ({ page }: any) => {
   return (
     <div>
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="max-w-[1600px] mx-auto pl-4 pr-4 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-12">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
-            <Link href={'/'}>
-              <div className="flex items-center gap-2">
-                <div className="w-auto h-10">
+            {/* Logo - Responsive sizing */}
+            <Link href={'/'} className="flex-shrink-0 -ml-10 sm:-ml-11 lg:-ml-12">
+              <div className="flex items-center">
+                <div className="w-auto h-12 sm:h-13 md:h-15 lg:h-14 xl:h-[50px]">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 270 54"
