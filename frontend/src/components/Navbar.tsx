@@ -16,36 +16,40 @@ const navItems = [
   {
     name: 'TECH ACCESSORIES',
     items: [
-      { name: 'Mackbook', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/34de1f5c-4dc1-4f78-b9dd-9ee22d2d9618/TECH%20ACCESSORIES' },
-      { name: 'PHONE CASES', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/2367fc28-9e11-4cf6-9500-1c32101652a9/TECH%20ACCESSORIES' },
-      { name: 'STANDS', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/388bbc7d-9204-4f56-be69-9fe6ce3ac91b/TECH%20ACCESSORIES' },
+      { name: 'Laptop skins & covers', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/f4ef65c5-b48e-4470-bfff-361cd9d336b0/TECH%20ACCESSORIES' },
+      { name: 'Phone skins & covers', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/932e3c8a-d458-4f0c-bbf2-7da238a46a3b/TECH%20ACCESSORIES' },
+      { name: '⁠⁠Tab skins & covers', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/b1c0d494-6cfb-4c30-b4fb-6f95319dddff/TECH%20ACCESSORIES' },
+      { name: 'Charger & cables', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/c47a97f8-80dd-48d0-a73a-12dcd4f568df/TECH%20ACCESSORIES' },
+      { name: 'Keyboards and mouse', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/df3c4774-f546-4266-a3e5-910fb836bc64/TECH%20ACCESSORIES' },
+      { name: 'Screen guards & keyboard skins', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2df4bd6f-a8e8-4aec-97e7-f014bef4dab1/TECH%20ACCESSORIES' },
+      { name: 'Combo deals', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2bcf9905-3bb2-4eb9-92f2-a9bb43015959/TECH%20ACCESSORIES' },
+      { name: 'Earbuds skins & covers', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/TECH%20ACCESSORIES' },
     ],
-    id: "cfd5c887-cfc6-4224-9da6-bb8fc85096a1"
+    id: "88b6c5ef-5ab0-41b8-97fb-c2099be6fb13"
   },
   {
     name: 'BAGS & WALLETS',
     items: [
-      { name: 'Backpacks', link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0/subcategory/14e1bb91-105f-49c5-9a30-0ed73dcbec64/BAGS%20&%20WALLETS' },
-      { name: 'Wallets', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/6e059067-a2f9-4879-918f-a8c32ca1b1ab/BAGS%20&%20WALLETS' },
+      { name: '⁠Laptop bags', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/da0c3b9e-183e-4fb4-9169-18fde3ed4c43/BAGS%20&%20WALLETS' },
+      { name: 'Laptop sleeves', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS' },
+      { name: '⁠Wallets', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/172af898-c565-4987-b715-a8d1fb1ad776/BAGS%20&%20WALLETS' },
+      { name: 'Hand bags', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS' },
+      { name: 'Office bags', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/017079fa-b6fb-40d1-8c2e-f582dab7fba7/BAGS%20&%20WALLETS' },
+      
     ],
     id: "6be4fe65-560d-4c66-8aa8-e5a478e02632"
   },
   {
     name: 'WORK ESSENTIALS',
     items: [
-      { name: 'DESKS', link: '/product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17/subcategory/ae1a8dd8-4398-4637-a3ab-22dbfd110150/WORK%20ESSENTIALS' },
+      { name: 'Water bottles & skins', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/40342562-7ddf-44f9-926e-e933ffac06df/WORK%20ESSENTIALS' },
+      { name: 'Diary & planners', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/f7d95b01-3279-4b59-aa28-20f249d2d508/WORK%20ESSENTIALS' },
+      { name: '⁠⁠Book selfs', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/ac53bff1-72ff-4587-8eb5-7435a0892ec1/WORK%20ESSENTIALS' },
+      { name: 'Office stickers', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/41d3a7f3-e0f2-402d-93b8-ea725317f24a/WORK%20ESSENTIALS' },
+      { name: '⁠Folders', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/WORK%20ESSENTIALS' },
     ],
-    id: "8c9213f1-2ce7-4066-80f1-3dad45afab17"
-  },
-  {
-    name: 'SHOP BY APPLE',
-    items: [
-      { name: 'Phone', link: '/product/category/8b644ef9-42ee-4c92-9106-f5d413e3929d/subcategory/180e2b41-1a10-4eb1-a385-70b176f81a02/SHOP%20BY%20APPLE' },
-      { name: 'Iphone', link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135/subcategory/8eaf3dad-86bf-49fd-af56-7e2a0b96ac63/SHOP%20BY%20APPLE' },
-      { name: 'MackBook', link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135/subcategory/42fa8c63-45c0-48b5-8bf4-049d37ca55aa/SHOP%20BY%20APPLE' }
-    ],
-    id: "8b644ef9-42ee-4c92-9106-f5d413e3929d"
-  },
+    id: "d7928347-cf87-4f84-ac22-71614aa6e629"
+  }
 ];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

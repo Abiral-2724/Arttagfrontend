@@ -18,38 +18,39 @@ import Footer from '../components/Footer'
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import TopCategorySlider from '@/components/TopCategory';
 
 const carouselSlides = [
   {
     title: 'POP ADAPTERS',
     subtitle: "India's 1st Foldable Pin Adapter.",
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967739/6_nissci.svg',
-    link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'
+    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
   },
   {
     title: 'STACK COLLECTION',
     subtitle: 'Organize Your Space.',
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967756/5_osfu1j.svg',
-    link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'
+    link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
   },
   {
     title: '',
     subtitle: '',
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967712/3_o9ejzq.svg',
-    link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
+    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
   },
   {
     title: 'WATCHBANDS',
     subtitle: 'Upgrade your watch drobe with our latest styles.',
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967536/2_bgjulo.svg',
-    link: 'product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
+    link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
   },
   {
 
     title: 'LOOP POWER BANKS',
     subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967747/4_lovdny.svg',
-    link: '/product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'
+    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
   },
 ];
 
@@ -154,17 +155,17 @@ export default function DailyObjectsReplica() {
     {
       title: 'TECH ACCESSORIES',
       image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3',
-      link: 'product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'
+      link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
     },
     {
       title: 'BAGS & WALLETS',
       image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3',
-      link: 'product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'
+      link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
     },
     {
       title: 'WORK ESSENTIALS',
       image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3',
-      link: 'product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'
+      link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
     }
   ];
 
@@ -328,78 +329,21 @@ export default function DailyObjectsReplica() {
           />
         </div>
       </section>
-
+      <TopCategorySlider isLoadingCategories={isLoadingCategories} 
+      topCategorySliderRef={topCategorySliderRef}
+      subcategories={subcategories}
+      handleCategoryClick={handleCategoryClick}
+      ></TopCategorySlider>
       {/* Top Categories Section - Enhanced */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight ">
-          Top Categories
-        </h2>
-
-        {isLoadingCategories ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-black mx-auto"></div>
-              <p className="mt-6 text-gray-600 text-lg">Loading categories...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="relative group">
-            {/* Left Arrow */}
-            <button
-              onClick={() => scrollSlider('left', topCategorySliderRef)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 -translate-x-2 hover:scale-110 border border-gray-200"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            {/* Slider Container */}
-            <div
-              ref={topCategorySliderRef}
-              className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}
-            >
-              {subcategories.map((category) => (
-                <div
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category)}
-                  className="flex-shrink-0 w-28 sm:w-32 md:w-36 flex flex-col items-center cursor-pointer group/item"
-                >
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full overflow-hidden mb-3 sm:mb-4 group-hover/item:shadow-2xl transition-all duration-300 ring-2 ring-transparent group-hover/item:ring-black group-hover/item:ring-offset-4">
-                    <img
-                      src={category.imageUrl}
-                      alt={category.name}
-                      className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                  <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 text-center leading-tight px-2 group-hover/item:text-black transition-colors">
-                    {category.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Right Arrow */}
-            <button
-              onClick={() => scrollSlider('right', topCategorySliderRef)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-x-2 hover:scale-110 border border-gray-200"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-          </div>
-        )}
-      </div>
+      
 
       {/* Trending Collections Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
         <div className="flex justify-between items-center mb-6 sm:mb-8 ml-2 sm:ml-3 md:ml-5">
-          <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans text-black tracking-tight uppercase">
-            TRENDING COLLECTIONS
-          </h2>
+        <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+        TRENDING COLLECTIONS
+</h2>
+          
          
         </div>
 
