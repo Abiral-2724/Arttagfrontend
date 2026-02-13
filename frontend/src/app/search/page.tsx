@@ -33,7 +33,7 @@ interface SubcategoriesResponse {
 }
 
 const trendingSearches = [
-  'Loop Powerbank',
+  'Arttag bags' ,
   'Phone Wallet',
   'Apple Phone Cases',
   'Pop Adapter',

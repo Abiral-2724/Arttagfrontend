@@ -12,7 +12,7 @@ const FooterPart = (props: Props) => {
         <div className="bg-gradient-to-b from-gray-50 to-gray-100 py-16 px-4">
         
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 mb-16">
             {/* Newsletter */}
             <div className="space-y-4">
               <h3 className="font-semibold text-base text-gray-900 mb-3">Stay Connected</h3>
@@ -31,27 +31,30 @@ const FooterPart = (props: Props) => {
               </div>
             </div>
 
-            {/* Know Us */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-base text-gray-900 mb-3">Know Us</h3>
-              <ul className="space-y-3">
-                <li><a href="/aboutus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">About Arttag</a></li>
-                <li><a href="/corporateGifting" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Corporate Gifting</a></li>
-                <li><a href="/findstore" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Find a Store</a></li>
-                <li><a href="/blog" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Blog</a></li>
-              </ul>
-            </div>
+            {/* Know Us + Helpdesk side-by-side on mobile, normal on desktop */}
+            <div className="grid grid-cols-2 md:contents gap-8">
+              {/* Know Us */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-base text-gray-900 mb-3">Know Us</h3>
+                <ul className="space-y-3">
+                  <li><a href="/aboutus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">About Arttag</a></li>
+                  <li><a href="/corporateGifting" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Corporate Gifting</a></li>
+                  <li><a href="/findstore" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Find a Store</a></li>
+                  <li><a href="/blog" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Blog</a></li>
+                </ul>
+              </div>
 
-            {/* Helpdesk */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-base text-gray-900 mb-3">Helpdesk</h3>
-              <ul className="space-y-3">
-                <li><a href="/contactus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Contact Us</a></li>
-                <li><a href="/faq" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">FAQs</a></li>
-                <li><a href="/termsofuse" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Terms Of Use</a></li>
-                <li><a href="/warrantypolicy" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Warranty Policy</a></li>
-                <li><a href="/privacyandSecurity" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy & Security Policy</a></li>
-              </ul>
+              {/* Helpdesk */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-base text-gray-900 mb-3">Helpdesk</h3>
+                <ul className="space-y-3">
+                  <li><a href="/contactus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Contact Us</a></li>
+                  <li><a href="/faq" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">FAQs</a></li>
+                  <li><a href="/termsofuse" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Terms Of Use</a></li>
+                  <li><a href="/warrantypolicy" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Warranty Policy</a></li>
+                  <li><a href="/privacyandSecurity" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy & Security Policy</a></li>
+                </ul>
+              </div>
             </div>
           </div>
 
