@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ShoppingCart, User, Search, ChevronDown, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingCart, User, Search, ChevronDown, ArrowRight, Play } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,11 +103,6 @@ export default function DailyObjectsReplica() {
 
 
   useEffect(() => {
-    // if (!localStorage.getItem("arttagUserId") || !localStorage.getItem("arttagtoken")) {
-    //   router.push('/login');
-    //   return;
-    // }
-
     const id = localStorage.getItem("arttagUserId");
     if (id) {
       setUserId(id);
@@ -120,7 +115,7 @@ export default function DailyObjectsReplica() {
 
     const interval = setInterval(() => {
       api.scrollNext();
-    }, 3000); // Change slide every 5 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [api]);
@@ -154,17 +149,17 @@ export default function DailyObjectsReplica() {
   const shopByCategories = [
     {
       title: 'TECH ACCESSORIES',
-      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967756/5_osfu1j.svg',
       link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
     },
     {
       title: 'BAGS & WALLETS',
-      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770181930/IMG_4630_tuviuo.jpg',
       link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
     },
     {
       title: 'WORK ESSENTIALS',
-      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770182067/IMG_4632_phsqrk.jpg',
       link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
     }
   ];
@@ -235,9 +230,9 @@ export default function DailyObjectsReplica() {
 
       {/* Shop by Category Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-      <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
-  SHOP BY CATEGORY
-</h2>
+        <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+          SHOP BY CATEGORY
+        </h2>
         {/* Mobile Horizontal Slider */}
         <div className="sm:hidden relative group">
           <button
@@ -292,31 +287,31 @@ export default function DailyObjectsReplica() {
 
         {/* Desktop Grid */}
         <div className="hidden sm:grid sm:grid-cols-3 gap-6">
-  {shopByCategories.map((category, index) => (
-    <Link key={index} href={category.link}>
-      <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-        <div className="aspect-[3/4] sm:aspect-[2/3] lg:aspect-[2.8/4] relative overflow-hidden">
-          <img
-            src={category.image}
-            alt={category.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-          <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-3 sm:left-4 md:left-5 right-3 sm:right-4 md:right-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-white text-base sm:text-lg md:text-xl font-black uppercase tracking-tight pr-3">
-                {category.title}
-              </h3>
-              <button className="rounded-full border border-white w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                <ArrowRight className="text-white w-3 h-3 sm:w-4 sm:h-4" />
-              </button>
-            </div>
-          </div>
+          {shopByCategories.map((category, index) => (
+            <Link key={index} href={category.link}>
+              <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
+                <div className="aspect-[3/4] sm:aspect-[2/3] lg:aspect-[2.8/4] relative overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                  <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-3 sm:left-4 md:left-5 right-3 sm:right-4 md:right-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white text-base sm:text-lg md:text-xl font-black uppercase tracking-tight pr-3">
+                        {category.title}
+                      </h3>
+                      <button className="rounded-full border border-white w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
+                        <ArrowRight className="text-white w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
-      </div>
-    </Link>
-  ))}
-</div>
       </section>
 
       {/* Promotional Banner */}
@@ -329,24 +324,21 @@ export default function DailyObjectsReplica() {
           />
         </div>
       </section>
-      <TopCategorySlider isLoadingCategories={isLoadingCategories} 
-      topCategorySliderRef={topCategorySliderRef}
-      subcategories={subcategories}
-      handleCategoryClick={handleCategoryClick}
-      ></TopCategorySlider>
-      {/* Top Categories Section - Enhanced */}
-      
+
+      <TopCategorySlider
+        isLoadingCategories={isLoadingCategories}
+        topCategorySliderRef={topCategorySliderRef}
+        subcategories={subcategories}
+        handleCategoryClick={handleCategoryClick}
+      />
 
       {/* Trending Collections Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
         <div className="flex justify-between items-center mb-6 sm:mb-8 ml-2 sm:ml-3 md:ml-5">
-        <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
-        TRENDING COLLECTIONS
-</h2>
-          
-         
+          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+            TRENDING COLLECTIONS
+          </h2>
         </div>
-
 
         {/* Mobile Slider */}
         <div className="sm:hidden relative">
@@ -355,20 +347,20 @@ export default function DailyObjectsReplica() {
               {
                 title: 'REFLECTIVE',
                 description: 'Carryalls that mirror your urban spirit of transience',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1reflective_zsi3kc.avif',
-                link: '/collection/reflective'
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191330/IMG_4691_v15fv4.jpg',
+                link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
               },
               {
                 title: 'CANVAS',
                 description: 'Classic staples for every day carry',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1canvas_u6oaeu.avif',
-                link: '/collection/canvas'
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191494/IMG_4692_c0x4hh.jpg',
+                link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
               },
               {
                 title: 'CARBON BLACK',
                 description: 'Comfort carryalls in a quintessentially classic colour',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1carbon-black_xbdc38.avif',
-                link: '/collection/carbon-black'
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191456/IMG_4693_anxtod.jpg',
+                link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
               }
             ].map((collection, index) => (
               <div key={index} className="flex-shrink-0 w-[85vw] snap-center">
@@ -406,20 +398,20 @@ export default function DailyObjectsReplica() {
             {
               title: 'REFLECTIVE',
               description: 'Carryalls that mirror your urban spirit of transience',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1reflective_zsi3kc.avif',
-              link: '/collection/reflective'
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191330/IMG_4691_v15fv4.jpg',
+              link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
             },
             {
               title: 'CANVAS',
               description: 'Classic staples for every day carry',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1canvas_u6oaeu.avif',
-              link: '/collection/canvas'
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191494/IMG_4692_c0x4hh.jpg',
+              link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
             },
             {
               title: 'CARBON BLACK',
               description: 'Comfort carryalls in a quintessentially classic colour',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1carbon-black_xbdc38.avif',
-              link: '/collection/carbon-black'
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191456/IMG_4693_anxtod.jpg',
+              link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
             }
           ].map((collection, index) => (
             <Link key={index} href={collection.link}>
@@ -440,7 +432,6 @@ export default function DailyObjectsReplica() {
                   </p>
                   
                   <button className="flex items-center gap-2 text-white font-light text-sm sm:text-base group/btn hover:gap-3 transition-all">
-                   
                     Shop now!
                     <div className="rounded-full border-1 border-white w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center group-hover/btn:bg-white transition-all">
                       <ArrowRight className="w-3 h-4 sm:w-5 sm:h-5 group-hover/btn:text-black transition-colors" />
@@ -453,7 +444,35 @@ export default function DailyObjectsReplica() {
         </div>
       </section>
 
-      
+      {/* ─── HOW TO PASTE LAPTOP SKINS — Video Section ─── */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+        {/* Section Header */}
+        <div className="ml-2 sm:ml-3 md:ml-5 mb-6 sm:mb-8 md:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans text-black font-bold tracking-tight uppercase">
+            HOW TO PASTE LAPTOP SKINS ?
+          </h2>
+          <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-light">
+            Follow our step by step guide for a perfect, bubble free finish every time.
+          </p>
+        </div>
+
+        {/* Video Embed Container */}
+        <div className="ml-2 sm:ml-3 md:ml-5 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-black">
+          {/* 16:9 Aspect Ratio Wrapper */}
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/CVM8Ly19iyg?rel=0&modestbranding=1&color=white"
+              title="How to Paste Laptop Skins?"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
+      {/* ─── End Video Section ─── */}
+
       <section>
         <Footer />
       </section>

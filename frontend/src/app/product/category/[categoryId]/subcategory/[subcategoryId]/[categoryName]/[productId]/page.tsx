@@ -8,6 +8,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import Navbar from '@/components/Navbar';
@@ -30,9 +38,41 @@ interface SubcategoriesResponse {
   subcategories: Subcategory[];
 }
 
+interface Color {
+  id: string;
+  name: string;
+  hex: string;
+  productId: string;
+  colorImage1: string | null;
+  colorImage2: string | null;
+  colorImage3: string | null;
+  colorImage4: string | null;
+  colorImage5: string | null;
+}
+
+interface ProductImage {
+  id: string;
+  url: string;
+  altText: string;
+  description: string;
+  productId: string;
+}
+
+interface SimilarProduct {
+  id: string;
+  name: string;
+  originalPrice: number;
+  discountPrice: number;
+  type: string;
+  primaryImage1: string;
+  primaryImage2: string;
+  colors: Color[];
+  images: ProductImage[];
+  totalCount: number;
+}
+
 const ProductDetailPage = () => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const topCategorySliderRef = useRef<HTMLDivElement>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [product, setProduct] : any = useState(null);
   const [selectedColor, setSelectedColor] : any = useState(null);
@@ -50,59 +90,85 @@ const ProductDetailPage = () => {
   const [linkCopied, setLinkCopied] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [similarProducts, setSimilarProducts] = useState<SimilarProduct[]>([]);
+  const [loadingSimilarProducts, setLoadingSimilarProducts] = useState(false);
   const {productId} = useParams();
   const [productName ,setProductName] = useState("")
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
-
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-useEffect(() => {
-  fetchSubcategories();
-}, []);
+  useEffect(() => {
+    fetchSubcategories();
+  }, []);
 
-
-// Function to fetch subcategories from API
-const fetchSubcategories = async () => {
-  setIsLoadingCategories(true);
-  try {
-    const response = await fetch(`${API_BASE}/category/get/all/subcategory`);
-    const data: SubcategoriesResponse = await response.json();
-    if (data.success) {
-      setSubcategories(data.subcategories);
+  // Function to fetch subcategories from API
+  const fetchSubcategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const response = await fetch(`${API_BASE}/category/get/all/subcategory`);
+      const data: SubcategoriesResponse = await response.json();
+      if (data.success) {
+        setSubcategories(data.subcategories);
+      }
+    } catch (error) {
+      console.error('Failed to fetch subcategories:', error);
+    } finally {
+      setIsLoadingCategories(false);
     }
-  } catch (error) {
-    console.error('Failed to fetch subcategories:', error);
-  } finally {
-    setIsLoadingCategories(false);
-  }
-};
+  };
 
-// Function to scroll the slider left or right
-const scrollSlider = (direction: 'left' | 'right', sliderRef: React.RefObject<HTMLDivElement>) => {
-  if (sliderRef.current) {
-    const scrollAmount = 300;
-    const newScrollLeft = direction === 'left'
-      ? sliderRef.current.scrollLeft - scrollAmount
-      : sliderRef.current.scrollLeft + scrollAmount;
+  // Function to fetch similar products using the new API
+  const fetchSimilarProducts = async (subcategoryId: string) => {
+    setLoadingSimilarProducts(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/product/get/all/product/category/${subcategoryId}`);
+      const data = await response.json();
+      console.log("Similar products = ", data);
+      
+      if (data.success) {
+        // Filter out the current product from similar products
+        const filteredProducts = data.product.filter((p: SimilarProduct) => p.id !== productId);
+        setSimilarProducts(filteredProducts || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch similar products:', error);
+    } finally {
+      setLoadingSimilarProducts(false);
+    }
+  };
 
-    sliderRef.current.scrollTo({
-      left: newScrollLeft,
-      behavior: 'smooth'
-    });
-  }
-};
+  const params = useParams();
 
-// Function to handle category click and navigate to subcategory page
-const handleCategoryClick = (subcategory: Subcategory) => {
-  const categoryId = subcategory.parentId;
-  const subcategoryId = subcategory.id;
-  const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
-
-  window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
-};
+  const {
+    categoryId,
+    subcategoryId,
+    categoryName,
+    
+  } = params;
 
 
+  const handleSimilarProductClick = (similarProductId: string) => {
+    // Navigate to the similar product's detail page
+    router.push(`http://localhost:3000/product/category/${categoryId}/subcategory/${subcategoryId}/${categoryName}/${similarProductId}`);
+  };
+
+  const handleViewAllClick = () => {
+    if (product?.categoryId) {
+      const categoryName = product.categoryName || 'products';
+      const formattedCategoryName = categoryName.toUpperCase().replace(/\s+/g, '%20');
+      router.push(`/product/category/${product.parentCategoryId}/subcategory/${product.categoryId}/${formattedCategoryName}`);
+    }
+  };
+
+  // Function to handle category click and navigate to subcategory page
+  const handleCategoryClick = (subcategory: Subcategory) => {
+    const categoryId = subcategory.parentId;
+    const subcategoryId = subcategory.id;
+    const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
+
+    window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
+  };
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagtoken") : null;
@@ -118,9 +184,7 @@ const handleCategoryClick = (subcategory: Subcategory) => {
     
     // Always fetch product details regardless of login status
     fetchProductDetails(storedUserId);
-  }, []);
-
-
+  }, [productId]);
 
   const fetchProductDetails = async (currentUserId = null) => {
     try {
@@ -131,6 +195,12 @@ const handleCategoryClick = (subcategory: Subcategory) => {
       if (data.success) {
         setProduct(data.product);
         setProductName(data.product.name)
+        
+        // Fetch similar products based on subcategory
+        if (data.product.categoryId) {
+          fetchSimilarProducts(data.product.categoryId);
+        }
+        
         // Only check wishlist and cart status if user is logged in
         if (currentUserId) {
           // Check if product is in wishlist
@@ -353,7 +423,6 @@ const handleCategoryClick = (subcategory: Subcategory) => {
 
   const handleNativeShare = async () => {
     if (false && navigator.share) {
-
       try {
         await navigator.share({
           title: product?.name,
@@ -368,51 +437,56 @@ const handleCategoryClick = (subcategory: Subcategory) => {
     }
   };
 
+  // Calculate discount percentage
+  const calculateDiscount = (originalPrice: number, discountPrice: number) => {
+    return Math.round(((originalPrice - discountPrice) / originalPrice) * 100);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col items-center justify-center p-6">
-      <Link href={'/'} className="mb-4">
-        <div className="flex items-center gap-2 transition-transform hover:scale-105 duration-300">
-          <div className="w-auto h-16">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 270 54"
-              className="h-full w-auto drop-shadow-md"
-            >
-              <defs>
-                <style>
-                  {`
-                  .st0 {
-                    font-family: MuktaMahee-Regular, 'Mukta Mahee';
-                    font-size: 49.69px;
-                  }
-                  `}
-                </style>
-              </defs>
-              <g>
-                <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
-                <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
-                <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
-              </g>
-              <text className="st0" transform="translate(84.95 40.38)">
-                <tspan x="0" y="0">Arttag</tspan>
-              </text>
-            </svg>
+        <Link href={'/'} className="mb-4">
+          <div className="flex items-center gap-2 transition-transform hover:scale-105 duration-300">
+            <div className="w-auto h-16">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 270 54"
+                className="h-full w-auto drop-shadow-md"
+              >
+                <defs>
+                  <style>
+                    {`
+                    .st0 {
+                      font-family: MuktaMahee-Regular, 'Mukta Mahee';
+                      font-size: 49.69px;
+                    }
+                    `}
+                  </style>
+                </defs>
+                <g>
+                  <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+                  <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+                  <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+                </g>
+                <text className="st0" transform="translate(84.95 40.38)">
+                  <tspan x="0" y="0">Arttag</tspan>
+                </text>
+              </svg>
+            </div>
+          </div>
+        </Link>
+        
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative">
+            <Spinner className='text-blue-600 text-6xl'></Spinner>
+            <div className="absolute inset-0 bg-blue-500 opacity-20 blur-xl rounded-full"></div>
+          </div>
+          <div className="text-center">
+            <p className="text-gray-700 text-base font-semibold">Loading product</p>
+            <p className="text-gray-500 text-xs mt-1">Please wait a moment...</p>
           </div>
         </div>
-      </Link>
-      
-      <div className="flex flex-col items-center gap-5">
-        <div className="relative">
-          <Spinner className='text-blue-600 text-6xl'></Spinner>
-          <div className="absolute inset-0 bg-blue-500 opacity-20 blur-xl rounded-full"></div>
-        </div>
-        <div className="text-center">
-          <p className="text-gray-700 text-base font-semibold">Loading product</p>
-          <p className="text-gray-500 text-xs mt-1">Please wait a moment...</p>
-        </div>
       </div>
-    </div>
     );
   }
 
@@ -426,16 +500,13 @@ const handleCategoryClick = (subcategory: Subcategory) => {
     );
   }
 
-
-
-
-
   const images = getCurrentImages();
   const discount = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
 
   return (
     <div className="min-h-screen pb-24 md:pb-0">
       <Navbar />
+      
       <div className="">
         <div className="grid md:grid-cols-2 gap-8 bg-white shadow-sm">
           {/* Left Side - Image Slider */}
@@ -516,12 +587,13 @@ const handleCategoryClick = (subcategory: Subcategory) => {
           <div className="space-y-6 mt-14 pl-15 mr-7">
             <div>
               <h1 className="text-2xl font-light mb-2">{product.name}</h1>
+              
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-2xl font-medium">₹{product.discountPrice}</span>
                 <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
                 <span className="text-sm text-gray-600">MRP Inclusive of all taxes</span>
               </div>
-              
+
               {/* Stock Availability Badge */}
               <div className="mb-4">
                 {product.totalCount === 0 ? (
@@ -542,6 +614,7 @@ const handleCategoryClick = (subcategory: Subcategory) => {
                 )}
               </div>
             </div>
+
             {product.shortDescription && (
               <div>
                 <p className="text-gray-900">{product.shortDescription}</p>
@@ -574,7 +647,7 @@ const handleCategoryClick = (subcategory: Subcategory) => {
             <button
               onClick={handleAddToCart}
               disabled={addingToCart || product.totalCount === 0}
-              className={`hidden md:block w-[76%] py-3 rounded-lg font-medium text-lg transition-colors ${
+              className={`hidden md:block w-[60%] py-2 rounded-lg font-medium text-lg transition-colors ${
                 addingToCart || product.totalCount === 0
                   ? 'bg-gray-400 cursor-not-allowed'
                   : !isLoggedIn
@@ -734,73 +807,212 @@ const handleCategoryClick = (subcategory: Subcategory) => {
         ))}
       </div>
 
-{/* Top Categories Section - Enhanced */}
-<div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-  <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight ">
-    Top Product
-  </h2>
-
-  {isLoadingCategories ? (
-    <div className="flex justify-center items-center py-20">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-black mx-auto"></div>
-        <p className="mt-6 text-gray-600 text-lg">Loading categories...</p>
-      </div>
-    </div>
-  ) : (
-    <div className="relative group">
-      {/* Left Arrow */}
-      <button
-        onClick={() => scrollSlider('left', topCategorySliderRef)}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 -translate-x-2 hover:scale-110 border border-gray-200"
-        aria-label="Scroll left"
-      >
-        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-      </button>
-
-      {/* Slider Container */}
-      <div
-        ref={topCategorySliderRef}
-        className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
-      >
-        {subcategories.map((category) => (
-          <div
-            key={category.id}
-            onClick={() => handleCategoryClick(category)}
-            className="flex-shrink-0 w-28 sm:w-32 md:w-36 flex flex-col items-center cursor-pointer group/item"
-          >
-            <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full overflow-hidden mb-3 sm:mb-4 group-hover/item:shadow-2xl transition-all duration-300 ring-2 ring-transparent group-hover/item:ring-black group-hover/item:ring-offset-4">
-              <img
-                src={category.imageUrl}
-                alt={category.name}
-                className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
-              />
-            </div>
-            <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 text-center leading-tight px-2 group-hover/item:text-black transition-colors">
-              {category.name}
-            </span>
+      {/* Similar Products Section with Shadcn Carousel */}
+      {similarProducts.length > 0 && (
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+          <div className="flex items-center justify-between mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              Similar Products
+            </h2>
+            <button 
+              onClick={handleViewAllClick}
+              className="text-sm sm:text-base text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-all flex items-center gap-2 group"
+            >
+              View all
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
-        ))}
+
+          {loadingSimilarProducts ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-blue-600 mx-auto"></div>
+                <p className="mt-6 text-gray-600 text-lg">Loading similar products...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="relative px-2 sm:px-4 md:px-8 lg:px-12">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: false,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {similarProducts.map((item) => {
+                    const productDiscount = calculateDiscount(item.originalPrice, item.discountPrice);
+                    
+                    return (
+                      <CarouselItem key={item.id} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/3 lg:basis-1/4">
+                        <Card 
+                          className="overflow-hidden cursor-pointer group border border-gray-200 hover:border-blue-400 shadow-md hover:shadow-2xl transition-all duration-300 h-full rounded-xl bg-white"
+                          onClick={() => handleSimilarProductClick(item.id)}
+                        >
+                          <CardContent className="p-0 flex flex-col h-full">
+                            {/* Product Image */}
+                            <div className="relative aspect-square overflow-hidden bg-gray-50">
+                              <img
+                                src={item.primaryImage1 || item.colors[0]?.colorImage1}
+                                alt={item.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              
+                              {/* Discount Badge */}
+                              {productDiscount > 0 && (
+                                <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg">
+                                  {productDiscount}% OFF
+                                </div>
+                              )}
+
+                              {/* Stock Badge */}
+                              {item.totalCount === 0 && (
+                                <div className="absolute top-3 right-3 bg-gray-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg">
+                                  Out of Stock
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Product Details */}
+                            <div className="p-2 sm:p-5 space-y-0.1 flex-1 flex flex-col">
+                              {/* Product Type Tag */}
+                              {item.type && (
+                                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  {item.type}
+                                </p>
+                              )}
+
+                              {/* Product Name */}
+                              <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors flex-1 min-h-[2.5rem]">
+                                {item.name}
+                              </h3>
+
+                              {/* Price Section */}
+                              <div className="flex items-center gap-2 flex-wrap pt-1">
+                                <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                                  ₹{item.discountPrice}
+                                </span>
+                                {item.originalPrice > item.discountPrice && (
+                                  <span className="text-sm sm:text-base text-gray-500 line-through">
+                                    ₹{item.originalPrice}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Color Options */}
+                              {item.colors && item.colors.length > 0 && (
+                                <div className="flex items-center gap-2 pt-2">
+                                  <span className="text-xs text-gray-600 font-medium">Colors:</span>
+                                  <div className="flex gap-1.5">
+                                    {item.colors.slice(0, 4).map((color) => (
+                                      <div
+                                        key={color.id}
+                                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-gray-300 shadow-sm"
+                                        style={{ backgroundColor: color.hex }}
+                                        title={color.name}
+                                      />
+                                    ))}
+                                    {item.colors.length > 4 && (
+                                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-gray-300 bg-gray-100 flex items-center justify-center text-xs font-bold">
+                                        +{item.colors.length - 4}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Stock Status */}
+                              <div className="pt-2">
+                                {item.totalCount === 0 ? (
+                                  <span className="text-xs text-red-600 font-bold">Out of Stock</span>
+                                ) : item.totalCount < 20 ? (
+                                  <span className="text-xs text-amber-600 font-bold">
+                                    Only {item.totalCount} left
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-green-600 font-bold">In Stock</span>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                
+                {/* Always visible navigation buttons */}
+                <CarouselPrevious className="absolute -left-4 sm:-left-6 md:-left-8 lg:-left-10 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-900 hover:text-white border-2 border-gray-300 shadow-xl w-10 h-10 sm:w-12 sm:h-12 z-10" />
+                <CarouselNext className="absolute -right-4 sm:-right-6 md:-right-8 lg:-right-10 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-900 hover:text-white border-2 border-gray-300 shadow-xl w-10 h-10 sm:w-12 sm:h-12 z-10" />
+              </Carousel>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Top Categories Section */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16 bg-white">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-8 sm:mb-10 tracking-tight">
+          Top Categories
+        </h2>
+
+        {isLoadingCategories ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-gray-900 mx-auto"></div>
+              <p className="mt-6 text-gray-600 text-lg">Loading categories...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="relative px-2 sm:px-4 md:px-8 lg:px-12">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: false,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-3 sm:-ml-4 md:-ml-6">
+                {subcategories.map((category) => (
+                  <CarouselItem 
+                    key={category.id} 
+                    className="pl-3 sm:pl-4 md:pl-6 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6"
+                  >
+                    <div
+                      onClick={() => handleCategoryClick(category)}
+                      className="flex flex-col items-center cursor-pointer group"
+                    >
+                      {/* Category Image */}
+                      <div className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-full overflow-hidden mb-3 sm:mb-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 ring-4 ring-transparent group-hover:ring-gray-900 group-hover:ring-offset-4">
+                        <img
+                          src={category.imageUrl}
+                          alt={category.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        
+                        {/* Overlay on hover */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+                      </div>
+                      
+                      {/* Category Name */}
+                      <span className="text-xs sm:text-sm md:text-base font-bold text-gray-900 text-center leading-tight px-2 group-hover:text-gray-900 transition-colors line-clamp-2 min-h-[2.5rem] flex items-center">
+                        {category.name}
+                      </span>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              
+              {/* Always visible navigation buttons */}
+              <CarouselPrevious className="absolute -left-4 sm:-left-6 md:-left-8 lg:-left-10 top-[calc(50%-2rem)] bg-white hover:bg-gray-900 hover:text-white border-2 border-gray-300 shadow-xl w-10 h-10 sm:w-12 sm:h-12 z-10" />
+              <CarouselNext className="absolute -right-4 sm:-right-6 md:-right-8 lg:-right-10 top-[calc(50%-2rem)] bg-white hover:bg-gray-900 hover:text-white border-2 border-gray-300 shadow-xl w-10 h-10 sm:w-12 sm:h-12 z-10" />
+            </Carousel>
+          </div>
+        )}
       </div>
 
-      {/* Right Arrow */}
-      <button
-        onClick={() => scrollSlider('right', topCategorySliderRef)}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-x-2 hover:scale-110 border border-gray-200"
-        aria-label="Scroll right"
-      >
-        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-      </button>
-    </div>
-  )}
-</div>
+      <CustomerReviewSection productId={productId} userId={userId} productName={productName}></CustomerReviewSection>
 
-
-        <CustomerReviewSection productId={productId} userId={userId} productName={productName}></CustomerReviewSection>
       <div className="border-t border-gray-300"></div>
       <Footer />
 
@@ -809,7 +1021,7 @@ const handleCategoryClick = (subcategory: Subcategory) => {
         <button
           onClick={handleAddToCart}
           disabled={addingToCart || product.totalCount === 0}
-          className={`w-full py-4 rounded-lg font-medium text-lg transition-colors ${
+          className={`w-full py-2 rounded-lg font-medium text-lg transition-colors ${
             addingToCart || product.totalCount === 0
               ? 'bg-gray-400 cursor-not-allowed'
               : !isLoggedIn

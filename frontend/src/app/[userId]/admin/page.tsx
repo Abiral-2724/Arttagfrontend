@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Grid3x3, ShoppingCart, BarChart3, Users, Settings, Menu, X, TrendingUp, TrendingDown, DollarSign, Pin, PinIcon, IndianRupeeIcon, TicketSlash, Undo2 } from 'lucide-react';
+import { Package, Grid3x3, ShoppingCart, BarChart3, Users, Settings, Menu, X, TrendingUp, TrendingDown, DollarSign, Pin, PinIcon, IndianRupeeIcon, TicketSlash, Undo2, Store, Gift, Wind } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import axios from 'axios';
@@ -259,6 +259,17 @@ export default function AdminDashboard() {
     router.push(`/${userId}/admin/return`);
   };
 
+  const handleviewstoreRequest = () => {
+    router.push(`/${userId}/admin/addstore`);
+  };
+
+  const handleviewGiftingRequest = () => {
+    router.push(`/${userId}/admin/gifting`);
+  };
+
+  const handleviewBlogRequest = () => {
+    router.push(`/${userId}/admin/blog`);
+  };
 
 
   const navigationItems = [
@@ -269,6 +280,9 @@ export default function AdminDashboard() {
     { id: 'coupens', label: 'View Coupens', icon: IndianRupeeIcon, description: 'Track and manage Coupen', color: 'blue', function: handleviewcoupens },
     { id: 'refunds', label: 'View Refunds Request', icon: TicketSlash, description: 'Track and manage Refund request', color: 'red', function: handleviewrefundRequest },
     { id: 'returns', label: 'View Returns Request', icon: Undo2, description: 'Track and manage Return request', color: 'blue', function: handleviewreturnRequest },
+    { id: 'Store', label: 'View Stores Details', icon: Store, description: 'View and manage stores', color: 'red', function: handleviewstoreRequest },
+    { id: 'Corporate Gifting', label: 'View Corporate Gifting Request', icon: Gift, description: 'View and manage gifting request', color: 'orange', function: handleviewGiftingRequest },
+    { id: 'Blogs', label: 'View Blogs', icon: Wind, description: 'View and manage Blogs', color: 'purple', function: handleviewBlogRequest },
   ];
 
   const handleclickhome = () => {
@@ -283,7 +297,7 @@ export default function AdminDashboard() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
@@ -306,12 +320,12 @@ export default function AdminDashboard() {
                 </Card>
               );
             })}
-          </div>
+          </div> */}
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Monthly Orders Bar Chart */}
-            <Card className="lg:col-span-2">
+            {/* <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Monthly Orders</CardTitle>
                 <CardDescription>Total orders placed each month</CardDescription>
@@ -351,10 +365,10 @@ export default function AdminDashboard() {
                   Showing orders for the last 12 months
                 </div>
               </CardFooter>
-            </Card>
+            </Card> */}
 
             {/* Order Status Pie Chart */}
-            <Card className="flex flex-col">
+            {/* <Card className="flex flex-col">
               <CardHeader className="items-center pb-0">
                 <CardTitle>Order Status</CardTitle>
                 <CardDescription>Current order distribution</CardDescription>
@@ -377,10 +391,10 @@ export default function AdminDashboard() {
                   Real-time order status breakdown
                 </div>
               </CardFooter>
-            </Card>
+            </Card> */}
 
             {/* Revenue Trend Line Chart */}
-            <Card className="lg:col-span-3">
+            {/* <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>Revenue Trend</CardTitle>
                 <CardDescription>Monthly revenue over the last 12 months</CardDescription>
@@ -427,7 +441,7 @@ export default function AdminDashboard() {
                   Total revenue: {formatCurrency(dashboardData?.totalRevenue || 0)}
                 </div>
               </CardFooter>
-            </Card>
+            </Card> */}
           </div>
 
           {/* Main Navigation Cards */}

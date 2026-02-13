@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronRight, Search, ShoppingCart, User, Menu, X, Package } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, ShoppingCart, User, Menu, X, Package, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -277,13 +277,20 @@ const Navbar = ({ page }: any) => {
                       </button>
                     </Link>
                   )}
+<div className="relative group inline-block">
+  <UserRound
+    size={26}
+    className="text-black cursor-pointer mt-[-7px]"
+    onClick={handleLoginClick}
+  />
 
-                  <Button
-                    onClick={handleLoginClick}
-                    className='bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-medium text-sm px-4 lg:px-6 py-2 shadow-md hover:shadow-lg transition-all'
-                  >
-                    Login
-                  </Button>
+  <div className="absolute left-1/2 -translate-x-1/2 mt-2 
+                  hidden group-hover:block
+                  bg-black text-white text-xs px-2 py-1 rounded">
+    Login
+  </div>
+</div>
+ 
                 </>
               )}
             </div>
@@ -408,7 +415,7 @@ const Navbar = ({ page }: any) => {
                   <>
                     {page !== "cart" && (
                       <Link href={'/search'}>
-                        <button className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
+                        <button className="flex items-center gap-3 w-full py-4 px-5 mb-2 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
                           <Search className="w-5 h-5 text-teal-600" />
                           Search
                         </button>

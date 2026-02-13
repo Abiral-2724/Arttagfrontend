@@ -81,7 +81,7 @@ const SubcategoryProductsPage = () => {
       const response = await axios.get(
         `${API_BASE_URL}/product/get/product/subcategory/all/type/${subcategoryId}`
       );
-
+      console.log(response)
       if (response.data.success) {
         setAvailableTypes(response.data.types || []);
         setSubcategoryDetails(response.data.subcategorydetail);
@@ -114,6 +114,7 @@ const SubcategoryProductsPage = () => {
       } else {
         setProducts([]);
       }
+      console.log('product' ,products)
     } catch (error: any) {
       if (error.response?.status === 404) {
         setProducts([]);

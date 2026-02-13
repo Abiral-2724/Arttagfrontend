@@ -36,9 +36,9 @@ const FooterPart = (props: Props) => {
               <h3 className="font-semibold text-base text-gray-900 mb-3">Know Us</h3>
               <ul className="space-y-3">
                 <li><a href="/aboutus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">About Arttag</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Corporate Gifting</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Find a Store</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Blog</a></li>
+                <li><a href="/corporateGifting" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Corporate Gifting</a></li>
+                <li><a href="/findstore" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Find a Store</a></li>
+                <li><a href="/blog" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Blog</a></li>
               </ul>
             </div>
 
@@ -140,9 +140,9 @@ const FooterPart = (props: Props) => {
             © Copyright 2025 Arttag Pvt. Ltd.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="#" className="hover:text-white transition-colors">Terms of use</a>
+            <a href="/termsofuse" className="hover:text-white transition-colors">Terms of use</a>
             <span className="text-gray-600">|</span>
-            <a href="#" className="hover:text-white transition-colors">Privacy policy</a>
+            <a href="/privacyandSecurity" className="hover:text-white transition-colors">Privacy policy</a>
           </div>
         </div>
       </div>
