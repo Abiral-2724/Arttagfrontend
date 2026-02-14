@@ -363,7 +363,7 @@ export default function DailyObjectsReplica() {
                 link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
               }
             ].map((collection, index) => (
-              <div key={index} className="flex-shrink-0 w-[85vw] snap-center">
+              <Link key={index} href={collection.link} className="flex-shrink-0 w-[85vw] snap-center">
                 <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[500px]">
                   <img
                     src={collection.image}
@@ -387,7 +387,7 @@ export default function DailyObjectsReplica() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

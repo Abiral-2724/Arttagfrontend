@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react'
+import { Facebook, Instagram, Linkedin, MessageCircleHeart, Twitter, Youtube } from 'lucide-react'
 import React from 'react'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
@@ -19,16 +19,7 @@ const FooterPart = (props: Props) => {
               <p className="text-sm text-gray-600 leading-relaxed">
                 Get exclusive access to new products, deals & surprise treats
               </p>
-              <div className="flex gap-2">
-                <Input
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="flex-1 bg-white border-gray-300 focus:border-emerald-500"
-                />
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 font-medium shadow-sm">
-                  Subscribe
-                </Button>
-              </div>
+              
             </div>
 
             {/* Know Us + Helpdesk side-by-side on mobile, normal on desktop */}
@@ -107,13 +98,13 @@ const FooterPart = (props: Props) => {
                 </a>
                 {/* <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Facebook className="w-5 h-5 text-gray-700 group-hover:text-white" />
-                </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
+                </a> */}
+                <a href="https://www.youtube.com/@arttagindia" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Youtube className="w-5 h-5 text-gray-700 group-hover:text-white" />
                 </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
-                  <Twitter className="w-5 h-5 text-gray-700 group-hover:text-white" />
-                </a> */}
+                <a href="https://pin.it/2sy8x46Dg" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
+                  <MessageCircleHeart className="w-5 h-5 text-gray-700 group-hover:text-white" />
+                </a>
                 <a href="https://www.linkedin.com/company/arttagindia/" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Linkedin className="w-5 h-5 text-gray-700 group-hover:text-white" />
                 </a>
@@ -140,7 +131,7 @@ const FooterPart = (props: Props) => {
       <div className="bg-gray-900 text-gray-300 py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm">
-            © Copyright 2025 Arttag Pvt. Ltd.
+            © Copyright 2026 Arttag Pvt. Ltd.
           </div>
           <div className="flex gap-6 text-sm">
             <a href="/termsofuse" className="hover:text-white transition-colors">Terms of use</a>

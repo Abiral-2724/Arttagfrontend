@@ -278,9 +278,8 @@ const Navbar = ({ page }: any) => {
                     </Link>
                   )}
 <div className="relative group inline-block">
-  <UserRound
-    size={26}
-    className="text-black cursor-pointer mt-[-7px]"
+<UserRound
+    className="w-5 h-5 mb-1 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] cursor-pointer group-hover:text-teal-600 transition-colors"
     onClick={handleLoginClick}
   />
 
