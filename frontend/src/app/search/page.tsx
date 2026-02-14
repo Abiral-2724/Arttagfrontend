@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Package, Folder, Tag, X, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -33,7 +34,7 @@ interface SubcategoriesResponse {
 }
 
 const trendingSearches = [
-  'Arttag bags' ,
+  'Arttag bags',
   'Phone Wallet',
   'Apple Phone Cases',
   'Pop Adapter',
@@ -45,6 +46,7 @@ const trendingSearches = [
 ];
 
 export default function EnhancedSearchPage() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,13 +54,14 @@ export default function EnhancedSearchPage() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isEnterLoading, setIsEnterLoading] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // Load recent searches from memory
+  // Load recent searches from session storage
   useEffect(() => {
     const saved = sessionStorage.getItem('recentSearches');
     if (saved) {
@@ -108,7 +111,6 @@ export default function EnhancedSearchPage() {
         setShowResults(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -116,7 +118,9 @@ export default function EnhancedSearchPage() {
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/product/search/product?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(
+        `${API_BASE}/product/search/product?q=${encodeURIComponent(searchQuery)}`
+      );
       const data: SearchResponse = await response.json();
       setResults(data.results || []);
       setShowResults(true);
@@ -143,27 +147,19 @@ export default function EnhancedSearchPage() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'product':
-        return <Package className="w-4 h-4 text-blue-500" />;
-      case 'category':
-        return <Folder className="w-4 h-4 text-green-500" />;
-      case 'subcategory':
-        return <Tag className="w-4 h-4 text-purple-500" />;
-      default:
-        return <Search className="w-4 h-4 text-gray-400" />;
+      case 'product': return <Package className="w-4 h-4 text-blue-500" />;
+      case 'category': return <Folder className="w-4 h-4 text-green-500" />;
+      case 'subcategory': return <Tag className="w-4 h-4 text-purple-500" />;
+      default: return <Search className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'product':
-        return 'Product';
-      case 'category':
-        return 'Category';
-      case 'subcategory':
-        return 'Subcategory';
-      default:
-        return '';
+      case 'product': return 'Product';
+      case 'category': return 'Category';
+      case 'subcategory': return 'Subcategory';
+      default: return '';
     }
   };
 
@@ -189,7 +185,6 @@ export default function EnhancedSearchPage() {
     const categoryId = subcategory.parentId;
     const subcategoryId = subcategory.id;
     const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
-
     window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
   };
 
@@ -200,17 +195,52 @@ export default function EnhancedSearchPage() {
     inputRef.current?.focus();
   };
 
+  // ─── Enter key: navigate to result or redirect to not-found page ─────────────
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter' || !query.trim()) return;
+
+    const trimmedQuery = query.trim();
+    saveRecentSearch(trimmedQuery);
+    setShowResults(false);
+
+    // Use already-fetched debounce results if available,
+    // otherwise do a fresh fetch to avoid race condition on fast typing + Enter
+    let freshResults = results;
+
+    if (freshResults.length === 0) {
+      setIsEnterLoading(true);
+      try {
+        const response = await fetch(
+          `${API_BASE}/product/search/product?q=${encodeURIComponent(trimmedQuery)}`
+        );
+        const data: SearchResponse = await response.json();
+        freshResults = data.results || [];
+      } catch (error) {
+        console.error('Search on Enter failed:', error);
+        freshResults = [];
+      } finally {
+        setIsEnterLoading(false);
+      }
+    }
+
+    if (freshResults.length > 0) {
+      // Navigate to the best matching result
+      window.location.href = freshResults[0].url;
+    } else {
+      // Redirect to the dedicated not-found page with the query in the URL
+      router.push(`/search/not-found?q=${encodeURIComponent(trimmedQuery)}`);
+    }
+  };
+  // ────────────────────────────────────────────────────────────────────────────
+
   const scrollSlider = (direction: 'left' | 'right') => {
     if (sliderRef.current) {
       const scrollAmount = 300;
-      const newScrollLeft = direction === 'left'
-        ? sliderRef.current.scrollLeft - scrollAmount
-        : sliderRef.current.scrollLeft + scrollAmount;
-
-      sliderRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth'
-      });
+      const newScrollLeft =
+        direction === 'left'
+          ? sliderRef.current.scrollLeft - scrollAmount
+          : sliderRef.current.scrollLeft + scrollAmount;
+      sliderRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
     }
   };
 
@@ -222,8 +252,9 @@ export default function EnhancedSearchPage() {
 
   return (
     <div>
-      <Navbar></Navbar>
+      <Navbar />
       <div className="min-h-screen bg-gray-50">
+
         {/* Search Bar Section */}
         <div className="bg-white py-6 border-0">
           <div className="max-w-4xl mx-auto px-4">
@@ -235,15 +266,19 @@ export default function EnhancedSearchPage() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   onFocus={() => {
-                    if (query.trim()) {
-                      setShowResults(true);
-                    }
+                    if (query.trim()) setShowResults(true);
                   }}
                   placeholder="Search for products, categories..."
                   className="w-full pl-12 pr-12 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-base"
                 />
-                {query && (
+                {isEnterLoading && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500" />
+                  </div>
+                )}
+                {query && !isEnterLoading && (
                   <button
                     onClick={clearSearch}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -258,7 +293,7 @@ export default function EnhancedSearchPage() {
                 <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
                   {isLoading ? (
                     <div className="p-4 text-center text-gray-500">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto" />
                       <p className="mt-2">Searching...</p>
                     </div>
                   ) : results.length === 0 ? (
@@ -338,10 +373,9 @@ export default function EnhancedSearchPage() {
           </div>
         </div>
 
-        {/* Recently Searched & Trending Search - Always visible */}
+        {/* Recently Searched & Trending Search */}
         <div className="bg-white border-b border-gray-200 py-6">
           <div className="max-w-4xl mx-auto px-4">
-            {/* Recently Searched */}
             {recentSearches.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold text-gray-900 uppercase mb-3">Recently Searched</h3>
@@ -368,7 +402,6 @@ export default function EnhancedSearchPage() {
               </div>
             )}
 
-            {/* Trending Search */}
             <div>
               <h3 className="text-sm font-bold text-gray-900 uppercase mb-3">Trending Search</h3>
               <div className="flex flex-wrap gap-2">
@@ -386,20 +419,19 @@ export default function EnhancedSearchPage() {
           </div>
         </div>
 
-        {/* Top Categories Slider Section - Always visible */}
+        {/* Top Categories Slider */}
         <div className="max-w-7xl mx-auto px-4 py-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">TOP CATEGORIES</h2>
 
           {isLoadingCategories ? (
             <div className="flex justify-center items-center py-20">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500 mx-auto" />
                 <p className="mt-4 text-gray-600">Loading categories...</p>
               </div>
             </div>
           ) : (
             <div className="relative group">
-              {/* Left Arrow */}
               <button
                 onClick={() => scrollSlider('left')}
                 className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 -translate-x-4 hover:scale-110"
@@ -408,14 +440,10 @@ export default function EnhancedSearchPage() {
                 <ChevronLeft className="w-6 h-6 text-gray-700" />
               </button>
 
-              {/* Slider Container */}
               <div
                 ref={sliderRef}
                 className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {subcategories.map((category) => (
                   <div
@@ -437,7 +465,6 @@ export default function EnhancedSearchPage() {
                 ))}
               </div>
 
-              {/* Right Arrow */}
               <button
                 onClick={() => scrollSlider('right')}
                 className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 translate-x-4 hover:scale-110"
@@ -450,13 +477,12 @@ export default function EnhancedSearchPage() {
         </div>
 
         <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
       </div>
-      <Footer></Footer>
+      <Footer />
     </div>
-
   );
 }
