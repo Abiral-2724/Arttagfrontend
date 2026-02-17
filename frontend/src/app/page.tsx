@@ -343,26 +343,26 @@ export default function DailyObjectsReplica() {
         {/* Mobile Slider */}
         <div className="sm:hidden relative">
           <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
-            {[
-              {
-                title: 'REFLECTIVE',
-                description: 'Carryalls that mirror your urban spirit of transience',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191330/IMG_4691_v15fv4.jpg',
-                link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-              },
-              {
-                title: 'CANVAS',
-                description: 'Classic staples for every day carry',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191494/IMG_4692_c0x4hh.jpg',
-                link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
-              },
-              {
-                title: 'CARBON BLACK',
-                description: 'Comfort carryalls in a quintessentially classic colour',
-                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191456/IMG_4693_anxtod.jpg',
-                link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
-              }
-            ].map((collection, index) => (
+          {[
+            {
+              title: 'Laptop Sleeves',
+              description: 'Smart Protection for Smart Devices.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
+              link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
+            },
+            {
+              title: 'Tote Bags',
+              description: 'Your Everyday Essential.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
+              link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
+            },
+            {
+              title: 'Backpacks',
+              description: 'Pack Your Next Adventure.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
+              link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
+            }
+          ].map((collection, index) => (
               <Link key={index} href={collection.link} className="flex-shrink-0 w-[85vw] snap-center">
                 <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[500px]">
                   <img
@@ -396,22 +396,22 @@ export default function DailyObjectsReplica() {
         <div className="hidden sm:grid sm:grid-cols-3">
           {[
             {
-              title: 'REFLECTIVE',
-              description: 'Carryalls that mirror your urban spirit of transience',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191330/IMG_4691_v15fv4.jpg',
-              link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
+              title: 'Laptop Sleeves',
+              description: 'Smart Protection for Smart Devices.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
+              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS'
             },
             {
-              title: 'CANVAS',
-              description: 'Classic staples for every day carry',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191494/IMG_4692_c0x4hh.jpg',
-              link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
+              title: 'Tote Bags',
+              description: 'Your Everyday Essential.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
+              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
             },
             {
-              title: 'CARBON BLACK',
-              description: 'Comfort carryalls in a quintessentially classic colour',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770191456/IMG_4693_anxtod.jpg',
-              link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
+              title: 'Backpacks',
+              description: 'Pack Your Next Adventure.',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
+              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/da0c3b9e-183e-4fb4-9169-18fde3ed4c43/BAGS%20&%20WALLETS'
             }
           ].map((collection, index) => (
             <Link key={index} href={collection.link}>
