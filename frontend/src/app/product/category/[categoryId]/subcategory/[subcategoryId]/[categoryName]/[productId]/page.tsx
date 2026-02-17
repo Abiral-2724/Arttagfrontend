@@ -649,12 +649,12 @@ const ProductDetailPage = () => {
               disabled={addingToCart || product.totalCount === 0}
               className={`hidden md:block w-[60%] py-2 rounded-lg font-medium text-lg transition-colors ${
                 addingToCart || product.totalCount === 0
-                  ? 'bg-gray-400 cursor-not-allowed'
+                  ? 'bg-teal-600 cursor-not-allowed'
                   : !isLoggedIn
-                  ? 'bg-blue-700 hover:bg-blue-600'
+                  ? 'bg-teal-600'
                   : isInCart
-                  ? 'bg-amber-800 hover:bg-amber-700'
-                  : 'bg-blue-700 hover:bg-blue-600'
+                  ? 'bg-teal-600'
+                  : 'bg-teal-600'
               } text-white`}
             >
               {product.totalCount === 0
@@ -1023,12 +1023,12 @@ const ProductDetailPage = () => {
           disabled={addingToCart || product.totalCount === 0}
           className={`w-full py-2 rounded-lg font-medium text-lg transition-colors ${
             addingToCart || product.totalCount === 0
-              ? 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-teal-600 cursor-not-allowed'
               : !isLoggedIn
-              ? 'bg-blue-700 hover:bg-blue-600'
+              ? 'bg-teal-600 hover:bg-teal-700'
               : isInCart
-              ? 'bg-amber-800 hover:bg-amber-700'
-              : 'bg-blue-700 hover:bg-blue-600'
+              ? 'bg-teal-600 hover:bg-teal-700'
+              : 'bg-teal-600 hover:bg-teal-700'
           } text-white`}
         >
           {product.totalCount === 0
