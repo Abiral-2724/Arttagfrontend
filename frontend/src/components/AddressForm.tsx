@@ -30,7 +30,7 @@ export default function AddressForm({ userId, address, onSuccess, showAlert }: a
       setForm({
         fullname: address.fullname || '',
         email: address.email || '',
-        mobile: address.mobile || '',
+        mobile: address.mobile ? address.mobile.replace(/^\+91/, '') : '',
         pincode: address.pincode || '',
         city: address.city || '',
         state: address.state || '',
@@ -51,8 +51,8 @@ export default function AddressForm({ userId, address, onSuccess, showAlert }: a
         : `${API_BASE_URL}/user/${userId}/add/address`;
 
       const payload = address
-        ? { addressId: address.id, ...form }
-        : form;
+        ? { addressId: address.id, ...form, mobile: `+91${form.mobile}` }
+        : { ...form, mobile: `+91${form.mobile}` };
 
       const method = address ? 'patch' : 'post';
       const { data } = await axios[method](url, payload);
@@ -102,12 +102,18 @@ export default function AddressForm({ userId, address, onSuccess, showAlert }: a
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label className="text-sm font-medium text-gray-700">Mobile Number *</Label>
-            <Input
-              className="h-11 border-gray-300 focus:border-black focus:ring-black"
-              placeholder="+91 XXXXXXXXXX"
-              value={form.mobile}
-              onChange={(e) => handleChange('mobile', e.target.value)}
-            />
+            <div className="flex h-11">
+              <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm rounded-l-md font-medium select-none">
+                +91
+              </span>
+              <Input
+                className="h-11 border-gray-300 focus:border-black focus:ring-black rounded-l-none"
+                placeholder="XXXXXXXXXX"
+                maxLength={10}
+                value={form.mobile}
+                onChange={(e) => handleChange('mobile', e.target.value.replace(/\D/g, ''))}
+              />
+            </div>
           </div>
         </div>
       </div>

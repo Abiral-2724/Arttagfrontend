@@ -334,30 +334,30 @@ const Navbar = ({ page }: any) => {
                     <div className="absolute inset-0 flex items-center justify-between px-8">
                       {/* Category Name */}
                       <div className="z-10">
-                        <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
-                          {item.name.split(' ')[0]}
+                        <h2 className="text-sm font-bold text-gray-950 mb-2 group-hover:text-teal-600 transition-colors">
+                          {item.name}
                         </h2>
-                        {item.name.split(' ').length > 1 && (
-                          <h3 className="text-xl font-bold text-gray-700 group-hover:text-teal-500 transition-colors">
-                            {item.name.split(' ').slice(1).join(' ')}
-                          </h3>
-                        )}
+                        
                       </div>
                       
                       {/* Placeholder for product image */}
-                      <div className="w-40 h-40 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-20 h-20 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
                         {idx === 0 && (
-                          <div className="text-6xl">📱</div>
+                          <div className="text-6xl">
+                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485944/MagSafe_Power_Bank_10800mAh_Magnetic_Power_Bank_Portable_USB_C_Battery_Charger_B705_tdeqjv.jpg" alt="" />
+                          </div>
                         )}
                         {idx === 1 && (
-                          <div className="text-6xl">👜</div>
+                          <div className="">
+                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485986/Casual_Backpack_Large_Capacity_Korean_Style_-_Light_Gray_bvqxtd.jpg" alt="" />
+                          </div>
                         )}
                         {idx === 2 && (
-                          <div className="text-6xl">💻</div>
+                          <div className="text-6xl">
+                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485998/Bravo_Totepack_uadwmw.jpg" alt="" />
+                          </div>
                         )}
-                        {idx === 3 && (
-                          <div className="text-6xl">🎁</div>
-                        )}
+                        
                       </div>
                     </div>
                     
@@ -404,7 +404,7 @@ const Navbar = ({ page }: any) => {
                           handleAdminPage();
                           setMobileMenuOpen(false);
                         }}
-                        className='w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl shadow-md text-base font-semibold'
+                        className='w-full mt-4 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl shadow-md text-base font-semibold'
                       >
                         Admin Panel
                       </Button>
