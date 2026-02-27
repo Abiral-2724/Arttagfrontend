@@ -1,10 +1,13 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { Heart, X, AlertCircle, SlidersHorizontal } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect, useRef } from 'react';
+import { Heart, X, AlertCircle, SlidersHorizontal, ChevronRight, Search, ArrowUpDown, Sparkles, TrendingUp, Tag, ArrowDownUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
@@ -15,18 +18,485 @@ const SubcategoryProductsPage = () => {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { subcategoryId, categoryId, categoryName } = useParams();
+  const typeScrollRef = useRef<HTMLDivElement>(null);
 
-  // Add CSS for hiding scrollbar
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap');
+
+      :root {
+        --accent: #0D9488;
+        --accent-light: #CCFBF1;
+        --accent-dark: #0F766E;
+        --ink: #111827;
+        --muted: #6B7280;
+        --surface: #FAFAFA;
+        --card-bg: #FFFFFF;
+        --border: #F3F4F6;
       }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+
+      * { box-sizing: border-box; }
+
+      .sc-page { font-family: 'Outfit', sans-serif; background: var(--surface); min-height: 100vh; }
+
+      /* Scrollbar hide */
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Hero */
+      .hero-section {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
       }
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(13,148,136,0.07) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; left: -40px;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(13,148,136,0.05) 0%, transparent 70%);
+        pointer-events: none;
+      }
+
+      .hero-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 600;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        line-height: 1.1;
+      }
+
+      .hero-underline {
+        display: inline-block;
+        position: relative;
+      }
+      .hero-underline::after {
+        content: '';
+        position: absolute;
+        bottom: -4px; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), transparent);
+        border-radius: 2px;
+      }
+
+      /* Type Filter Pills */
+      .type-rail {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+      }
+
+      .type-pill {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--muted);
+        background: var(--surface);
+      }
+      .type-pill:hover {
+        color: var(--ink);
+        border-color: #E5E7EB;
+        background: #F9FAFB;
+        transform: translateY(-1px);
+      }
+      .type-pill.active {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+        box-shadow: 0 4px 14px rgba(17,24,39,0.18);
+        transform: translateY(-2px);
+      }
+      .type-pill.active:hover {
+        background: #1F2937;
+      }
+      .type-pill-img {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .type-pill-count {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 1px 6px;
+        border-radius: 100px;
+        background: rgba(255,255,255,0.2);
+      }
+      .type-pill:not(.active) .type-pill-count {
+        background: var(--accent-light);
+        color: var(--accent-dark);
+      }
+
+      /* Sort Bar */
+      .sort-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1.5px solid #E5E7EB;
+        color: var(--muted);
+        background: #fff;
+        transition: all 0.18s ease;
+      }
+      .sort-chip:hover { border-color: var(--accent); color: var(--accent); }
+      .sort-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+      /* Product Cards */
+      .pcard {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+      }
+      .pcard:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 24px 48px rgba(0,0,0,0.10), 0 8px 16px rgba(0,0,0,0.06);
+        border-color: #E5E7EB;
+      }
+
+      .pcard-img-wrap {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: #F8F8F8;
+      }
+      .pcard-img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        display: block;
+      }
+      .pcard:hover .pcard-img { transform: scale(1.08); }
+
+      .pcard-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.18) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .pcard:hover .pcard-overlay { opacity: 1; }
+
+      /* Quick action bar on hover */
+      .pcard-actions {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%) translateY(16px);
+        opacity: 0;
+        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        gap: 8px;
+        z-index: 5;
+      }
+      .pcard:hover .pcard-actions {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      .pcard-action-btn {
+        padding: 8px 16px;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink);
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        transition: background 0.15s;
+      }
+      .pcard-action-btn:hover { background: #fff; }
+
+      /* Wishlist btn */
+      .wish-btn {
+        position: absolute;
+        top: 12px; right: 12px;
+        z-index: 10;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(6px);
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        transition: all 0.2s ease;
+      }
+      .wish-btn:hover { transform: scale(1.12); background: #fff; }
+      .wish-btn.active { background: #FEE2E2; }
+
+      /* Discount badge */
+      .badge-discount {
+        position: absolute;
+        top: 12px; left: 12px;
+        z-index: 10;
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+      }
+      .badge-new {
+        position: absolute;
+        top: 12px; left: 12px;
+        z-index: 10;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        box-shadow: 0 2px 8px rgba(13,148,136,0.35);
+      }
+
+      /* Card content */
+      .pcard-body { padding: 16px; }
+      .pcard-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink);
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 10px;
+        min-height: 38px;
+      }
+      .pcard-price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+      .pcard-price {
+        font-family: 'Outfit', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+      .pcard-og-price {
+        font-size: 12px;
+        color: #9CA3AF;
+        text-decoration: line-through;
+      }
+      .pcard-save {
+        font-size: 10px;
+        font-weight: 700;
+        color: #16A34A;
+        background: #DCFCE7;
+        padding: 2px 7px;
+        border-radius: 100px;
+      }
+
+      /* Sidebar */
+      .sidebar-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        position: sticky;
+        top: 80px;
+      }
+      .sidebar-header {
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .sidebar-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .sidebar-section { padding: 20px; }
+      .sidebar-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9CA3AF;
+        margin-bottom: 14px;
+      }
+
+      /* Radio Sort Options */
+      .sort-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.15s;
+        border: 1.5px solid transparent;
+      }
+      .sort-option:hover { background: var(--surface); }
+      .sort-option.selected {
+        background: var(--accent-light);
+        border-color: rgba(13,148,136,0.2);
+      }
+      .sort-option-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        background: var(--surface);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.15s;
+      }
+      .sort-option.selected .sort-option-icon {
+        background: rgba(13,148,136,0.15);
+      }
+      .sort-option-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink);
+      }
+
+      /* Skeleton */
+      .skel {
+        background: linear-gradient(90deg, #F3F4F6 0%, #E9EAEC 50%, #F3F4F6 100%);
+        background-size: 200% 100%;
+        animation: skel-shine 1.6s ease-in-out infinite;
+        border-radius: 12px;
+      }
+      @keyframes skel-shine {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Staggered fade in */
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .card-appear {
+        animation: card-in 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 80px 24px;
+      }
+      .empty-icon-wrap {
+        width: 80px; height: 80px;
+        border-radius: 24px;
+        background: var(--surface);
+        border: 1.5px dashed #D1D5DB;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+      }
+      .empty-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 8px;
+      }
+
+      /* Toolbar */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .filter-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid #E5E7EB;
+        background: #fff;
+        color: var(--ink);
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      }
+      .filter-toggle-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: 0 2px 12px rgba(13,148,136,0.12);
+      }
+      .product-count {
+        font-size: 13px;
+        color: #9CA3AF;
+        font-weight: 400;
+      }
+      .product-count strong { color: var(--ink); font-weight: 600; }
+
+      /* Breadcrumb */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #9CA3AF;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .breadcrumb a { color: inherit; text-decoration: none; transition: color 0.15s; }
+      .breadcrumb a:hover { color: var(--accent); }
+      .breadcrumb .current { color: var(--muted); }
+
+      /* Close btn */
+      .icon-btn {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+        color: var(--muted);
+      }
+      .icon-btn:hover { background: #F3F4F6; color: var(--ink); }
+
+      /* Sheet override tweaks */
+      [data-radix-popper-content-wrapper] { z-index: 100 !important; }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -46,538 +516,457 @@ const SubcategoryProductsPage = () => {
   const [availableTypes, setAvailableTypes] = useState([]);
   const [subcategoryDetails, setSubcategoryDetails]: any = useState(null);
 
-  // Authentication Check (Non-blocking)
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagtoken") : null;
     const storedUserId: any = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagUserId") : null;
-
-    if (storedUserId && token) {
-      setUserId(storedUserId);
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-      setUserId(null);
-    }
+    if (storedUserId && token) { setUserId(storedUserId); setIsAuthenticated(true); }
+    else { setIsAuthenticated(false); setUserId(null); }
   }, []);
 
-  // Fetch data - works with or without authentication
   useEffect(() => {
     fetchTypesAndDetails();
     fetchProducts();
-
-    // Only fetch wishlist if user is authenticated
-    if (isAuthenticated && userId) {
-      fetchWishlist();
-    }
+    if (isAuthenticated && userId) fetchWishlist();
   }, [subcategoryId, isAuthenticated, userId]);
 
-  // Refetch products when filters change
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedType, selectedSort]);
+  useEffect(() => { fetchProducts(); }, [selectedType, selectedSort]);
 
   const fetchTypesAndDetails = async () => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/product/get/product/subcategory/all/type/${subcategoryId}`
-      );
-      console.log(response)
+      const response = await axios.get(`${API_BASE_URL}/product/get/product/subcategory/all/type/${subcategoryId}`);
       if (response.data.success) {
         setAvailableTypes(response.data.types || []);
         setSubcategoryDetails(response.data.subcategorydetail);
       }
-    } catch (error) {
-      console.error('Error fetching types:', error);
-      setError('Failed to load product types. Please try again.');
-    }
+    } catch (error) { console.error('Error:', error); setError('Failed to load product types.'); }
   };
 
   const fetchProducts = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
+      setLoading(true); setError(null);
       let sortParam = '';
       if (selectedSort === 'lowToHigh') sortParam = 'lowToHigh';
       if (selectedSort === 'highToLow') sortParam = 'highToLow';
-
       const typeParam = selectedType !== 'All' ? `type=${selectedType}` : '';
       const sortQuery = sortParam ? `sort=${sortParam}` : '';
       const queryString = [typeParam, sortQuery].filter(Boolean).join('&');
-
-      const response = await axios.get(
-        `${API_BASE_URL}/product/get/product/bytype/${subcategoryId}?${queryString}`
-      );
-
-      if (response.data.success) {
-        setProducts(response.data.products);
-      } else {
-        setProducts([]);
-      }
-      console.log('product' ,products)
+      const response = await axios.get(`${API_BASE_URL}/product/get/product/bytype/${subcategoryId}?${queryString}`);
+      if (response.data.success) setProducts(response.data.products);
+      else setProducts([]);
     } catch (error: any) {
-      if (error.response?.status === 404) {
-        setProducts([]);
-      } else {
-        console.error('Error fetching products:', error);
-        setError(
-          error.response?.data?.message ||
-          'Failed to load products. Please try again.'
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (error.response?.status === 404) setProducts([]);
+      else { console.error('Error:', error); setError(error.response?.data?.message || 'Failed to load products.'); }
+    } finally { setLoading(false); }
   };
 
   const fetchWishlist = async () => {
     if (!isAuthenticated || !userId) return;
-
     try {
       const response = await axios.get(`${API_BASE_URL}/wishlist/${userId}/get/all/items/wishlist`);
       if (response.data.success) {
-        const wishlistIds = new Set(response.data.wishlist.map(item => item.productId));
-        setWishlist(wishlistIds);
+        const ids = new Set(response.data.wishlist.map(item => item.productId));
+        setWishlist(ids);
       }
-    } catch (error) {
-      console.error('Error fetching wishlist:', error);
-    }
+    } catch (error) { console.error('Wishlist error:', error); }
   };
 
   const handleWishlistToggle = async (productId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Redirect to login if not authenticated
-    if (!isAuthenticated || !userId) {
-      router.push('/login');
-      return;
-    }
-
+    e.preventDefault(); e.stopPropagation();
+    if (!isAuthenticated || !userId) { router.push('/login'); return; }
     try {
       if (wishlist.has(productId)) {
-        await axios.delete(`${API_BASE_URL}/wishlist/delete/item/user/wishlist`, {
-          data: { userId, productId }
-        });
-
-        setWishlist(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(productId);
-          return newSet;
-        });
+        await axios.delete(`${API_BASE_URL}/wishlist/delete/item/user/wishlist`, { data: { userId, productId } });
+        setWishlist(prev => { const s = new Set(prev); s.delete(productId); return s; });
       } else {
-        const response = await axios.post(`${API_BASE_URL}/wishlist/add/product/user/wishlist`, {
-          userId,
-          productId
-        });
-
-        if (response.data.success) {
-          setWishlist(prev => new Set([...prev, productId]));
-        }
+        const res = await axios.post(`${API_BASE_URL}/wishlist/add/product/user/wishlist`, { userId, productId });
+        if (res.data.success) setWishlist(prev => new Set([...prev, productId]));
       }
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      setError('Failed to update wishlist. Please try again.');
-      setTimeout(() => setError(null), 3000);
-    }
+    } catch (error) { console.error('Wishlist toggle error:', error); }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(price);
-  };
+  const formatPrice = (price) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
-  const renderSkeletons = () => {
-    const count = products.length || 8;
-    return Array(count).fill(0).map((_, i) => (
-      <Card key={i} className="overflow-hidden border shadow-sm rounded-lg bg-white">
-        <div className="aspect-square bg-gray-100">
-          <Skeleton className="w-full h-full" />
-        </div>
-        <CardContent className="p-4 space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <div className="flex items-center gap-2 pt-1">
-            <Skeleton className="h-6 w-20" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-        </CardContent>
-      </Card>
-    ));
-  };
+  const typeIcons = { 'Paintings': '🎨', 'Sculptures': '🗿', 'Prints': '🖼️', 'Photography': '📷', 'Digital Art': '💻' };
 
-  const typeIcons = {
-    'Paintings': '🎨',
-    'Sculptures': '🗿',
-    'Prints': '🖼️',
-    'Photography': '📷',
-    'Digital Art': '💻',
-  };
+  const filteredProducts = selectedType === 'All' ? products : products.filter((p: any) => p.type === selectedType);
 
-  const filteredProducts = selectedType === 'All'
-    ? products
-    : products.filter((p: any) => p.type === selectedType);
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First', icon: <Sparkles size={14} /> },
+    { value: 'popularity', label: 'Most Popular', icon: <TrendingUp size={14} /> },
+    { value: 'discount', label: 'Best Discount', icon: <Tag size={14} /> },
+    { value: 'lowToHigh', label: 'Price: Low → High', icon: <ArrowUpDown size={14} /> },
+    { value: 'highToLow', label: 'Price: High → Low', icon: <ArrowDownUp size={14} /> },
+  ];
 
   const FilterContent = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-bold text-sm mb-4 uppercase tracking-wide">SORT BY</h3>
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="sort"
-              checked={selectedSort === 'newest'}
-              onChange={() => setSelectedSort('newest')}
-              className="w-5 h-5 accent-teal-500 cursor-pointer"
-            />
-            <span className="text-sm group-hover:text-teal-600">Newest</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="sort"
-              checked={selectedSort === 'popularity'}
-              onChange={() => setSelectedSort('popularity')}
-              className="w-5 h-5 accent-teal-500 cursor-pointer"
-            />
-            <span className="text-sm group-hover:text-teal-600">Popularity</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="sort"
-              checked={selectedSort === 'discount'}
-              onChange={() => setSelectedSort('discount')}
-              className="w-5 h-5 accent-teal-500 cursor-pointer"
-            />
-            <span className="text-sm group-hover:text-teal-600">Discount</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="sort"
-              checked={selectedSort === 'lowToHigh'}
-              onChange={() => setSelectedSort('lowToHigh')}
-              className="w-5 h-5 accent-teal-500 cursor-pointer"
-            />
-            <span className="text-sm group-hover:text-teal-600">Price: Low To High</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="sort"
-              checked={selectedSort === 'highToLow'}
-              onChange={() => setSelectedSort('highToLow')}
-              className="w-5 h-5 accent-teal-500 cursor-pointer"
-            />
-            <span className="text-sm group-hover:text-teal-600">Price: High To Low</span>
-          </label>
-        </div>
+    <div className="sidebar-section">
+      <p className="sidebar-section-title">Sort By</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {sortOptions.map((opt) => (
+          <div
+            key={opt.value}
+            className={`sort-option ${selectedSort === opt.value ? 'selected' : ''}`}
+            onClick={() => setSelectedSort(opt.value)}
+          >
+            <div className="sort-option-icon" style={{ color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)' }}>
+              {opt.icon}
+            </div>
+            <span className="sort-option-label" style={{ color: selectedSort === opt.value ? 'var(--accent-dark)' : undefined }}>
+              {opt.label}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
 
-  return (
-    <div>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <Navbar />
-        <div className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-4 py-8">
-            <h1 className="text-2xl md:text-3xl font-mono text-center tracking-tight uppercase">
-              {subcategoryDetails?.name || 'Products'}
-            </h1>
-          </div>
-        </div>
-
-        {/* Type Filters - Desktop: Centered, Mobile: Slider */}
-        <div className="bg-white border-b py-6">
-          {/* Desktop View - Centered */}
-          <div className="hidden md:block max-w-4xl mx-auto px-4">
-            <div className="flex justify-center items-center gap-6 flex-wrap">
-              <button
-                onClick={() => setSelectedType('All')}
-                className={`flex flex-col items-center gap-2 transition-all ${selectedType === 'All' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                  }`}
-              >
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-xs font-bold transition-all ${selectedType === 'All'
-                    ? 'bg-teal-500 text-white shadow-lg scale-110'
-                    : 'bg-gray-200 hover:bg-gray-300'
-                  }`}>
-                  ALL
-                </div>
-                <span className="text-sm font-medium text-black">All</span>
-              </button>
-
-              {availableTypes.map((typeObj: any) => (
-                <button
-                  key={typeObj.type}
-                  onClick={() => setSelectedType(typeObj.type)}
-                  className={`flex flex-col items-center gap-2 transition-all ${selectedType === typeObj.type ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                    }`}
-                >
-                  <div className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
-                      ? 'bg-teal-500 shadow-lg scale-110 ring-4 ring-teal-200'
-                      : 'bg-gray-100 hover:bg-gray-300'
-                    }`}>
-                    {typeObj.image ? (
-                      <img
-                        src={typeObj.image}
-                        alt={typeObj.type}
-                        className="w-14 h-14 object-cover"
-                        onError={(e: any) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement.innerHTML = `<span class="text-2xl">${typeIcons[typeObj.type] || '📦'}</span>`;
-                        }}
-                      />
-                    ) : (
-                      <span className="text-2xl">{typeIcons[typeObj.type] || '📦'}</span>
-                    )}
-                  </div>
-                  <span className="text-sm font-medium text-black">{typeObj.type}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile View - Horizontal Slider */}
-          <div className="md:hidden px-4">
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-              <button
-                onClick={() => setSelectedType('All')}
-                className={`flex flex-col items-center gap-2 flex-shrink-0 transition-all snap-center ${selectedType === 'All' ? 'opacity-100' : 'opacity-50'
-                  }`}
-              >
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xs font-bold transition-all ${selectedType === 'All'
-                    ? 'bg-teal-500 text-white shadow-lg scale-105'
-                    : 'bg-gray-200'
-                  }`}>
-                  ALL
-                </div>
-                <span className="text-xs font-medium text-black whitespace-nowrap">All</span>
-              </button>
-
-              {availableTypes.map((typeObj: any) => (
-                <button
-                  key={typeObj.type}
-                  onClick={() => setSelectedType(typeObj.type)}
-                  className={`flex flex-col items-center gap-2 flex-shrink-0 transition-all snap-center ${selectedType === typeObj.type ? 'opacity-100' : 'opacity-50'
-                    }`}
-                >
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
-                      ? 'bg-teal-500 shadow-lg scale-105 ring-4 ring-teal-200'
-                      : 'bg-gray-100'
-                    }`}>
-                    {typeObj.image ? (
-                      <img
-                        src={typeObj.image}
-                        alt={typeObj.type}
-                        className="w-12 h-12 object-cover"
-                        onError={(e: any) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement.innerHTML = `<span class="text-xl">${typeIcons[typeObj.type] || '📦'}</span>`;
-                        }}
-                      />
-                    ) : (
-                      <span className="text-xl">{typeIcons[typeObj.type] || '📦'}</span>
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-black whitespace-nowrap max-w-[80px] truncate">{typeObj.type}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {error && (
-            <Alert variant="destructive" className="mb-6 rounded-lg">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex gap-6">
-            {/* Desktop Sidebar Filters */}
-            {showFilters && (
-              <div className="w-64 flex-shrink-0 hidden lg:block">
-                <div className="bg-white rounded-lg p-6 shadow-sm sticky top-4">
-                  <button
-                    onClick={() => setShowFilters(false)}
-                    className="flex items-center gap-2 text-white bg-teal-500 hover:bg-teal-600 px-4 py-2 rounded-full mb-6 transition-colors w-full justify-center"
-                  >
-                    <span className="font-medium text-sm">HIDE FILTERS</span>
-                    <X className="h-4 w-4" />
-                  </button>
-                  <FilterContent />
-                </div>
-              </div>
-            )}
-
-            {/* Products Grid */}
-            <div className="flex-1">
-              {/* Desktop Show Filters Button */}
-              {!showFilters && (
-                <button
-                  onClick={() => setShowFilters(true)}
-                  className="mb-6 text-white bg-teal-500 hover:bg-teal-600 px-6 py-2.5 rounded-full transition-colors font-medium text-sm hidden lg:block"
-                >
-                  SHOW FILTERS
-                </button>
-              )}
-
-              {/* Mobile Filter Button */}
-              <button
-                onClick={() => setShowMobileFilters(true)}
-                className="mb-6 flex items-center gap-2 text-white bg-teal-500 hover:bg-teal-600 px-6 py-2.5 rounded-full transition-colors font-medium text-sm lg:hidden w-full justify-center"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                FILTERS & SORT
-              </button>
-
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {loading ? (
-                  renderSkeletons()
-                ) : (
-                  filteredProducts.map((product: any) => (
-                    <div key={product.id}>
-                      <Link href={`/product/category/${categoryId}/subcategory/${subcategoryId}/${categoryName}/${product.id}`}>
-                        <Card
-                          className="group overflow-hidden border hover:shadow-xl shadow-sm transition-all duration-300 cursor-pointer bg-white rounded-lg relative"
-                          onMouseEnter={() => setHoveredProduct(product.id)}
-                          onMouseLeave={() => setHoveredProduct(null)}
-                        >
-                          {/* Wishlist Button - Only show if authenticated */}
-                          {isAuthenticated && (
-                            <button
-                              onClick={(e) => handleWishlistToggle(product.id, e)}
-                              className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hover:scale-110"
-                            >
-                              <Heart
-                                className={`h-5 w-5 transition-all ${wishlist.has(product.id)
-                                    ? "fill-red-500 text-red-500"
-                                    : "text-gray-600 hover:text-red-500"
-                                  }`}
-                              />
-                            </button>
-                          )}
-
-                          {/* New Badge */}
-                          {product.isNew && (
-                            <Badge className="absolute top-3 left-3 z-10 bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-1 text-xs shadow-md uppercase">
-                              NEW
-                            </Badge>
-                          )}
-
-                          {/* Product Image */}
-                          <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                            <img
-                              src={
-                                hoveredProduct === product.id && product.images?.[1]?.url
-                                  ? product.images[1].url
-                                  : product.images?.[0]?.url || "/api/placeholder/400/400"
-                              }
-                              alt={product.name}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.currentTarget.src = "/api/placeholder/400/400";
-                              }}
-                            />
-                            {/* Gradient Overlay on Hover */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          </div>
-
-                          {/* Product Content */}
-                          <CardContent className="p-4">
-                            <h3 className="font-semibold text-sm text-gray-900 leading-tight line-clamp-2 mb-2 min-h-[40px]">
-                              {product.name}
-                            </h3>
-
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-lg font-bold text-gray-900">
-                                {formatPrice(product.discountPrice)}
-                              </span>
-                              {product.originalPrice > product.discountPrice && (
-                                <>
-                                  <span className="text-sm text-gray-400 line-through">
-                                    {formatPrice(product.originalPrice)}
-                                  </span>
-                                  <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                                    {Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100)}% OFF
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Empty State */}
-              {!loading && filteredProducts.length === 0 && (
-                <div className="text-center py-20">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
-                    <AlertCircle className="h-10 w-10 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">No products found</h3>
-                  <p className="text-gray-500 max-w-md mx-auto">
-                    Try adjusting your filters or check back later for new arrivals
-                  </p>
-                </div>
-              )}
-            </div>
+  const renderSkeletons = () =>
+    Array(8).fill(0).map((_, i) => (
+      <div key={i} style={{ borderRadius: 20, overflow: 'hidden', background: '#fff', border: '1px solid var(--border)' }}>
+        <div className="skel" style={{ aspectRatio: '1', width: '100%' }} />
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="skel" style={{ height: 13, width: '100%' }} />
+          <div className="skel" style={{ height: 13, width: '70%' }} />
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <div className="skel" style={{ height: 20, width: 64 }} />
+            <div className="skel" style={{ height: 20, width: 48 }} />
           </div>
         </div>
       </div>
+    ));
 
-      {/* Mobile Filter Drawer */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowMobileFilters(false)}
-          />
-          
-          {/* Drawer */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[80vh] overflow-y-auto animate-slide-up">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-lg font-bold uppercase">Filters & Sort</h2>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <FilterContent />
-            </div>
+  return (
+    <TooltipProvider>
+      <div className="sc-page">
+        <Navbar />
 
-            <div className="sticky bottom-0 bg-white border-t p-4">
+        {/* ── Hero Header ─────────────────────────── */}
+        <div className="hero-section">
+          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '36px 24px 32px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <nav className="breadcrumb" style={{ justifyContent: 'center', marginBottom: 16 }}>
+              <a href="/">Home</a>
+              <ChevronRight size={12} />
+              <a href="#">{categoryName || 'Category'}</a>
+              <ChevronRight size={12} />
+              <span className="current">{subcategoryDetails?.name || 'Products'}</span>
+            </nav>
+
+            <h1 className="hero-title">
+              <span className="hero-underline">{subcategoryDetails?.name || 'Products'}</span>
+            </h1>
+
+            {subcategoryDetails?.description && (
+              <p style={{ marginTop: 12, color: 'var(--muted)', fontSize: 14, maxWidth: 520, margin: '12px auto 0', lineHeight: 1.7 }}>
+                {subcategoryDetails.description}
+              </p>
+            )}
+
+            {/* Count pill */}
+            {!loading && (
+              <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 100, background: 'var(--accent-light)', color: 'var(--accent-dark)', fontSize: 12, fontWeight: 600 }}>
+                <Sparkles size={12} />
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'} available
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Type Filter Rail ─────────────────────── */}
+        <div className="type-rail">
+          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '14px 24px' }}>
+            <div
+              ref={typeScrollRef}
+              className="scrollbar-hide"
+              style={{ display: 'flex', gap: 8, overflowX: 'auto', alignItems: 'center', paddingBottom: 2 }}
+            >
+              {/* ALL */}
               <button
-                onClick={() => setShowMobileFilters(false)}
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-full transition-colors"
+                onClick={() => setSelectedType('All')}
+                className={`type-pill ${selectedType === 'All' ? 'active' : ''}`}
               >
-                APPLY FILTERS
+                <span style={{ fontSize: 14 }}>✦</span>
+                All
+                <span className="type-pill-count">{products.length}</span>
               </button>
+
+              {availableTypes.map((typeObj: any) => (
+                <button
+                  key={typeObj.type}
+                  onClick={() => setSelectedType(typeObj.type)}
+                  className={`type-pill ${selectedType === typeObj.type ? 'active' : ''}`}
+                >
+                  {typeObj.image ? (
+                    <img src={typeObj.image} alt={typeObj.type} className="type-pill-img"
+                      onError={(e: any) => { e.currentTarget.style.display = 'none'; }} />
+                  ) : (
+                    <span style={{ fontSize: 14 }}>{typeIcons[typeObj.type] || '📦'}</span>
+                  )}
+                  {typeObj.type}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-      )}
 
-      <div className="border-t border-gray-300 my-0"></div>
-      <FooterPart />
-    </div>
+        {/* ── Main Layout ──────────────────────────── */}
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px', display: 'flex', gap: 28 }}>
+
+          {/* ── Sidebar ── */}
+          {showFilters && (
+            <aside style={{ width: 240, flexShrink: 0 }} className="hidden lg:block">
+              <div className="sidebar-card">
+                <div className="sidebar-header">
+                  <span className="sidebar-title">Filters</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="icon-btn" onClick={() => setShowFilters(false)}>
+                        <X size={15} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Hide sidebar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <FilterContent />
+              </div>
+            </aside>
+          )}
+
+          {/* ── Products Area ── */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+
+            {/* Error */}
+            {error && (
+              <Alert variant="destructive" style={{ marginBottom: 20, borderRadius: 14 }}>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Toolbar */}
+            <div className="toolbar">
+              <div className="toolbar-left">
+                {/* Show filters (desktop) */}
+                {!showFilters && (
+                  <button className="filter-toggle-btn hidden lg:inline-flex" onClick={() => setShowFilters(true)}>
+                    <SlidersHorizontal size={14} />
+                    Show Filters
+                  </button>
+                )}
+
+                {/* Mobile filter btn */}
+                <button className="filter-toggle-btn lg:hidden" onClick={() => setShowMobileFilters(true)}>
+                  <SlidersHorizontal size={14} />
+                  Filters & Sort
+                </button>
+
+                {/* Quick sort chips — desktop only */}
+                <div className="hidden md:flex items-center gap-2">
+                  {sortOptions.slice(0, 3).map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSelectedSort(opt.value)}
+                      className={`sort-chip ${selectedSort === opt.value ? 'active' : ''}`}
+                    >
+                      {opt.icon}
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="product-count">
+                {loading ? 'Loading…' : <><strong>{filteredProducts.length}</strong> products</>}
+              </p>
+            </div>
+
+            {/* Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+              {loading ? renderSkeletons() : filteredProducts.map((product: any, idx) => (
+                <div
+                  key={product.id}
+                  className="card-appear"
+                  style={{ animationDelay: `${Math.min(idx * 35, 400)}ms` }}
+                >
+                  <Link href={`/product/category/${categoryId}/subcategory/${subcategoryId}/${categoryName}/${product.id}`}>
+                    <div
+                      className="pcard"
+                      onMouseEnter={() => setHoveredProduct(product.id)}
+                      onMouseLeave={() => setHoveredProduct(null)}
+                    >
+                      {/* Wishlist */}
+                      <button
+                        className={`wish-btn ${wishlist.has(product.id) ? 'active' : ''}`}
+                        onClick={(e) => handleWishlistToggle(product.id, e)}
+                        aria-label="Toggle wishlist"
+                      >
+                        <Heart
+                          size={15}
+                          style={{
+                            fill: wishlist.has(product.id) ? '#EF4444' : 'none',
+                            color: wishlist.has(product.id) ? '#EF4444' : '#6B7280',
+                            transition: 'all 0.2s'
+                          }}
+                        />
+                      </button>
+
+                      {/* Badge */}
+                      {product.originalPrice > product.discountPrice ? (
+                        <span className="badge-discount">
+                          {Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100)}% OFF
+                        </span>
+                      ) : product.isNew ? (
+                        <span className="badge-new">NEW</span>
+                      ) : null}
+
+                      {/* Image */}
+                      <div className="pcard-img-wrap">
+                        <img
+                          className="pcard-img"
+                          src={hoveredProduct === product.id && product.images?.[1]?.url ? product.images[1].url : product.images?.[0]?.url || '/api/placeholder/400/400'}
+                          alt={product.name}
+                          loading="lazy"
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/api/placeholder/400/400'; }}
+                        />
+                        <div className="pcard-overlay" />
+
+                        {/* Quick view on hover */}
+                        <div className="pcard-actions">
+                          <span className="pcard-action-btn">Quick View →</span>
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="pcard-body">
+                        <p className="pcard-name">{product.name}</p>
+                        <div className="pcard-price-row">
+                          <span className="pcard-price">{formatPrice(product.discountPrice)}</span>
+                          {product.originalPrice > product.discountPrice && (
+                            <>
+                              <span className="pcard-og-price">{formatPrice(product.originalPrice)}</span>
+                              <span className="pcard-save">
+                                Save {formatPrice(product.originalPrice - product.discountPrice)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty */}
+            {!loading && filteredProducts.length === 0 && (
+              <div className="empty-state card-appear">
+                <div className="empty-icon-wrap">
+                  <Search size={28} style={{ color: '#D1D5DB' }} />
+                </div>
+                <h3 className="empty-title">Nothing here yet</h3>
+                <p style={{ color: 'var(--muted)', fontSize: 13, maxWidth: 320, margin: '0 auto 24px', lineHeight: 1.6 }}>
+                  Try a different category or explore our full collection.
+                </p>
+                <button
+                  onClick={() => setSelectedType('All')}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 100,
+                    background: 'var(--ink)',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'opacity 0.15s'
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                  Browse All Products
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Mobile Filter Sheet (shadcn) ──────────── */}
+        <div >
+        <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters} >
+          <SheetContent side="bottom" style={{ borderRadius: '24px 24px 0 0', padding: 0, maxHeight: '85vh' ,background:"white" }}>
+            <SheetHeader style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)' }}>
+              <SheetTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, textAlign: 'left' }}>
+                Filters & Sort
+              </SheetTitle>
+            </SheetHeader>
+
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 130px)' }}>
+              <div style={{ padding: '8px 0' }}>
+                <p style={{ padding: '16px 24px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF' }}>
+                  Sort By
+                </p>
+                {sortOptions.map((opt) => (
+                  <div
+                    key={opt.value}
+                    onClick={() => setSelectedSort(opt.value)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      padding: '13px 24px',
+                      cursor: 'pointer',
+                      background: selectedSort === opt.value ? 'var(--accent-light)' : 'transparent',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: selectedSort === opt.value ? 'rgba(13,148,136,0.15)' : 'var(--surface)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)',
+                      flexShrink: 0,
+                    }}>
+                      {opt.icon}
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: selectedSort === opt.value ? 'var(--accent-dark)' : 'var(--ink)' }}>
+                      {opt.label}
+                    </span>
+                    {selectedSort === opt.value && (
+                      <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: 100,
+                  background: 'var(--ink)',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+        </div>
+
+        <Separator style={{ borderColor: '#E5E7EB' }} />
+        <FooterPart />
+      </div>
+    </TooltipProvider>
   );
 };
 
