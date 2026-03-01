@@ -486,11 +486,13 @@ export default function DailyObjectsReplica() {
   <div className="relative overflow-hidden group cursor-pointer">
     
     {/* Desktop image */}
-    <img
-      src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
-      alt="Step Inside Arttag Store"
-      className="hidden sm:block w-full h-auto object-cover"
-    />
+    {/* Desktop image */}
+<img
+  src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
+  alt="Step Inside Arttag Store"
+  className="hidden sm:block w-full object-cover"
+  style={{ aspectRatio: '16/7', objectPosition: 'center' }}
+/>
 
     {/* Mobile image — same src, cropped taller for portrait */}
     <img
