@@ -497,6 +497,49 @@ const SubcategoryProductsPage = () => {
 
       /* Sheet override tweaks */
       [data-radix-popper-content-wrapper] { z-index: 100 !important; }
+
+      /* ── Product Grid ── */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      /* 3 columns from 480px */
+      @media (min-width: 480px) {
+        .product-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+      }
+
+      /* 3 columns from 640px */
+      @media (min-width: 640px) {
+        .product-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+        }
+      }
+
+      /* 3–4 columns from 1024px */
+      @media (min-width: 1024px) {
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 16px;
+        }
+      }
+
+      /* Mobile card tweaks */
+      @media (max-width: 479px) {
+        .pcard { border-radius: 14px; }
+        .pcard-body { padding: 10px; }
+        .pcard-name { font-size: 11px; min-height: 32px; margin-bottom: 6px; }
+        .pcard-price { font-size: 14px; }
+        .pcard-og-price { font-size: 10px; }
+        .pcard-save { font-size: 9px; padding: 1px 5px; }
+        .wish-btn { width: 28px; height: 28px; top: 8px; right: 8px; }
+        .badge-discount, .badge-new { font-size: 9px; padding: 2px 6px; top: 8px; left: 8px; }
+      }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -781,8 +824,8 @@ const SubcategoryProductsPage = () => {
               </p>
             </div>
 
-            {/* Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+            {/* Grid — now uses .product-grid class for responsive columns */}
+            <div className="product-grid">
               {loading ? renderSkeletons() : filteredProducts.map((product: any, idx) => (
                 <div
                   key={product.id}
@@ -892,75 +935,75 @@ const SubcategoryProductsPage = () => {
         </div>
 
         {/* ── Mobile Filter Sheet (shadcn) ──────────── */}
-        <div >
-        <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters} >
-          <SheetContent side="bottom" style={{ borderRadius: '24px 24px 0 0', padding: 0, maxHeight: '85vh' ,background:"white" }}>
-            <SheetHeader style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)' }}>
-              <SheetTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, textAlign: 'left' }}>
-                Filters & Sort
-              </SheetTitle>
-            </SheetHeader>
+        <div>
+          <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+            <SheetContent side="bottom" style={{ borderRadius: '24px 24px 0 0', padding: 0, maxHeight: '85vh', background: "white" }}>
+              <SheetHeader style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)' }}>
+                <SheetTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, textAlign: 'left' }}>
+                  Filters & Sort
+                </SheetTitle>
+              </SheetHeader>
 
-            <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 130px)' }}>
-              <div style={{ padding: '8px 0' }}>
-                <p style={{ padding: '16px 24px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF' }}>
-                  Sort By
-                </p>
-                {sortOptions.map((opt) => (
-                  <div
-                    key={opt.value}
-                    onClick={() => setSelectedSort(opt.value)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 14,
-                      padding: '13px 24px',
-                      cursor: 'pointer',
-                      background: selectedSort === opt.value ? 'var(--accent-light)' : 'transparent',
-                      transition: 'background 0.15s',
-                    }}
-                  >
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10,
-                      background: selectedSort === opt.value ? 'rgba(13,148,136,0.15)' : 'var(--surface)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)',
-                      flexShrink: 0,
-                    }}>
-                      {opt.icon}
+              <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 130px)' }}>
+                <div style={{ padding: '8px 0' }}>
+                  <p style={{ padding: '16px 24px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF' }}>
+                    Sort By
+                  </p>
+                  {sortOptions.map((opt) => (
+                    <div
+                      key={opt.value}
+                      onClick={() => setSelectedSort(opt.value)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: '13px 24px',
+                        cursor: 'pointer',
+                        background: selectedSort === opt.value ? 'var(--accent-light)' : 'transparent',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10,
+                        background: selectedSort === opt.value ? 'rgba(13,148,136,0.15)' : 'var(--surface)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)',
+                        flexShrink: 0,
+                      }}>
+                        {opt.icon}
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: selectedSort === opt.value ? 'var(--accent-dark)' : 'var(--ink)' }}>
+                        {opt.label}
+                      </span>
+                      {selectedSort === opt.value && (
+                        <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
+                      )}
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: selectedSort === opt.value ? 'var(--accent-dark)' : 'var(--ink)' }}>
-                      {opt.label}
-                    </span>
-                    {selectedSort === opt.value && (
-                      <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: 100,
-                  background: 'var(--ink)',
-                  color: '#fff',
-                  border: 'none',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                Apply
-              </button>
-            </div>
-          </SheetContent>
-        </Sheet>
+              <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: 100,
+                    background: 'var(--ink)',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  Apply
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         <Separator style={{ borderColor: '#E5E7EB' }} />
