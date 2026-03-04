@@ -689,8 +689,7 @@ const SubcategoryProductsPage = () => {
             <nav className="breadcrumb" style={{ justifyContent: 'center', marginBottom: 16 }}>
               <a href="/">Home</a>
               <ChevronRight size={12} />
-              <a href="#">{categoryName || 'Category'}</a>
-              <ChevronRight size={12} />
+             
               <span className="current">{subcategoryDetails?.name || 'Products'}</span>
             </nav>
 

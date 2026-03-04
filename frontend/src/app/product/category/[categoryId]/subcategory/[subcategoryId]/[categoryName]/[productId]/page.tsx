@@ -491,7 +491,7 @@ const ProductDetailPage = () => {
             )}
 
             {/* Product Name */}
-            <h1 className="serif text-2xl md:text-2xl font-light leading-tight text-[#1a1a1a]">
+            <h1 className="serif text-lg md:text-2xl font-light leading-tight text-[#1a1a1a]">
               {product.name}
             </h1>
 

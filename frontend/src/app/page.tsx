@@ -167,7 +167,14 @@ export default function DailyObjectsReplica() {
 
 
   return (
-    <div className="bg-white">
+    <div className="bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+
+<style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+        .serif { font-family: 'Cormorant Garamond', serif; }
+        .sans { font-family: 'DM Sans', sans-serif; }
+`}</style>
       {/* Header */}
       <Navbar page={"Home"} />
 
@@ -231,7 +238,7 @@ export default function DailyObjectsReplica() {
 
       {/* Shop by Category Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+        <h2 className="text-xl sm:text-2xl md:text-[28px] ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
           SHOP BY CATEGORY
         </h2>
         {/* Mobile Horizontal Slider */}
@@ -253,7 +260,7 @@ export default function DailyObjectsReplica() {
             }}
           >
             {shopByCategories.map((category, index) => (
-              <Link key={index} href={category.link} className="flex-shrink-0 w-[85vw] snap-center">
+              <Link key={index} href={category.link} className="flex-shrink-0 w-[65vw] snap-center">
                 <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
                   <div className="aspect-[3/5] relative overflow-hidden">
                     <img
@@ -336,7 +343,7 @@ export default function DailyObjectsReplica() {
       {/* Trending Collections Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
         <div className="flex justify-between items-center mb-6 sm:mb-8 ml-2 sm:ml-3 md:ml-5">
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
+          <h2 className="text-xl sm:text-2xl md:text-[26px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold tracking-tight uppercase">
             TRENDING COLLECTIONS
           </h2>
         </div>
@@ -364,8 +371,8 @@ export default function DailyObjectsReplica() {
               link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
             }
           ].map((collection, index) => (
-              <Link key={index} href={collection.link} className="flex-shrink-0 w-[85vw] snap-center">
-                <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[500px]">
+              <Link key={index} href={collection.link} className="flex-shrink-0 w-[70vw] snap-center">
+                <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[400px]">
                   <img
                     src={collection.image}
                     alt={collection.title}
