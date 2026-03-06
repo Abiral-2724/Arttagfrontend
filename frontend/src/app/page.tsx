@@ -47,7 +47,6 @@ const carouselSlides = [
     link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
   },
   {
-
     title: 'LOOP POWER BANKS',
     subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
     image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967747/4_lovdny.svg',
@@ -165,6 +164,27 @@ export default function DailyObjectsReplica() {
     }
   ];
 
+  const trendingCollections = [
+    {
+      title: 'Laptop Sleeves',
+      description: 'Smart Protection for Smart Devices.',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
+      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS'
+    },
+    {
+      title: 'Tote Bags',
+      description: 'Your Everyday Essential.',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
+      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
+    },
+    {
+      title: 'Backpacks',
+      description: 'Pack Your Next Adventure.',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
+      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/da0c3b9e-183e-4fb4-9169-18fde3ed4c43/BAGS%20&%20WALLETS'
+    }
+  ];
+
 
   return (
     <div className="bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -241,6 +261,7 @@ export default function DailyObjectsReplica() {
         <h2 className="text-xl sm:text-2xl md:text-[28px] ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
           SHOP BY CATEGORY
         </h2>
+
         {/* Mobile Horizontal Slider */}
         <div className="sm:hidden relative group">
           <button
@@ -262,7 +283,8 @@ export default function DailyObjectsReplica() {
             {shopByCategories.map((category, index) => (
               <Link key={index} href={category.link} className="flex-shrink-0 w-[65vw] snap-center">
                 <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
-                  <div className="aspect-[3/5] relative overflow-hidden">
+                  {/* ✅ Unified aspect ratio for mobile Shop by Category */}
+                  <div className="aspect-[3/4] relative overflow-hidden">
                     <img
                       src={category.image}
                       alt={category.title}
@@ -294,11 +316,12 @@ export default function DailyObjectsReplica() {
         </div>
 
         {/* Desktop Grid */}
-        <div className="hidden sm:grid sm:grid-cols-3 gap-6">
+        <div className="hidden sm:grid sm:grid-cols-3 gap-6 max-w-8xl mx-auto">
           {shopByCategories.map((category, index) => (
             <Link key={index} href={category.link}>
               <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-                <div className="aspect-[3/4] sm:aspect-[2/3] lg:aspect-[2.8/4] relative overflow-hidden">
+                {/* ✅ Unified aspect ratio for desktop Shop by Category */}
+                <div className="aspect-[3/4] relative overflow-hidden">
                   <img
                     src={category.image}
                     alt={category.title}
@@ -351,35 +374,17 @@ export default function DailyObjectsReplica() {
         {/* Mobile Slider */}
         <div className="sm:hidden relative">
           <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
-          {[
-            {
-              title: 'Laptop Sleeves',
-              description: 'Smart Protection for Smart Devices.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
-              link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-            },
-            {
-              title: 'Tote Bags',
-              description: 'Your Everyday Essential.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
-              link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
-            },
-            {
-              title: 'Backpacks',
-              description: 'Pack Your Next Adventure.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
-              link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
-            }
-          ].map((collection, index) => (
+            {trendingCollections.map((collection, index) => (
               <Link key={index} href={collection.link} className="flex-shrink-0 w-[70vw] snap-center">
-                <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[400px]">
+                {/* ✅ Unified aspect ratio for mobile Trending Collections */}
+                <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4]">
                   <img
                     src={collection.image}
                     alt={collection.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                  
+
                   <div className="absolute bottom-8 left-6 right-6">
                     <h3 className="text-white text-2xl font-black uppercase tracking-tight mb-3">
                       {collection.title}
@@ -402,35 +407,17 @@ export default function DailyObjectsReplica() {
 
         {/* Desktop Grid */}
         <div className="hidden sm:grid sm:grid-cols-3">
-          {[
-            {
-              title: 'Laptop Sleeves',
-              description: 'Smart Protection for Smart Devices.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
-              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS'
-            },
-            {
-              title: 'Tote Bags',
-              description: 'Your Everyday Essential.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
-              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
-            },
-            {
-              title: 'Backpacks',
-              description: 'Pack Your Next Adventure.',
-              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
-              link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/da0c3b9e-183e-4fb4-9169-18fde3ed4c43/BAGS%20&%20WALLETS'
-            }
-          ].map((collection, index) => (
+          {trendingCollections.map((collection, index) => (
             <Link key={index} href={collection.link}>
-              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3.5/5] ml-6">
+              {/* ✅ Unified aspect ratio for desktop Trending Collections */}
+              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4] ml-6">
                 <img
                   src={collection.image}
                   alt={collection.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                
+
                 <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-6 sm:left-8 right-6 sm:right-8">
                   <h3 className="text-white text-xl sm:text-2xl md:text-[28px] font-black uppercase tracking-tight mb-2 sm:mb-3">
                     {collection.title}
@@ -438,7 +425,7 @@ export default function DailyObjectsReplica() {
                   <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-4 sm:mb-6 leading-relaxed">
                     {collection.description}
                   </p>
-                  
+
                   <button className="flex items-center gap-2 text-white font-light text-sm sm:text-base group/btn hover:gap-3 transition-all">
                     Shop now!
                     <div className="rounded-full border-1 border-white w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center group-hover/btn:bg-white transition-all">
@@ -454,137 +441,134 @@ export default function DailyObjectsReplica() {
 
       {/* ─── Corporate Gifting Section ─── */}
       <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
-  <div className="relative overflow-hidden group cursor-pointer">
-    
-    {/* Fixed aspect ratio container so image never gets weird on any screen */}
-    <div className="relative w-full aspect-[16/9] sm:aspect-[16/7] md:aspect-[13/6]">
-      <img
-        src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
-        alt="Corporate Gifting"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+        <div className="relative overflow-hidden group cursor-pointer">
 
-      {/* Gradient overlay — stronger at bottom for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+          {/* Fixed aspect ratio container so image never gets weird on any screen */}
+          <div className="relative w-full aspect-[16/9] sm:aspect-[16/7] md:aspect-[13/6]">
+            <img
+              src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
+              alt="Corporate Gifting"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
 
-      {/* Text content — pinned to bottom-left, scales with viewport */}
-      <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-[85%] sm:max-w-[60%] md:max-w-[50%]">
-        <h2 className="text-lg sm:text-xl md:text-3xl lg:text-[42px] font-black text-white uppercase tracking-tight leading-tight mb-1.5 sm:mb-2 md:mb-3 drop-shadow-lg">
-          CORPORATE GIFTING
-        </h2>
-        <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-3 sm:mb-4 md:mb-5 drop-shadow-md leading-relaxed">
-          It is the season to celebrate and nurture everlasting bonds. Build lasting relationships with our bespoke corporate solutions.
-        </p>
-        <button
-          className="bg-white text-black px-3 sm:px-5 md:px-7 py-2 sm:py-2.5 md:py-3 text-[10px] sm:text-xs md:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
-          onClick={() => router.push('/corporateGifting')}
-        >
-          ENQUIRE NOW
-        </button>
-      </div>
-    </div>
+            {/* Gradient overlay — stronger at bottom for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 
-  </div>
-</section>
+            {/* Text content — pinned to bottom-left, scales with viewport */}
+            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-[85%] sm:max-w-[60%] md:max-w-[50%]">
+              <h2 className="text-lg sm:text-xl md:text-3xl lg:text-[42px] font-black text-white uppercase tracking-tight leading-tight mb-1.5 sm:mb-2 md:mb-3 drop-shadow-lg">
+                CORPORATE GIFTING
+              </h2>
+              <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-3 sm:mb-4 md:mb-5 drop-shadow-md leading-relaxed">
+                It is the season to celebrate and nurture everlasting bonds. Build lasting relationships with our bespoke corporate solutions.
+              </p>
+              <button
+                className="bg-white text-black px-3 sm:px-5 md:px-7 py-2 sm:py-2.5 md:py-3 text-[10px] sm:text-xs md:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
+                onClick={() => router.push('/corporateGifting')}
+              >
+                ENQUIRE NOW
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
       {/* ─── End Corporate Gifting Section ─── */}
 
       {/* ─── Step Inside DailyObjects Section ─── */}
       <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
-  <div className="relative overflow-hidden group cursor-pointer">
-    
-    {/* Desktop image */}
-    {/* Desktop image */}
-<img
-  src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
-  alt="Step Inside Arttag Store"
-  className="hidden sm:block w-full object-cover"
-  style={{ aspectRatio: '16/7', objectPosition: 'center' }}
-/>
+        <div className="relative overflow-hidden group cursor-pointer">
 
-    {/* Mobile image — same src, cropped taller for portrait */}
-    <img
-      src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
-      alt="Step Inside Arttag Store"
-      className="block sm:hidden w-full object-cover"
-      style={{ aspectRatio: '4/5' }}
-    />
+          {/* Desktop image */}
+          <img
+            src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
+            alt="Step Inside Arttag Store"
+            className="hidden sm:block w-full object-cover"
+            style={{ aspectRatio: '16/7', objectPosition: 'center' }}
+          />
 
-    {/* Overlay */}
-    <div className="absolute inset-0 bg-black/30" />
+          {/* Mobile image — same src, cropped taller for portrait */}
+          <img
+            src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
+            alt="Step Inside Arttag Store"
+            className="block sm:hidden w-full object-cover"
+            style={{ aspectRatio: '4/5' }}
+          />
 
-    {/* Content */}
-    <div className="absolute bottom-6 left-4 sm:bottom-14 sm:left-10 md:bottom-20 md:left-14">
-      <h2 className="text-lg sm:text-2xl md:text-[36px] font-black text-white uppercase tracking-tight leading-tight mb-2 sm:mb-3 drop-shadow-lg">
-        STEP INSIDE<br />Arttag
-      </h2>
-      <p className="text-white/90 text-xs sm:text-base md:text-lg font-light mb-3 sm:mb-5 drop-shadow-md">
-        Experience our products in real life
-      </p>
-      <button className="bg-white text-black px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg">
-        VISIT US!
-      </button>
-    </div>
-  </div>
-</section>
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/30" />
+
+          {/* Content */}
+          <div className="absolute bottom-6 left-4 sm:bottom-14 sm:left-10 md:bottom-20 md:left-14">
+            <h2 className="text-lg sm:text-2xl md:text-[36px] font-black text-white uppercase tracking-tight leading-tight mb-2 sm:mb-3 drop-shadow-lg">
+              STEP INSIDE<br />Arttag
+            </h2>
+            <p className="text-white/90 text-xs sm:text-base md:text-lg font-light mb-3 sm:mb-5 drop-shadow-md">
+              Experience our products in real life
+            </p>
+            <button className="bg-white text-black px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg">
+              VISIT US!
+            </button>
+          </div>
+        </div>
+      </section>
       {/* ─── End Step Inside Section ─── */}
 
       {/* ─── Everyday Inspiration Section ─── */}
-      {/* ─── Everyday Inspiration Section ─── */}
-<section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-  <div className="text-center mb-6 sm:mb-8 md:mb-10">
-    <h2 className="text-2xl sm:text-3xl md:text-[32px] font-black text-black uppercase tracking-tight">
-      EVERYDAY INSPIRATION
-    </h2>
-    <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-light">
-      Follow @arttag.india to join the #arttagcommunity
-    </p>
-  </div>
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+        <div className="text-center mb-6 sm:mb-8 md:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-black text-black uppercase tracking-tight">
+            EVERYDAY INSPIRATION
+          </h2>
+          <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-light">
+            Follow @arttag.india to join the #arttagcommunity
+          </p>
+        </div>
 
-  <Carousel
-    opts={{ align: 'start', loop: true, dragFree: true }}
-    plugins={[
-      AutoScroll({
-        speed: 1.5,
-        stopOnInteraction: false,
-        stopOnMouseEnter: true,
-      }),
-    ]}
-    className="w-full"
-  >
-    <CarouselContent className="-ml-2">
-      {[
-        { image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&h=500&fit=crop', alt: 'Style 1' },
-        { image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop', alt: 'Style 2' },
-        { image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop', alt: 'Style 3' },
-        { image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop', alt: 'Style 4' },
-        { image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop', alt: 'Style 5' },
-        { image: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=500&fit=crop', alt: 'Style 6' },
-        { image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop', alt: 'Style 7' },
-        { image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop', alt: 'Style 8' },
-      ].map((item, index) => (
-        <CarouselItem key={index} className="pl-2 basis-[42%] sm:basis-[28%] md:basis-[22%] lg:basis-[18%]">
-          <div className="relative overflow-hidden group cursor-pointer aspect-[3/5]">
-            <img
-              src={item.image}
-              alt={item.alt}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-              </svg>
-            </div>
-          </div>
-        </CarouselItem>
-      ))}
-    </CarouselContent>
-  </Carousel>
-</section>
-{/* ─── End Everyday Inspiration Section ─── */}
+        <Carousel
+          opts={{ align: 'start', loop: true, dragFree: true }}
+          plugins={[
+            AutoScroll({
+              speed: 1.5,
+              stopOnInteraction: false,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2">
+            {[
+              { image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&h=500&fit=crop', alt: 'Style 1' },
+              { image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop', alt: 'Style 2' },
+              { image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop', alt: 'Style 3' },
+              { image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop', alt: 'Style 4' },
+              { image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop', alt: 'Style 5' },
+              { image: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=500&fit=crop', alt: 'Style 6' },
+              { image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop', alt: 'Style 7' },
+              { image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop', alt: 'Style 8' },
+            ].map((item, index) => (
+              <CarouselItem key={index} className="pl-2 basis-[42%] sm:basis-[28%] md:basis-[22%] lg:basis-[18%]">
+                <div className="relative overflow-hidden group cursor-pointer aspect-[3/5]">
+                  <img
+                    src={item.image}
+                    alt={item.alt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </section>
       {/* ─── End Everyday Inspiration Section ─── */}
 
       {/* ─── HOW TO PASTE LAPTOP SKINS — Video Section ─── */}
