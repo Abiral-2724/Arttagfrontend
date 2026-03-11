@@ -148,40 +148,40 @@ export default function DailyObjectsReplica() {
 
   const shopByCategories = [
     {
-      title: 'TECH ACCESSORIES',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967756/5_osfu1j.svg',
+      title: 'Travel and lifestyle',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209284/IMG_5611_wygjc4.jpg',
       link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
     },
     {
-      title: 'BAGS & WALLETS',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770181930/IMG_4630_tuviuo.jpg',
-      link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
+      title: 'Work bags',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209386/IMG_5609_zjwnfq.jpg',
+      link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
     },
     {
-      title: 'WORK ESSENTIALS',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1770182067/IMG_4632_phsqrk.jpg',
-      link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
+      title: 'Backpacks',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209479/IMG_5592_fms8zt.jpg',
+      link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
     }
   ];
 
   const trendingCollections = [
     {
-      title: 'Laptop Sleeves',
-      description: 'Smart Protection for Smart Devices.',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308238/IMG_4935_cgdyro.jpg',
-      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS'
+      title: 'Laptop backpacks',
+      description: 'Pack Your Everyday Essentials',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209719/IMG_5588_fhj1sk.png',
+      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
     },
     {
       title: 'Tote Bags',
       description: 'Your Everyday Essential.',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308259/IMG_4936_kklziy.jpg',
-      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209569/IMG_5520_yrowcz.png',
+      link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/BAGS%20&%20WALLETS'
     },
     {
-      title: 'Backpacks',
-      description: 'Pack Your Next Adventure.',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1771308269/IMG_4938_gbh4x0.jpg',
-      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/da0c3b9e-183e-4fb4-9169-18fde3ed4c43/BAGS%20&%20WALLETS'
+      title: 'Laptop sleeves',
+      description: 'Protect Your Essentials',
+      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773148508/IMG_5145_hsiahs.jpg',
+      link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/BAGS%20&%20WALLETS'
     }
   ];
 
