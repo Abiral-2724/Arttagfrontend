@@ -767,11 +767,19 @@ const ShoppingCart = () => {
                           }`}>
                           <div className="flex items-center gap-2">
                             {pincodeStatus.success ? (
-                              <Check size={16} />
+                              <div className='flex'>
+<Check size={16} />
+<span className='ml-1 mt-[-1]'>Delivery available to this pincode. Estimated delivery: 2–4 days.</span>
+                              </div>
+                              
                             ) : (
-                              <X size={16} />
+                              <div className='flex'>
+                                <X size={13} />
+                                 <span className='ml-1 mt-[-3]'>{pincodeStatus.message} Delivery Not possible </span>
+                              </div>
+                              
                             )}
-                            <span>{pincodeStatus.message}</span>
+                           
                           </div>
                         </div>
                       )}
