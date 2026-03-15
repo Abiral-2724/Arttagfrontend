@@ -1,12 +1,12 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, X, AlertCircle, SlidersHorizontal, ChevronRight, Search, ArrowUpDown, Sparkles, TrendingUp, Tag, ArrowDownUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import {
+  Heart, X, AlertCircle, SlidersHorizontal, ChevronRight,
+  Search, ArrowUpDown, Sparkles, TrendingUp, Tag, ArrowDownUp
+} from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -23,414 +23,227 @@ const SubcategoryProductsPage = () => {
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
       :root {
-        --accent: #0D9488;
-        --accent-light: #CCFBF1;
-        --accent-dark: #0F766E;
-        --ink: #111827;
-        --muted: #6B7280;
-        --surface: #FAFAFA;
-        --card-bg: #FFFFFF;
-        --border: #F3F4F6;
+        --ink: #1a1a1a;
+        --ink-soft: #444;
+        --muted: #888;
+        --faint: #aaa;
+        --cream: #faf9f7;
+        --cream-dark: #f5f3ef;
+        --border: #e8e4de;
+        --border-light: #f0ece6;
+        --white: #ffffff;
       }
 
       * { box-sizing: border-box; }
 
-      .sc-page { font-family: 'Outfit', sans-serif; background: var(--surface); min-height: 100vh; }
+      .sc-page {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--cream);
+        min-height: 100vh;
+        color: var(--ink);
+      }
 
-      /* Scrollbar hide */
+      /* ── Scrollbar hide ── */
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-      /* Hero */
-      .hero-section {
-        background: #fff;
-        border-bottom: 1px solid var(--border);
-        position: relative;
-        overflow: hidden;
-      }
-      .hero-section::before {
-        content: '';
-        position: absolute;
-        top: -60px; right: -60px;
-        width: 280px; height: 280px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(13,148,136,0.07) 0%, transparent 70%);
-        pointer-events: none;
-      }
-      .hero-section::after {
-        content: '';
-        position: absolute;
-        bottom: -40px; left: -40px;
-        width: 200px; height: 200px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(13,148,136,0.05) 0%, transparent 70%);
-        pointer-events: none;
+      /* ── Divider ── */
+      .art-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--border) 30%, var(--border) 70%, transparent);
       }
 
+      /* ── Hero ── */
+      .hero-section {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        padding: 48px 0 40px;
+      }
+      .hero-eyebrow {
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
       .hero-title {
         font-family: 'Cormorant Garamond', serif;
-        font-weight: 600;
-        font-size: clamp(2rem, 5vw, 3.25rem);
-        letter-spacing: -0.02em;
+        font-weight: 400;
+        font-size: clamp(2.4rem, 5vw, 3.6rem);
         color: var(--ink);
-        line-height: 1.1;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
       }
-
-      .hero-underline {
-        display: inline-block;
-        position: relative;
+      .hero-desc {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+        max-width: 480px;
+        line-height: 1.75;
       }
-      .hero-underline::after {
-        content: '';
-        position: absolute;
-        bottom: -4px; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--accent), transparent);
+      .hero-count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 20px;
+        padding: 5px 14px;
         border-radius: 2px;
+        border: 1px solid var(--border);
+        background: var(--cream);
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 500;
       }
 
-      /* Type Filter Pills */
+      /* ── Breadcrumb ── */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--faint);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-bottom: 18px;
+      }
+      .breadcrumb a { color: inherit; text-decoration: none; transition: color 0.15s; }
+      .breadcrumb a:hover { color: var(--ink); }
+
+      /* ── Type Rail ── */
       .type-rail {
-        background: #fff;
+        background: var(--white);
         border-bottom: 1px solid var(--border);
         position: sticky;
         top: 0;
         z-index: 30;
-        box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
       }
-
       .type-pill {
         position: relative;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 100px;
-        font-size: 13px;
+        gap: 7px;
+        padding: 7px 16px;
+        border-radius: 2px;
+        font-size: 11px;
         font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         white-space: nowrap;
         cursor: pointer;
-        border: 1.5px solid transparent;
-        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
         color: var(--muted);
-        background: var(--surface);
+        background: transparent;
       }
       .type-pill:hover {
         color: var(--ink);
-        border-color: #E5E7EB;
-        background: #F9FAFB;
-        transform: translateY(-1px);
+        border-color: var(--border);
+        background: var(--cream);
       }
       .type-pill.active {
         background: var(--ink);
-        color: #fff;
+        color: var(--white);
         border-color: var(--ink);
-        box-shadow: 0 4px 14px rgba(17,24,39,0.18);
-        transform: translateY(-2px);
-      }
-      .type-pill.active:hover {
-        background: #1F2937;
       }
       .type-pill-img {
-        width: 22px; height: 22px;
+        width: 20px; height: 20px;
         border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
+        opacity: 0.85;
       }
+      .type-pill.active .type-pill-img { opacity: 1; filter: brightness(0) invert(1); }
       .type-pill-count {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 600;
         padding: 1px 6px;
-        border-radius: 100px;
-        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        background: rgba(255,255,255,0.18);
+        letter-spacing: 0.05em;
       }
       .type-pill:not(.active) .type-pill-count {
-        background: var(--accent-light);
-        color: var(--accent-dark);
-      }
-
-      /* Sort Bar */
-      .sort-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        border: 1.5px solid #E5E7EB;
-        color: var(--muted);
-        background: #fff;
-        transition: all 0.18s ease;
-      }
-      .sort-chip:hover { border-color: var(--accent); color: var(--accent); }
-      .sort-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-      /* Product Cards */
-      .pcard {
-        background: var(--card-bg);
-        border-radius: 20px;
-        overflow: hidden;
-        border: 1px solid var(--border);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        position: relative;
-      }
-      .pcard:hover {
-        transform: translateY(-8px) scale(1.01);
-        box-shadow: 0 24px 48px rgba(0,0,0,0.10), 0 8px 16px rgba(0,0,0,0.06);
-        border-color: #E5E7EB;
-      }
-
-      .pcard-img-wrap {
-        position: relative;
-        aspect-ratio: 1;
-        overflow: hidden;
-        background: #F8F8F8;
-      }
-      .pcard-img {
-        width: 100%; height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        display: block;
-      }
-      .pcard:hover .pcard-img { transform: scale(1.08); }
-
-      .pcard-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.18) 0%, transparent 50%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-      .pcard:hover .pcard-overlay { opacity: 1; }
-
-      /* Quick action bar on hover */
-      .pcard-actions {
-        position: absolute;
-        bottom: 12px;
-        left: 50%;
-        transform: translateX(-50%) translateY(16px);
-        opacity: 0;
-        transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        gap: 8px;
-        z-index: 5;
-      }
-      .pcard:hover .pcard-actions {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-      }
-      .pcard-action-btn {
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(8px);
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 600;
+        background: var(--cream-dark);
         color: var(--ink);
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-        transition: background 0.15s;
-      }
-      .pcard-action-btn:hover { background: #fff; }
-
-      /* Wishlist btn */
-      .wish-btn {
-        position: absolute;
-        top: 12px; right: 12px;
-        z-index: 10;
-        width: 36px; height: 36px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(6px);
-        border: none;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-        transition: all 0.2s ease;
-      }
-      .wish-btn:hover { transform: scale(1.12); background: #fff; }
-      .wish-btn.active { background: #FEE2E2; }
-
-      /* Discount badge */
-      .badge-discount {
-        position: absolute;
-        top: 12px; left: 12px;
-        z-index: 10;
-        background: linear-gradient(135deg, #EF4444, #DC2626);
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-        letter-spacing: 0.04em;
-        box-shadow: 0 2px 8px rgba(239,68,68,0.3);
-      }
-      .badge-new {
-        position: absolute;
-        top: 12px; left: 12px;
-        z-index: 10;
-        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-        letter-spacing: 0.04em;
-        box-shadow: 0 2px 8px rgba(13,148,136,0.35);
       }
 
-      /* Card content */
-      .pcard-body { padding: 16px; }
-      .pcard-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink);
-        line-height: 1.45;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: 10px;
-        min-height: 38px;
-      }
-      .pcard-price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-      .pcard-price {
-        font-family: 'Outfit', sans-serif;
-        font-size: 17px;
-        font-weight: 700;
-        color: var(--ink);
-        letter-spacing: -0.02em;
-      }
-      .pcard-og-price {
-        font-size: 12px;
-        color: #9CA3AF;
-        text-decoration: line-through;
-      }
-      .pcard-save {
-        font-size: 10px;
-        font-weight: 700;
-        color: #16A34A;
-        background: #DCFCE7;
-        padding: 2px 7px;
-        border-radius: 100px;
-      }
-
-      /* Sidebar */
+      /* ── Sidebar ── */
       .sidebar-card {
-        background: #fff;
-        border-radius: 20px;
+        background: var(--white);
         border: 1px solid var(--border);
-        overflow: hidden;
+        border-radius: 2px;
         position: sticky;
-        top: 80px;
+        top: 68px;
+        overflow: hidden;
       }
       .sidebar-header {
-        padding: 20px 20px 16px;
-        border-bottom: 1px solid var(--border);
+        padding: 18px 20px 14px;
+        border-bottom: 1px solid var(--border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .sidebar-title {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 18px;
+        font-weight: 400;
         color: var(--ink);
+        letter-spacing: 0.02em;
       }
-      .sidebar-section { padding: 20px; }
-      .sidebar-section-title {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
+      .sidebar-section { padding: 18px 20px; }
+      .sidebar-section-label {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #9CA3AF;
-        margin-bottom: 14px;
+        color: var(--faint);
+        margin-bottom: 12px;
       }
-
-      /* Radio Sort Options */
       .sort-option {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 12px;
-        border-radius: 12px;
+        padding: 9px 10px;
+        border-radius: 2px;
         cursor: pointer;
         transition: background 0.15s;
-        border: 1.5px solid transparent;
+        border: 1px solid transparent;
+        margin-bottom: 2px;
       }
-      .sort-option:hover { background: var(--surface); }
+      .sort-option:hover { background: var(--cream); }
       .sort-option.selected {
-        background: var(--accent-light);
-        border-color: rgba(13,148,136,0.2);
+        background: var(--cream-dark);
+        border-color: var(--border);
       }
       .sort-option-icon {
-        width: 32px; height: 32px;
-        border-radius: 8px;
-        background: var(--surface);
+        width: 28px; height: 28px;
+        border-radius: 2px;
+        background: var(--cream);
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
-        transition: background 0.15s;
+        color: var(--muted);
+        transition: all 0.15s;
       }
       .sort-option.selected .sort-option-icon {
-        background: rgba(13,148,136,0.15);
+        background: var(--ink);
+        color: var(--white);
       }
       .sort-option-label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink);
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink-soft);
+        letter-spacing: 0.02em;
       }
+      .sort-option.selected .sort-option-label { color: var(--ink); font-weight: 500; }
 
-      /* Skeleton */
-      .skel {
-        background: linear-gradient(90deg, #F3F4F6 0%, #E9EAEC 50%, #F3F4F6 100%);
-        background-size: 200% 100%;
-        animation: skel-shine 1.6s ease-in-out infinite;
-        border-radius: 12px;
-      }
-      @keyframes skel-shine {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
-
-      /* Staggered fade in */
-      @keyframes card-in {
-        from { opacity: 0; transform: translateY(20px) scale(0.97); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
-      .card-appear {
-        animation: card-in 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
-      }
-
-      /* Empty state */
-      .empty-state {
-        text-align: center;
-        padding: 80px 24px;
-      }
-      .empty-icon-wrap {
-        width: 80px; height: 80px;
-        border-radius: 24px;
-        background: var(--surface);
-        border: 1.5px dashed #D1D5DB;
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 20px;
-      }
-      .empty-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 24px;
-        font-weight: 600;
-        color: var(--ink);
-        margin-bottom: 8px;
-      }
-
-      /* Toolbar */
+      /* ── Toolbar ── */
       .toolbar {
         display: flex;
         align-items: center;
@@ -439,107 +252,295 @@ const SubcategoryProductsPage = () => {
         gap: 12px;
         flex-wrap: wrap;
       }
-      .toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
       .filter-toggle-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 9px 18px;
-        border-radius: 100px;
-        font-size: 13px;
-        font-weight: 600;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
         cursor: pointer;
-        border: 1.5px solid #E5E7EB;
-        background: #fff;
-        color: var(--ink);
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--ink-soft);
         transition: all 0.2s ease;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
       }
-      .filter-toggle-btn:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        box-shadow: 0 2px 12px rgba(13,148,136,0.12);
+      .filter-toggle-btn:hover { border-color: var(--ink); color: var(--ink); }
+      .sort-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        background: var(--white);
+        transition: all 0.18s ease;
       }
+      .sort-chip:hover { border-color: var(--ink); color: var(--ink); }
+      .sort-chip.active { background: var(--ink); color: var(--white); border-color: var(--ink); }
       .product-count {
-        font-size: 13px;
-        color: #9CA3AF;
+        font-size: 12px;
+        color: var(--muted);
         font-weight: 400;
+        letter-spacing: 0.05em;
       }
       .product-count strong { color: var(--ink); font-weight: 600; }
 
-      /* Breadcrumb */
-      .breadcrumb {
+      /* ── Product Cards ── */
+      .pcard {
+        background: var(--white);
+        border-radius: 2px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+      }
+      .pcard:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+        border-color: #d4cfc8;
+      }
+
+      /* ── KEY FIX: image never crops ── */
+      .pcard-img-wrap {
+        position: relative;
+        width: 100%;
+        /* aspect-ratio keeps a square placeholder, but the image itself
+           uses object-fit: contain so the entire product is always visible */
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+        background: var(--cream-dark);
         display: flex;
         align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: #9CA3AF;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-        font-weight: 500;
+        justify-content: center;
       }
-      .breadcrumb a { color: inherit; text-decoration: none; transition: color 0.15s; }
-      .breadcrumb a:hover { color: var(--accent); }
-      .breadcrumb .current { color: var(--muted); }
+      .pcard-img {
+        width: 100%;
+        height: 100%;
+        /* contain = shows full image, never crops */
+        object-fit: contain;
+        object-position: center;
+        transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        display: block;
+        padding: 8px;          /* small breathing room around the product */
+      }
+      .pcard:hover .pcard-img { transform: scale(1.04); }
 
-      /* Close btn */
-      .icon-btn {
+      .pcard-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(26,26,26,0.12) 0%, transparent 55%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+      .pcard:hover .pcard-overlay { opacity: 1; }
+
+      /* Quick view label on hover */
+      .pcard-quick {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        opacity: 0;
+        transition: all 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 5;
+        pointer-events: none;
+        white-space: nowrap;
+        background: rgba(255,255,255,0.94);
+        backdrop-filter: blur(8px);
+        border-radius: 2px;
+        padding: 6px 14px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink);
+        border: 1px solid var(--border);
+      }
+      .pcard:hover .pcard-quick {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      /* Wishlist btn */
+      .wish-btn {
+        position: absolute;
+        top: 10px; right: 10px;
+        z-index: 10;
         width: 32px; height: 32px;
-        border-radius: 8px;
-        background: var(--surface);
-        border: none;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(6px);
+        border: 1px solid var(--border);
         cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: background 0.15s;
-        color: var(--muted);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
       }
-      .icon-btn:hover { background: #F3F4F6; color: var(--ink); }
+      .wish-btn:hover { transform: scale(1.1); background: var(--white); }
+      .wish-btn.active { background: #fdecea; border-color: #f5c6c6; }
 
-      /* Sheet override tweaks */
-      [data-radix-popper-content-wrapper] { z-index: 100 !important; }
+      /* Badges */
+      .badge-discount {
+        position: absolute;
+        top: 10px; left: 10px;
+        z-index: 10;
+        background: var(--ink);
+        color: var(--white);
+        font-size: 9px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 2px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .badge-new {
+        position: absolute;
+        top: 10px; left: 10px;
+        z-index: 10;
+        background: var(--cream-dark);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        font-size: 9px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 2px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
 
-      /* ── Product Grid ── */
+      /* Card body */
+      .pcard-body { padding: 12px 14px 14px; }
+      .pcard-type {
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--faint);
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .pcard-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink);
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 8px;
+        min-height: 40px;
+      }
+      .pcard-price-row { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+      .pcard-price {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+      .pcard-og-price {
+        font-size: 12px;
+        color: var(--faint);
+        text-decoration: line-through;
+      }
+      .pcard-save {
+        font-size: 9px;
+        font-weight: 600;
+        color: #27ae60;
+        background: #eafaf1;
+        padding: 2px 6px;
+        border-radius: 2px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      /* Product Grid */
       .product-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
-
-      /* 3 columns from 480px */
       @media (min-width: 480px) {
-        .product-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
-        }
+        .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       }
-
-      /* 3 columns from 640px */
       @media (min-width: 640px) {
-        .product-grid {
-          grid-template-columns: repeat(3, 1fr);
-          gap: 14px;
-        }
+        .product-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
       }
-
-      /* 3–4 columns from 1024px */
       @media (min-width: 1024px) {
-        .product-grid {
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 16px;
-        }
+        .product-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
       }
 
       /* Mobile card tweaks */
       @media (max-width: 479px) {
-        .pcard { border-radius: 14px; }
-        .pcard-body { padding: 10px; }
-        .pcard-name { font-size: 11px; min-height: 32px; margin-bottom: 6px; }
-        .pcard-price { font-size: 14px; }
-        .pcard-og-price { font-size: 10px; }
-        .pcard-save { font-size: 9px; padding: 1px 5px; }
-        .wish-btn { width: 28px; height: 28px; top: 8px; right: 8px; }
-        .badge-discount, .badge-new { font-size: 9px; padding: 2px 6px; top: 8px; left: 8px; }
+        .pcard-body { padding: 9px 10px 11px; }
+        .pcard-name { font-size: 13px; min-height: 34px; }
+        .pcard-price { font-size: 13px; }
+        .wish-btn { width: 28px; height: 28px; top: 7px; right: 7px; }
+        .badge-discount, .badge-new { font-size: 8px; padding: 2px 6px; }
       }
+
+      /* Skeleton */
+      .skel {
+        background: linear-gradient(90deg, var(--cream-dark) 0%, var(--border-light) 50%, var(--cream-dark) 100%);
+        background-size: 200% 100%;
+        animation: skel-shine 1.6s ease-in-out infinite;
+        border-radius: 2px;
+      }
+      @keyframes skel-shine {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Card entrance */
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .card-appear { animation: card-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+      /* Empty state */
+      .empty-state { text-align: center; padding: 80px 24px; }
+      .empty-icon-wrap {
+        width: 72px; height: 72px;
+        border-radius: 2px;
+        background: var(--cream-dark);
+        border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+      }
+      .empty-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 26px;
+        font-weight: 300;
+        color: var(--ink);
+        margin-bottom: 8px;
+      }
+
+      /* Icon btn */
+      .icon-btn {
+        width: 30px; height: 30px;
+        border-radius: 2px;
+        background: var(--cream);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s;
+        color: var(--muted);
+      }
+      .icon-btn:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -627,36 +628,31 @@ const SubcategoryProductsPage = () => {
     } catch (error) { console.error('Wishlist toggle error:', error); }
   };
 
-  const formatPrice = (price) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
-
-  const typeIcons = { 'Paintings': '🎨', 'Sculptures': '🗿', 'Prints': '🖼️', 'Photography': '📷', 'Digital Art': '💻' };
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
   const filteredProducts = selectedType === 'All' ? products : products.filter((p: any) => p.type === selectedType);
 
   const sortOptions = [
-    { value: 'newest', label: 'Newest First', icon: <Sparkles size={14} /> },
-    { value: 'popularity', label: 'Most Popular', icon: <TrendingUp size={14} /> },
-    { value: 'discount', label: 'Best Discount', icon: <Tag size={14} /> },
-    { value: 'lowToHigh', label: 'Price: Low → High', icon: <ArrowUpDown size={14} /> },
-    { value: 'highToLow', label: 'Price: High → Low', icon: <ArrowDownUp size={14} /> },
+    { value: 'newest',     label: 'Newest First',       icon: <Sparkles size={13} /> },
+    { value: 'popularity', label: 'Most Popular',        icon: <TrendingUp size={13} /> },
+    { value: 'discount',   label: 'Best Discount',       icon: <Tag size={13} /> },
+    { value: 'lowToHigh',  label: 'Price: Low → High',   icon: <ArrowUpDown size={13} /> },
+    { value: 'highToLow',  label: 'Price: High → Low',   icon: <ArrowDownUp size={13} /> },
   ];
 
   const FilterContent = () => (
     <div className="sidebar-section">
-      <p className="sidebar-section-title">Sort By</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <p className="sidebar-section-label">Sort By</p>
+      <div>
         {sortOptions.map((opt) => (
           <div
             key={opt.value}
             className={`sort-option ${selectedSort === opt.value ? 'selected' : ''}`}
             onClick={() => setSelectedSort(opt.value)}
           >
-            <div className="sort-option-icon" style={{ color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)' }}>
-              {opt.icon}
-            </div>
-            <span className="sort-option-label" style={{ color: selectedSort === opt.value ? 'var(--accent-dark)' : undefined }}>
-              {opt.label}
-            </span>
+            <div className="sort-option-icon">{opt.icon}</div>
+            <span className="sort-option-label">{opt.label}</span>
           </div>
         ))}
       </div>
@@ -665,14 +661,15 @@ const SubcategoryProductsPage = () => {
 
   const renderSkeletons = () =>
     Array(8).fill(0).map((_, i) => (
-      <div key={i} style={{ borderRadius: 20, overflow: 'hidden', background: '#fff', border: '1px solid var(--border)' }}>
-        <div className="skel" style={{ aspectRatio: '1', width: '100%' }} />
-        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="skel" style={{ height: 13, width: '100%' }} />
-          <div className="skel" style={{ height: 13, width: '70%' }} />
+      <div key={i} style={{ borderRadius: 2, overflow: 'hidden', background: '#fff', border: '1px solid var(--border)' }}>
+        <div className="skel" style={{ aspectRatio: '4/5', width: '100%' }} />
+        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="skel" style={{ height: 10, width: '60%' }} />
+          <div className="skel" style={{ height: 14, width: '100%' }} />
+          <div className="skel" style={{ height: 14, width: '75%' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <div className="skel" style={{ height: 20, width: 64 }} />
-            <div className="skel" style={{ height: 20, width: 48 }} />
+            <div className="skel" style={{ height: 18, width: 56 }} />
+            <div className="skel" style={{ height: 18, width: 42 }} />
           </div>
         </div>
       </div>
@@ -683,50 +680,46 @@ const SubcategoryProductsPage = () => {
       <div className="sc-page">
         <Navbar />
 
-        {/* ── Hero Header ─────────────────────────── */}
+        {/* ── Hero ── */}
         <div className="hero-section">
-          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '36px 24px 32px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            <nav className="breadcrumb" style={{ justifyContent: 'center', marginBottom: 16 }}>
-              <a href="/">Home</a>
-              <ChevronRight size={12} />
-             
-              <span className="current">{subcategoryDetails?.name || 'Products'}</span>
+          <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px' }}>
+            <nav className="breadcrumb">
+              <Link href="/">Home</Link>
+              <ChevronRight size={10} />
+              <span style={{ color: 'var(--ink)' }}>{subcategoryDetails?.name || 'Products'}</span>
             </nav>
 
-            <h1 className="hero-title">
-              <span className="hero-underline">{subcategoryDetails?.name || 'Products'}</span>
-            </h1>
+            {/* Thin rule */}
+            <div style={{ height: 1, background: 'linear-gradient(to right, var(--ink) 40px, transparent 40px)', marginBottom: 14, opacity: 0.18 }} />
+
+            <h1 className="hero-title">{subcategoryDetails?.name || 'Products'}</h1>
 
             {subcategoryDetails?.description && (
-              <p style={{ marginTop: 12, color: 'var(--muted)', fontSize: 14, maxWidth: 520, margin: '12px auto 0', lineHeight: 1.7 }}>
-                {subcategoryDetails.description}
-              </p>
+              <p className="hero-desc">{subcategoryDetails.description}</p>
             )}
 
-            {/* Count pill */}
             {!loading && (
-              <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 100, background: 'var(--accent-light)', color: 'var(--accent-dark)', fontSize: 12, fontWeight: 600 }}>
-                <Sparkles size={12} />
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'} available
+              <div className="hero-count-pill">
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--ink)', display: 'inline-block', opacity: 0.5 }} />
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Type Filter Rail ─────────────────────── */}
+        {/* ── Type Rail ── */}
         <div className="type-rail">
-          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '14px 24px' }}>
+          <div style={{ maxWidth: 1400, margin: '0 auto', padding: '12px 24px' }}>
             <div
               ref={typeScrollRef}
               className="scrollbar-hide"
-              style={{ display: 'flex', gap: 8, overflowX: 'auto', alignItems: 'center', paddingBottom: 2 }}
+              style={{ display: 'flex', gap: 6, overflowX: 'auto', alignItems: 'center' }}
             >
-              {/* ALL */}
               <button
                 onClick={() => setSelectedType('All')}
                 className={`type-pill ${selectedType === 'All' ? 'active' : ''}`}
               >
-                <span style={{ fontSize: 14 }}>✦</span>
+                <span style={{ fontSize: 11, opacity: 0.7 }}>✦</span>
                 All
                 <span className="type-pill-count">{products.length}</span>
               </button>
@@ -737,11 +730,13 @@ const SubcategoryProductsPage = () => {
                   onClick={() => setSelectedType(typeObj.type)}
                   className={`type-pill ${selectedType === typeObj.type ? 'active' : ''}`}
                 >
-                  {typeObj.image ? (
-                    <img src={typeObj.image} alt={typeObj.type} className="type-pill-img"
-                      onError={(e: any) => { e.currentTarget.style.display = 'none'; }} />
-                  ) : (
-                    <span style={{ fontSize: 14 }}>{typeIcons[typeObj.type] || '📦'}</span>
+                  {typeObj.image && (
+                    <img
+                      src={typeObj.image}
+                      alt={typeObj.type}
+                      className="type-pill-img"
+                      onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                    />
                   )}
                   {typeObj.type}
                 </button>
@@ -750,24 +745,22 @@ const SubcategoryProductsPage = () => {
           </div>
         </div>
 
-        {/* ── Main Layout ──────────────────────────── */}
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px', display: 'flex', gap: 28 }}>
+        {/* ── Main Layout ── */}
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px', display: 'flex', gap: 24 }}>
 
-          {/* ── Sidebar ── */}
+          {/* Sidebar */}
           {showFilters && (
-            <aside style={{ width: 240, flexShrink: 0 }} className="hidden lg:block">
+            <aside style={{ width: 220, flexShrink: 0 }} className="hidden lg:block">
               <div className="sidebar-card">
                 <div className="sidebar-header">
                   <span className="sidebar-title">Filters</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button className="icon-btn" onClick={() => setShowFilters(false)}>
-                        <X size={15} />
+                        <X size={13} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>Hide sidebar</p>
-                    </TooltipContent>
+                    <TooltipContent side="right"><p>Hide sidebar</p></TooltipContent>
                   </Tooltip>
                 </div>
                 <FilterContent />
@@ -775,12 +768,11 @@ const SubcategoryProductsPage = () => {
             </aside>
           )}
 
-          {/* ── Products Area ── */}
+          {/* Products area */}
           <div style={{ flex: 1, minWidth: 0 }}>
 
-            {/* Error */}
             {error && (
-              <Alert variant="destructive" style={{ marginBottom: 20, borderRadius: 14 }}>
+              <Alert variant="destructive" style={{ marginBottom: 20, borderRadius: 2 }}>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -789,21 +781,16 @@ const SubcategoryProductsPage = () => {
             {/* Toolbar */}
             <div className="toolbar">
               <div className="toolbar-left">
-                {/* Show filters (desktop) */}
                 {!showFilters && (
                   <button className="filter-toggle-btn hidden lg:inline-flex" onClick={() => setShowFilters(true)}>
-                    <SlidersHorizontal size={14} />
+                    <SlidersHorizontal size={13} />
                     Show Filters
                   </button>
                 )}
-
-                {/* Mobile filter btn */}
                 <button className="filter-toggle-btn lg:hidden" onClick={() => setShowMobileFilters(true)}>
-                  <SlidersHorizontal size={14} />
+                  <SlidersHorizontal size={13} />
                   Filters & Sort
                 </button>
-
-                {/* Quick sort chips — desktop only */}
                 <div className="hidden md:flex items-center gap-2">
                   {sortOptions.slice(0, 3).map((opt) => (
                     <button
@@ -817,19 +804,18 @@ const SubcategoryProductsPage = () => {
                   ))}
                 </div>
               </div>
-
               <p className="product-count">
                 {loading ? 'Loading…' : <><strong>{filteredProducts.length}</strong> products</>}
               </p>
             </div>
 
-            {/* Grid — now uses .product-grid class for responsive columns */}
+            {/* Grid */}
             <div className="product-grid">
               {loading ? renderSkeletons() : filteredProducts.map((product: any, idx) => (
                 <div
                   key={product.id}
                   className="card-appear"
-                  style={{ animationDelay: `${Math.min(idx * 35, 400)}ms` }}
+                  style={{ animationDelay: `${Math.min(idx * 30, 350)}ms` }}
                 >
                   <Link href={`/product/category/${categoryId}/subcategory/${subcategoryId}/${categoryName}/${product.id}`}>
                     <div
@@ -844,11 +830,11 @@ const SubcategoryProductsPage = () => {
                         aria-label="Toggle wishlist"
                       >
                         <Heart
-                          size={15}
+                          size={14}
                           style={{
-                            fill: wishlist.has(product.id) ? '#EF4444' : 'none',
-                            color: wishlist.has(product.id) ? '#EF4444' : '#6B7280',
-                            transition: 'all 0.2s'
+                            fill: wishlist.has(product.id) ? '#c0392b' : 'none',
+                            color: wishlist.has(product.id) ? '#c0392b' : 'var(--muted)',
+                            transition: 'all 0.2s',
                           }}
                         />
                       </button>
@@ -856,31 +842,32 @@ const SubcategoryProductsPage = () => {
                       {/* Badge */}
                       {product.originalPrice > product.discountPrice ? (
                         <span className="badge-discount">
-                          {Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100)}% OFF
+                          −{Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100)}%
                         </span>
                       ) : product.isNew ? (
-                        <span className="badge-new">NEW</span>
+                        <span className="badge-new">New</span>
                       ) : null}
 
-                      {/* Image */}
+                      {/* Image — full product always visible, never cropped */}
                       <div className="pcard-img-wrap">
                         <img
                           className="pcard-img"
-                          src={hoveredProduct === product.id && product.images?.[1]?.url ? product.images[1].url : product.images?.[0]?.url || '/api/placeholder/400/400'}
+                          src={
+                            hoveredProduct === product.id && product.primaryImage2
+                              ? product.primaryImage2
+                              : product.primaryImage1 || product.images?.[0]?.url || '/api/placeholder/400/500'
+                          }
                           alt={product.name}
                           loading="lazy"
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/api/placeholder/400/400'; }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/api/placeholder/400/500'; }}
                         />
                         <div className="pcard-overlay" />
-
-                        {/* Quick view on hover */}
-                        <div className="pcard-actions">
-                          <span className="pcard-action-btn">Quick View →</span>
-                        </div>
+                        <span className="pcard-quick">View Product →</span>
                       </div>
 
                       {/* Body */}
                       <div className="pcard-body">
+                        {product.type && <p className="pcard-type">{product.type}</p>}
                         <p className="pcard-name">{product.name}</p>
                         <div className="pcard-price-row">
                           <span className="pcard-price">{formatPrice(product.discountPrice)}</span>
@@ -900,112 +887,126 @@ const SubcategoryProductsPage = () => {
               ))}
             </div>
 
-            {/* Empty */}
+            {/* Empty state */}
             {!loading && filteredProducts.length === 0 && (
               <div className="empty-state card-appear">
                 <div className="empty-icon-wrap">
-                  <Search size={28} style={{ color: '#D1D5DB' }} />
+                  <Search size={24} style={{ color: 'var(--faint)' }} />
                 </div>
                 <h3 className="empty-title">Nothing here yet</h3>
-                <p style={{ color: 'var(--muted)', fontSize: 13, maxWidth: 320, margin: '0 auto 24px', lineHeight: 1.6 }}>
-                  Try a different category or explore our full collection.
+                <p style={{ color: 'var(--muted)', fontSize: 13, maxWidth: 300, margin: '0 auto 24px', lineHeight: 1.7 }}>
+                  Try a different category or browse our full collection.
                 </p>
                 <button
                   onClick={() => setSelectedType('All')}
                   style={{
-                    padding: '10px 24px',
-                    borderRadius: 100,
+                    padding: '10px 28px',
+                    borderRadius: 2,
                     background: 'var(--ink)',
                     color: '#fff',
                     border: 'none',
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
                     cursor: 'pointer',
-                    transition: 'opacity 0.15s'
+                    transition: 'opacity 0.15s',
                   }}
-                  onMouseOver={(e) => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseOver={(e) => (e.currentTarget.style.opacity = '0.75')}
                   onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
                 >
-                  Browse All Products
+                  Browse All
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Mobile Filter Sheet (shadcn) ──────────── */}
-        <div>
-          <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
-            <SheetContent side="bottom" style={{ borderRadius: '24px 24px 0 0', padding: 0, maxHeight: '85vh', background: "white" }}>
-              <SheetHeader style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border)' }}>
-                <SheetTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, textAlign: 'left' }}>
-                  Filters & Sort
-                </SheetTitle>
-              </SheetHeader>
+        {/* ── Mobile Filter Sheet ── */}
+        <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+          <SheetContent
+            side="bottom"
+            style={{
+              borderRadius: '16px 16px 0 0',
+              padding: 0,
+              maxHeight: '85vh',
+              background: 'var(--cream)',
+            }}
+          >
+            <SheetHeader style={{ padding: '20px 24px 14px', borderBottom: '1px solid var(--border)' }}>
+              <SheetTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 400, textAlign: 'left' }}>
+                Filters & Sort
+              </SheetTitle>
+            </SheetHeader>
 
-              <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 130px)' }}>
-                <div style={{ padding: '8px 0' }}>
-                  <p style={{ padding: '16px 24px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF' }}>
-                    Sort By
-                  </p>
-                  {sortOptions.map((opt) => (
-                    <div
-                      key={opt.value}
-                      onClick={() => setSelectedSort(opt.value)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 14,
-                        padding: '13px 24px',
-                        cursor: 'pointer',
-                        background: selectedSort === opt.value ? 'var(--accent-light)' : 'transparent',
-                        transition: 'background 0.15s',
-                      }}
-                    >
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 10,
-                        background: selectedSort === opt.value ? 'rgba(13,148,136,0.15)' : 'var(--surface)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: selectedSort === opt.value ? 'var(--accent)' : 'var(--muted)',
-                        flexShrink: 0,
-                      }}>
-                        {opt.icon}
-                      </div>
-                      <span style={{ fontSize: 14, fontWeight: 500, color: selectedSort === opt.value ? 'var(--accent-dark)' : 'var(--ink)' }}>
-                        {opt.label}
-                      </span>
-                      {selectedSort === opt.value && (
-                        <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
-                <button
-                  onClick={() => setShowMobileFilters(false)}
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 130px)', padding: '8px 0' }}>
+              <p style={{ padding: '14px 24px 8px', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--faint)' }}>
+                Sort By
+              </p>
+              {sortOptions.map((opt) => (
+                <div
+                  key={opt.value}
+                  onClick={() => setSelectedSort(opt.value)}
                   style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: 100,
-                    background: 'var(--ink)',
-                    color: '#fff',
-                    border: 'none',
-                    fontSize: 14,
-                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    padding: '12px 24px',
                     cursor: 'pointer',
-                    letterSpacing: '0.02em',
+                    background: selectedSort === opt.value ? 'var(--cream-dark)' : 'transparent',
+                    borderLeft: selectedSort === opt.value ? '2px solid var(--ink)' : '2px solid transparent',
+                    transition: 'all 0.15s',
                   }}
                 >
-                  Apply
-                </button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+                  <div style={{
+                    width: 32, height: 32,
+                    borderRadius: 2,
+                    background: selectedSort === opt.value ? 'var(--ink)' : 'var(--cream-dark)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: selectedSort === opt.value ? '#fff' : 'var(--muted)',
+                    flexShrink: 0,
+                  }}>
+                    {opt.icon}
+                  </div>
+                  <span style={{
+                    fontSize: 13,
+                    fontWeight: selectedSort === opt.value ? 600 : 400,
+                    color: selectedSort === opt.value ? 'var(--ink)' : 'var(--ink-soft)',
+                    letterSpacing: '0.02em',
+                  }}>
+                    {opt.label}
+                  </span>
+                  {selectedSort === opt.value && (
+                    <div style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
 
-        <Separator style={{ borderColor: '#E5E7EB' }} />
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                style={{
+                  width: '100%',
+                  padding: '13px',
+                  borderRadius: 2,
+                  background: 'var(--ink)',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <div className="art-divider" style={{ margin: '0 24px' }} />
         <FooterPart />
       </div>
     </TooltipProvider>

@@ -24,9 +24,6 @@ import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
 import CustomerReviewSection from '@/components/CustomerReview';
 
-// Add this to your global CSS or _document.tsx:
-// @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
-
 interface Subcategory {
   id: string;
   name: string;
@@ -202,15 +199,23 @@ const ProductDetailPage = () => {
     }
   };
 
+  // ─── FIX 1: getCurrentImages with fallback to product primary images ───────
   const getCurrentImages = () => {
-    if (!selectedColor) return [];
-    const images: any = [];
-    if (selectedColor.colorImage1) images.push(selectedColor.colorImage1);
-    if (selectedColor.colorImage2) images.push(selectedColor.colorImage2);
-    if (selectedColor.colorImage3) images.push(selectedColor.colorImage3);
-    if (selectedColor.colorImage4) images.push(selectedColor.colorImage4);
-    if (selectedColor.colorImage5) images.push(selectedColor.colorImage5);
-    return images;
+    // Try color-specific images first
+    if (selectedColor) {
+      const colorImages: any = [];
+      if (selectedColor.colorImage1) colorImages.push(selectedColor.colorImage1);
+      if (selectedColor.colorImage2) colorImages.push(selectedColor.colorImage2);
+      if (selectedColor.colorImage3) colorImages.push(selectedColor.colorImage3);
+      if (selectedColor.colorImage4) colorImages.push(selectedColor.colorImage4);
+      if (selectedColor.colorImage5) colorImages.push(selectedColor.colorImage5);
+      if (colorImages.length > 0) return colorImages;
+    }
+    // Fallback to product-level primary images
+    const fallback: any = [];
+    if (product?.primaryImage1) fallback.push(product.primaryImage1);
+    if (product?.primaryImage2) fallback.push(product.primaryImage2);
+    return fallback;
   };
 
   const nextImage = () => {
@@ -376,6 +381,29 @@ const ProductDetailPage = () => {
         [data-accordion-item] { border-bottom: 1px solid #e8e4de; }
         
         .share-modal-bg { backdrop-filter: blur(8px); background: rgba(0,0,0,0.4); }
+
+        /* FIX: Editorial image section — image fills its side without cropping subject */
+        .editorial-image-container {
+          position: relative;
+          overflow: hidden;
+          min-height: 480px;
+        }
+        .editorial-image-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          display: block;
+        }
+        .editorial-text-panel {
+          min-height: 480px;
+        }
+        @media (min-width: 768px) {
+          .editorial-image-container,
+          .editorial-text-panel {
+            min-height: 600px;
+          }
+        }
       `}</style>
 
       <Navbar />
@@ -393,13 +421,18 @@ const ProductDetailPage = () => {
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
-              {images.length > 0 && (
+              {/* FIX 1: Show image if available, otherwise show placeholder */}
+              {images.length > 0 ? (
                 <img
                   src={images[currentImageIndex]}
-                  alt={selectedColor?.name}
+                  alt={selectedColor?.name || product?.name}
                   className="w-full h-full object-cover select-none"
                   draggable="false"
                 />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-[#f5f3ef]">
+                  <span className="text-xs tracking-[0.15em] uppercase text-[#aaa]">No image available</span>
+                </div>
               )}
 
               {/* Floating Badges */}
@@ -554,87 +587,233 @@ const ProductDetailPage = () => {
 
             <div className="divider" />
 
-            {/* Accordion Details */}
+            {/* ── Accordion Details ─────────────────────────────── */}
             <Accordion type="single" collapsible className="w-full space-y-0">
+
+              {/* ─ Product Details ─ */}
               <AccordionItem value="product-details" className="border-b border-[#e8e4de]">
                 <AccordionTrigger className="serif text-lg font-light py-4 hover:no-underline text-[#1a1a1a] [&>svg]:text-[#888]">
                   Product Details
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-[#555] text-sm leading-relaxed pb-4">{product.description}</p>
+                  <div className="pb-5 space-y-6 text-sm">
+
+                    {/* Description */}
+                    {product.description && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-2">Description</p>
+                        <p className="text-[#444] leading-relaxed">{product.description}</p>
+                      </div>
+                    )}
+
+                    {/* Highlights — rendered as bullet list if pipe-separated or newline-separated */}
+                    {product.highlights && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Product Highlights</p>
+                        <ul className="space-y-2">
+                          {product.highlights
+                            .split(/\n|•|\|/)
+                            .map((h: string) => h.trim())
+                            .filter(Boolean)
+                            .map((highlight: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                <span>{highlight}</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Key Features — rendered from keyFeatures field */}
+                    {product.keyFeatures && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Key Features</p>
+                        <ul className="space-y-2">
+                          {product.keyFeatures
+                            .split(/\n|•|\|/)
+                            .map((f: string) => f.trim())
+                            .filter(Boolean)
+                            .map((feature: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
+              {/* ─ Specifications ─ */}
               <AccordionItem value="specifications" className="border-b border-[#e8e4de]">
                 <AccordionTrigger className="serif text-lg font-light py-4 hover:no-underline text-[#1a1a1a] [&>svg]:text-[#888]">
                   Specifications
                 </AccordionTrigger>
                 <AccordionContent>
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 pb-4 text-sm">
-                    {[
-                      ['Material', product.material],
-                      ['Dimensions', product.dimensions],
-                      ['Weight', product.weight ? `${product.weight}g` : null],
-                      ['Country of Origin', product.countryOfOrigin],
-                    ].filter(([, v]) => v).map(([label, value]) => (
-                      <div key={label as string} className="border-b border-[#f0ece6] pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">{label}</dt>
-                        <dd className="text-[#333] font-medium">{value}</dd>
-                      </div>
-                    ))}
-                    {product.care && (
-                      <div className="sm:col-span-2 border-b border-[#f0ece6] pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">Care Instructions</dt>
-                        <dd className="text-[#333]">{product.care}</dd>
-                      </div>
-                    )}
-                    {product.packageContent && (
-                      <div className="sm:col-span-2 border-b border-[#f0ece6] pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">Package Content</dt>
-                        <dd className="text-[#333]">{product.packageContent}</dd>
-                      </div>
-                    )}
-                    {product.manufacturerName && (
-                      <div className="pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">Manufacturer</dt>
-                        <dd className="text-[#333]">{product.manufacturerName}</dd>
-                      </div>
-                    )}
-                    {product.packerName && (
-                      <div className="pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">Packer</dt>
-                        <dd className="text-[#333]">{product.packerName}</dd>
-                      </div>
-                    )}
-                  </dl>
+                  <div className="pb-5 space-y-5 text-sm">
+
+                    {/* Spec table — all available fields */}
+                    {(() => {
+                      const rows = [
+                        ['Brand', product.brand || product.manufacturerName],
+                        ['Product Type', product.type],
+                        ['Material', product.material],
+                        ['Dimensions', product.dimensions],
+                        ['Weight', product.weight ? `${product.weight}g` : null],
+                        ['Capacity', product.capacity],
+                        ['Laptop Compatibility', product.laptopCompatibility],
+                        ['Closure Type', product.closureType],
+                        ['Usage', product.usage],
+                        ['Gender', product.gender],
+                        ['Colour', selectedColor?.name || product.colors?.[0]?.name],
+                        ['Country of Origin', product.countryOfOrigin],
+                        ['Manufacturer', product.manufacturerName],
+                        ['Packer', product.packerName],
+                      ].filter(([, v]) => v);
+
+                      if (rows.length === 0) return null;
+                      return (
+                        <div>
+                          <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Product Specifications</p>
+                          <table className="w-full text-sm border-collapse">
+                            <tbody>
+                              {rows.map(([label, value], i) => (
+                                <tr key={label as string} className={i % 2 === 0 ? 'bg-[#f7f5f1]' : 'bg-white'}>
+                                  <td className="py-2.5 px-3 text-[#666] w-2/5 text-xs">{label}</td>
+                                  <td className="py-2.5 px-3 text-[#1a1a1a] font-medium text-xs">{value}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()}
+
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
+              {/* ─ Package & Care ─ */}
+              {(product.packageContent || product.care) && (
+                <AccordionItem value="package-care" className="border-b border-[#e8e4de]">
+                  <AccordionTrigger className="serif text-lg font-light py-4 hover:no-underline text-[#1a1a1a] [&>svg]:text-[#888]">
+                    Package & Care
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="pb-5 space-y-5 text-sm">
+
+                      {/* Package Contents */}
+                      {product.packageContent && (
+                        <div>
+                          <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Package Contents</p>
+                          <ul className="space-y-2">
+                            {product.packageContent
+                              .split(/\n|•|\|/)
+                              .map((p: string) => p.trim())
+                              .filter(Boolean)
+                              .map((item: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                  <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Care Instructions */}
+                      {product.care && (
+                        <div>
+                          <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Care Instructions</p>
+                          <ul className="space-y-2">
+                            {product.care
+                              .split(/\n|•|\|/)
+                              .map((c: string) => c.trim())
+                              .filter(Boolean)
+                              .map((instruction: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                  <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                  <span>{instruction}</span>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      )}
+
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* ─ Delivery & Returns ─ */}
               <AccordionItem value="delivery" className="border-b border-[#e8e4de]">
                 <AccordionTrigger className="serif text-lg font-light py-4 hover:no-underline text-[#1a1a1a] [&>svg]:text-[#888]">
                   Delivery & Returns
                 </AccordionTrigger>
                 <AccordionContent>
-                  <dl className="space-y-4 pb-4 text-sm">
-                    {[
-                      ['Delivery Time', product.delivery],
-                      ['Cash on Delivery', product.caseOnDeliveryAvailability ? 'Available' : 'Not Available'],
-                      ['Return Policy', product.returnDetails],
-                    ].filter(([, v]) => v).map(([label, value]) => (
-                      <div key={label as string} className="border-b border-[#f0ece6] pb-3">
-                        <dt className="text-xs tracking-[0.1em] uppercase text-[#888] mb-0.5">{label}</dt>
-                        <dd className="text-[#333]">{value}</dd>
+                  <div className="pb-5 space-y-5 text-sm">
+
+                    {/* Delivery info */}
+                    {product.delivery && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Delivery Information</p>
+                        <ul className="space-y-2">
+                          {product.delivery
+                            .split(/\n|•|\|/)
+                            .map((d: string) => d.trim())
+                            .filter(Boolean)
+                            .map((line: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                <span>{line}</span>
+                              </li>
+                            ))}
+                        </ul>
                       </div>
-                    ))}
-                  </dl>
+                    )}
+
+                    {/* COD */}
+                    <div className="flex items-center gap-3 py-2.5 border-b border-[#f0ece6]">
+                      <span className="text-[10px] tracking-[0.1em] uppercase text-[#888] w-40">Cash on Delivery</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-sm ${product.caseOnDeliveryAvailability ? 'bg-[#eafaf1] text-[#27ae60]' : 'bg-[#fdecea] text-[#c0392b]'}`}>
+                        {product.caseOnDeliveryAvailability ? 'Available' : 'Not Available'}
+                      </span>
+                    </div>
+
+                    {/* Return details */}
+                    {product.returnDetails && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.15em] uppercase text-[#888] mb-3">Return Details</p>
+                        <ul className="space-y-2">
+                          {product.returnDetails
+                            .split(/\n|•|\|/)
+                            .map((r: string) => r.trim())
+                            .filter(Boolean)
+                            .map((line: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2.5 text-[#444]">
+                                <span className="mt-1.5 w-1 h-1 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                                <span>{line}</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+
+                  </div>
                 </AccordionContent>
               </AccordionItem>
+
             </Accordion>
           </div>
         </div>
       </div>
 
       {/* ── Editorial Feature Images ────────────────────────────── */}
+      {/* FIX 2: Editorial images no longer crop — use min-height + auto sizing */}
       {product.images?.length > 0 && (
         <div className="space-y-0">
           {product.images.map((image, idx) => (
@@ -642,12 +821,19 @@ const ProductDetailPage = () => {
               key={image.id}
               className={`grid md:grid-cols-2 items-stretch ${idx % 2 !== 0 ? 'md:[&>*:first-child]:order-2' : ''}`}
             >
-              <div className="h-[70vh] overflow-hidden">
-                <img src={image.url} alt={image.altText} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+              {/* Image side — grows with content, never clips */}
+              <div className="editorial-image-container">
+                <img
+                  src={image.url}
+                  alt={image.altText}
+                  className="transition-transform duration-700 hover:scale-105"
+                />
               </div>
-              <div className="flex flex-col justify-center bg-[#faf9f7] px-10 md:px-20 lg:px-28 py-16 space-y-4">
+
+              {/* Text side — same min-height as image side */}
+              <div className="editorial-text-panel flex flex-col justify-center bg-[#faf9f7] px-10 md:px-20 lg:px-28 py-16 space-y-4">
                 <div className="w-8 h-px bg-[#1a1a1a]" />
-                <h2 className="serif text-3xl md:text-4xl font-light text-[#1a1a1a] leading-snug">
+                <h2 className="serif text-2xl md:text-3xl font-light text-[#1a1a1a] leading-relaxed">
                   {image.description}
                 </h2>
               </div>
@@ -691,9 +877,9 @@ const ProductDetailPage = () => {
                           {/* Image */}
                           <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f3ef] rounded-sm mb-3">
                             <img
-                              src={item.primaryImage1 || item.colors[0]?.colorImage1}
+                              src={item.primaryImage1 || item.colors?.[0]?.colorImage1}
                               alt={item.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-107"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
                             />
                             {pd > 0 && (
                               <span className="absolute top-3 left-3 badge-tag bg-[#1a1a1a] text-white">−{pd}%</span>
