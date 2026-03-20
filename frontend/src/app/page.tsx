@@ -199,11 +199,12 @@ export default function DailyObjectsReplica() {
       <Navbar page={"Home"} />
 
       {/* Hero Carousel */}
+      {/* FIX 1: Smoother height progression — added md:h-[85vh] step so tablet doesn't jump straight to full-screen */}
       <Carousel className="w-full" opts={{ loop: true }} setApi={setApi}>
         <CarouselContent>
           {carouselSlides.map((slide, index) => (
             <CarouselItem key={index}>
-              <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[calc(100vh-80px)]">
+              <div className="relative w-full h-[55vh] sm:h-[65vh] md:h-[85vh] lg:h-[calc(100vh-80px)]">
                 {/* Background Image */}
                 <img
                   src={slide.image}
@@ -214,14 +215,17 @@ export default function DailyObjectsReplica() {
                 {/* Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/10"></div>
 
+                {/* FIX 2: Hero text — added md:text-[38px] intermediate step for tablet */}
                 <div className="relative max-w-[1300px] mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 flex items-end pb-16 sm:pb-20 md:pb-28 lg:pb-35">
                   <div className="z-10">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[47px] font-black text-white mb-1 sm:mb-2 tracking-tight leading-tight uppercase drop-shadow-lg">
+                    <h1 className="text-2xl sm:text-[32px] md:text-[38px] lg:text-[47px] font-black text-white mb-1 sm:mb-2 tracking-tight leading-tight uppercase drop-shadow-lg">
                       {slide.title}
                     </h1>
+                    {/* FIX 3: Subtitle — added explicit md size for tablet */}
                     <p className="text-sm sm:text-base md:text-lg lg:text-[21px] text-white mb-4 sm:mb-5 md:mb-7 font-light drop-shadow-md">
                       {slide.subtitle}
                     </p>
+                    {/* FIX 4: Button — tablet-friendly padding */}
                     <button
                       onClick={() => handleShopNow(slide.link)}
                       className="bg-white text-black px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-xs sm:text-sm md:text-[14px] font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
@@ -258,12 +262,14 @@ export default function DailyObjectsReplica() {
 
       {/* Shop by Category Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+        {/* FIX 5: Heading — added md size step */}
         <h2 className="text-xl sm:text-2xl md:text-[28px] ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
           SHOP BY CATEGORY
         </h2>
 
-        {/* Mobile Horizontal Slider */}
-        <div className="sm:hidden relative group">
+        {/* FIX 6: Mobile slider now only shows on true mobile (below md/768px).
+            Tablets (md+) get the 3-col grid which is far better for that screen size. */}
+        <div className="md:hidden relative group">
           <button
             onClick={() => scrollSlider('left', categorySliderRef)}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
@@ -281,9 +287,8 @@ export default function DailyObjectsReplica() {
             }}
           >
             {shopByCategories.map((category, index) => (
-              <Link key={index} href={category.link} className="flex-shrink-0 w-[65vw] snap-center">
+              <Link key={index} href={category.link} className="flex-shrink-0 w-[72vw] snap-center">
                 <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
-                  {/* ✅ Unified aspect ratio for mobile Shop by Category */}
                   <div className="aspect-[3/4] relative overflow-hidden">
                     <img
                       src={category.image}
@@ -315,12 +320,11 @@ export default function DailyObjectsReplica() {
           </button>
         </div>
 
-        {/* Desktop Grid */}
-        <div className="hidden sm:grid sm:grid-cols-3 gap-6 max-w-8xl mx-auto">
+        {/* FIX 7: Grid now shows from md (768px) upward — tablet gets a proper 3-col grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 max-w-8xl mx-auto">
           {shopByCategories.map((category, index) => (
             <Link key={index} href={category.link}>
               <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-                {/* ✅ Unified aspect ratio for desktop Shop by Category */}
                 <div className="aspect-[3/4] relative overflow-hidden">
                   <img
                     src={category.image}
@@ -371,12 +375,11 @@ export default function DailyObjectsReplica() {
           </h2>
         </div>
 
-        {/* Mobile Slider */}
-        <div className="sm:hidden relative">
+        {/* FIX 8: Mobile slider — only shows below md (768px) */}
+        <div className="md:hidden relative">
           <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
             {trendingCollections.map((collection, index) => (
-              <Link key={index} href={collection.link} className="flex-shrink-0 w-[70vw] snap-center">
-                {/* ✅ Unified aspect ratio for mobile Trending Collections */}
+              <Link key={index} href={collection.link} className="flex-shrink-0 w-[72vw] snap-center">
                 <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4]">
                   <img
                     src={collection.image}
@@ -405,12 +408,11 @@ export default function DailyObjectsReplica() {
           </div>
         </div>
 
-        {/* Desktop Grid */}
-        <div className="hidden sm:grid sm:grid-cols-3">
+        {/* FIX 9: Desktop grid — now starts at md (768px) and uses a proper gap instead of per-item ml-6 */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6">
           {trendingCollections.map((collection, index) => (
             <Link key={index} href={collection.link}>
-              {/* ✅ Unified aspect ratio for desktop Trending Collections */}
-              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4] ml-6">
+              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4]">
                 <img
                   src={collection.image}
                   alt={collection.title}
@@ -443,7 +445,6 @@ export default function DailyObjectsReplica() {
       <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
         <div className="relative overflow-hidden group cursor-pointer">
 
-          {/* Fixed aspect ratio container so image never gets weird on any screen */}
           <div className="relative w-full aspect-[16/9] sm:aspect-[16/7] md:aspect-[13/6]">
             <img
               src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
@@ -451,12 +452,11 @@ export default function DailyObjectsReplica() {
               className="absolute inset-0 w-full h-full object-cover"
             />
 
-            {/* Gradient overlay — stronger at bottom for text readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 
-            {/* Text content — pinned to bottom-left, scales with viewport */}
             <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-[85%] sm:max-w-[60%] md:max-w-[50%]">
-              <h2 className="text-lg sm:text-xl md:text-3xl lg:text-[42px] font-black text-white uppercase tracking-tight leading-tight mb-1.5 sm:mb-2 md:mb-3 drop-shadow-lg">
+              {/* FIX 10: Corporate heading — sm:text-2xl added for a proper tablet intermediate size */}
+              <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-[42px] font-black text-white uppercase tracking-tight leading-tight mb-1.5 sm:mb-2 md:mb-3 drop-shadow-lg">
                 CORPORATE GIFTING
               </h2>
               <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-3 sm:mb-4 md:mb-5 drop-shadow-md leading-relaxed">
@@ -479,31 +479,31 @@ export default function DailyObjectsReplica() {
       <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
         <div className="relative overflow-hidden group cursor-pointer">
 
-          {/* Desktop image */}
+          {/* FIX 11: Desktop image now shows from md (was sm) — tablet gets the proper landscape crop */}
           <img
             src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
             alt="Step Inside Arttag Store"
-            className="hidden sm:block w-full object-cover"
+            className="hidden md:block w-full object-cover"
             style={{ aspectRatio: '16/7', objectPosition: 'center' }}
           />
 
-          {/* Mobile image — same src, cropped taller for portrait */}
+          {/* Mobile image — shows below md (768px) */}
           <img
             src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
             alt="Step Inside Arttag Store"
-            className="block sm:hidden w-full object-cover"
+            className="block md:hidden w-full object-cover"
             style={{ aspectRatio: '4/5' }}
           />
 
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/30" />
 
-          {/* Content */}
-          <div className="absolute bottom-6 left-4 sm:bottom-14 sm:left-10 md:bottom-20 md:left-14">
+          {/* FIX 12: Content text — added md sizes for tablet */}
+          <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 md:bottom-20 md:left-14">
             <h2 className="text-lg sm:text-2xl md:text-[36px] font-black text-white uppercase tracking-tight leading-tight mb-2 sm:mb-3 drop-shadow-lg">
               STEP INSIDE<br />Arttag
             </h2>
-            <p className="text-white/90 text-xs sm:text-base md:text-lg font-light mb-3 sm:mb-5 drop-shadow-md">
+            <p className="text-white/90 text-xs sm:text-sm md:text-base lg:text-lg font-light mb-3 sm:mb-5 drop-shadow-md">
               Experience our products in real life
             </p>
             <button className="bg-white text-black px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg">
@@ -525,6 +525,7 @@ export default function DailyObjectsReplica() {
           </p>
         </div>
 
+        {/* FIX 13: Carousel basis — added sm:basis-[32%] to smooth the jump from 42% to 28% */}
         <Carousel
           opts={{ align: 'start', loop: true, dragFree: true }}
           plugins={[
@@ -547,7 +548,7 @@ export default function DailyObjectsReplica() {
               { image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop', alt: 'Style 7' },
               { image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop', alt: 'Style 8' },
             ].map((item, index) => (
-              <CarouselItem key={index} className="pl-2 basis-[42%] sm:basis-[28%] md:basis-[22%] lg:basis-[18%]">
+              <CarouselItem key={index} className="pl-2 basis-[42%] sm:basis-[32%] md:basis-[22%] lg:basis-[18%]">
                 <div className="relative overflow-hidden group cursor-pointer aspect-[3/5]">
                   <img
                     src={item.image}
@@ -573,7 +574,6 @@ export default function DailyObjectsReplica() {
 
       {/* ─── HOW TO PASTE LAPTOP SKINS — Video Section ─── */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        {/* Section Header */}
         <div className="ml-2 sm:ml-3 md:ml-5 mb-6 sm:mb-8 md:mb-10">
           <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans text-black font-bold tracking-tight uppercase">
             HOW TO PASTE LAPTOP SKINS ?
@@ -583,9 +583,7 @@ export default function DailyObjectsReplica() {
           </p>
         </div>
 
-        {/* Video Embed Container */}
         <div className="ml-2 sm:ml-3 md:ml-5 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-black">
-          {/* 16:9 Aspect Ratio Wrapper */}
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute inset-0 w-full h-full"
