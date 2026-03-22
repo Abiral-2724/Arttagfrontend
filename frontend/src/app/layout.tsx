@@ -11,9 +11,8 @@ export const metadata: Metadata = {
   title: "Arttag",
   description: "An Ecommerce store",
   icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' }
-    ],
+    icon: '/favicon.ico',
+    apple: "/apple-icon.png"
   },
 };
 
