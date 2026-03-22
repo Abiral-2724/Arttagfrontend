@@ -1,915 +1,501 @@
 'use client'
 import React, { useState } from 'react';
-import { Package, Eye, X, CheckCircle, Clock, Truck, MapPin, XCircle, Calendar, CreditCard, ShoppingBag, AlertCircle, RotateCcw } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Package, Eye, X, CheckCircle2, Clock, Truck,
+  XCircle, Calendar, CreditCard, ShoppingBag,
+  AlertCircle, RotateCcw, ChevronRight, PackageCheck,
+  MapPin, ArrowRight,
+} from 'lucide-react';
 
-const ORDER_STATUS_TABS = [
-  { id: 'ALL', label: 'All Orders', icon: ShoppingBag },
-  { id: 'DELIVERED', label: 'Delivered', icon: CheckCircle },
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const getOrderStatusConfig = (status) => {
-  const configs = {
-    'CREATED': { 
-      color: 'bg-blue-500/10 text-blue-700 border-blue-200',
-      icon: Clock,
-      gradient: 'from-blue-500/20 to-blue-500/5'
-    },
-    'CONFIRMED': { 
-      color: 'bg-emerald-500/10 text-emerald-700 border-emerald-200',
-      icon: CheckCircle,
-      gradient: 'from-emerald-500/20 to-emerald-500/5'
-    },
-    'SHIPPED': { 
-      color: 'bg-purple-500/10 text-purple-700 border-purple-200',
-      icon: Truck,
-      gradient: 'from-purple-500/20 to-purple-500/5'
-    },
-    'DELIVERED': { 
-      color: 'bg-green-500/10 text-green-700 border-green-200',
-      icon: CheckCircle,
-      gradient: 'from-green-500/20 to-green-500/5'
-    },
-    'CANCELLED': { 
-      color: 'bg-red-500/10 text-red-700 border-red-200',
-      icon: XCircle,
-      gradient: 'from-red-500/20 to-red-500/5'
-    },
-  };
-  return configs[status] || { 
-    color: 'bg-gray-500/10 text-gray-700 border-gray-200',
-    icon: Package,
-    gradient: 'from-gray-500/20 to-gray-500/5'
-  };
+/* ─────────────────────────────────────────────
+   STATUS CONFIG
+───────────────────────────────────────────── */
+const STATUS_META: Record<string, { label: string; dot: string; text: string; bg: string; border: string }> = {
+  CREATED:   { label: 'Created',   dot: '#aaa',    text: '#555',    bg: '#f5f3ef', border: '#e8e4de' },
+  CONFIRMED: { label: 'Confirmed', dot: '#2980b9', text: '#1a5276', bg: '#eaf3fb', border: '#aed6f1' },
+  SHIPPED:   { label: 'Shipped',   dot: '#8e44ad', text: '#6c3483', bg: '#f4ecf7', border: '#d2b4de' },
+  DELIVERED: { label: 'Delivered', dot: '#27ae60', text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf' },
+  CANCELLED: { label: 'Cancelled', dot: '#c0392b', text: '#922b21', bg: '#fdecea', border: '#f5b7b1' },
 };
 
-const getReturnStatusBadge = (returnStatus) => {
-  const configs = {
-    'REQUESTED': { color: 'bg-yellow-500/10 text-yellow-700 border-yellow-200', label: 'Return Requested' },
-    'REJECTED': { color: 'bg-red-500/10 text-red-700 border-red-200', label: 'Return Rejected' },
-    'APPROVED': { color: 'bg-blue-500/10 text-blue-700 border-blue-200', label: 'Return Approved' },
-    'PICKED': { color: 'bg-purple-500/10 text-purple-700 border-purple-200', label: 'Item Picked Up' },
-    'REFUNDED': { color: 'bg-green-500/10 text-green-700 border-green-200', label: 'Refunded' },
-  };
-  return configs[returnStatus] || null;
+const RETURN_META: Record<string, { label: string; dot: string; text: string; bg: string; border: string }> = {
+  REQUESTED: { label: 'Requested', dot: '#e67e22', text: '#935116', bg: '#fef5e7', border: '#f5cba7' },
+  REJECTED:  { label: 'Rejected',  dot: '#c0392b', text: '#922b21', bg: '#fdecea', border: '#f5b7b1' },
+  APPROVED:  { label: 'Approved',  dot: '#2980b9', text: '#1a5276', bg: '#eaf3fb', border: '#aed6f1' },
+  PICKED:    { label: 'Picked Up', dot: '#8e44ad', text: '#6c3483', bg: '#f4ecf7', border: '#d2b4de' },
+  REFUNDED:  { label: 'Refunded',  dot: '#27ae60', text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf' },
 };
 
-const ReturnRequestDialog = ({ isOpen, onClose, product, orderId, userId, onSuccess, API_BASE_URL }) => {
-  const [reason, setReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!reason.trim()) {
-      alert('Please provide a reason for return');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/return/request/return`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId,
-          productId: product.product.id,
-          reason: reason.trim(),
-          userId
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        onSuccess('Return request submitted successfully');
-        onClose();
-        setReason('');
-      } else {
-        alert(data.error || 'Failed to submit return request');
-      }
-    } catch (error) {
-      console.error('Return request error:', error);
-      alert('Error submitting return request. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+const StatusBadge = ({ status, meta }: any) => {
+  const s = meta[status];
+  if (!s) return null;
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-[95vw] sm:w-full bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Request Return</DialogTitle>
-        </DialogHeader>
-        
-        {product && (
-          <div className="space-y-4">
-            <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border">
-              <div className="w-16 h-16 bg-white rounded-lg overflow-hidden border flex-shrink-0">
-                {product.product?.primaryImage1 ? (
-                  <img 
-                    src={product.product.primaryImage1} 
-                    alt={product.product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-8 h-8 text-gray-300" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
-                  {product.product?.name}
-                </h4>
-                <p className="text-xs text-gray-600">Qty: {product.quantity} × ₹{product.price}</p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Reason for Return *
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Please describe why you want to return this product..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={4}
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <Alert className="border-blue-200 bg-blue-50">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="ml-2 text-sm text-gray-700">
-                Your return request will be reviewed by our team. You'll be notified once it's approved.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="flex-1 font-semibold"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !reason.trim()}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Submit Request
-              </>
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.08em] uppercase px-2.5 py-1 rounded-sm border"
+      style={{ color: s.text, background: s.bg, borderColor: s.border }}>
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.dot }} />
+      {s.label}
+    </span>
   );
 };
 
-const OrderProductsDialog = ({ order, isOpen, onClose, userId, onSuccess, API_BASE_URL }) => {
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showReturnDialog, setShowReturnDialog] = useState(false);
-
-  if (!order) return null;
-
-  const handleReturnClick = (product) => {
-    setSelectedProduct(product);
-    setShowReturnDialog(true);
-  };
-
-  const handleReturnSuccess = (message) => {
-    setShowReturnDialog(false);
-    setSelectedProduct(null);
-    onClose();
-    onSuccess(message);
-  };
-
+/* ─────────────────────────────────────────────
+   MODAL
+───────────────────────────────────────────── */
+const Modal = ({ open, onClose, title, eyebrow, children, wide = false }: any) => {
+  if (!open) return null;
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full bg-white">
-          <DialogHeader className="bg-white sticky top-0 z-10 pb-4">
-            <DialogTitle className="text-xl sm:text-2xl font-bold">Order Products</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">Order #{order.id.slice(0, 12)}...</p>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            {order.items?.map((item) => {
-              const returnStatusConfig = getReturnStatusBadge(item.returnStatus);
-              const canReturn = item.isReturnable && !item.returnStatus;
-              
-              return (
-                <div key={item.id} className="group p-5 bg-white rounded-xl border hover:border-gray-300 transition-all hover:shadow-md">
-                  <div className="flex gap-4 mb-4">
-                    <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border group-hover:border-gray-200 transition-all">
-                      {item.product?.primaryImage1 ? (
-                        <img 
-                          src={item.product.primaryImage1} 
-                          alt={item.product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                          <Package className="w-10 h-10 text-gray-300" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 mb-2 text-base">
-                        {item.product?.name || 'Product'}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-3 text-sm mb-3">
-                        <div className="px-3 py-1 bg-gray-50 rounded-full border">
-                          <span className="text-gray-700 font-medium">Qty: {item.quantity}</span>
-                        </div>
-                        <div className="px-3 py-1 bg-blue-50 rounded-full border border-blue-100">
-                          <span className="text-blue-700 font-medium">₹{item.price}</span>
-                        </div>
-                        <div className="px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                          <span className="text-emerald-700 font-bold">Total: ₹{item.price * item.quantity}</span>
-                        </div>
-                      </div>
-                      
-                      {returnStatusConfig && (
-                        <Badge className={`${returnStatusConfig.color} px-3 py-1 text-xs font-semibold border mb-3`}>
-                          {returnStatusConfig.label}
-                        </Badge>
-                      )}
-                      
-                      {!item.isReturnable && !returnStatusConfig && (
-                        <p className="text-xs text-gray-500 mb-3">This product is not eligible for return</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {canReturn && (
-                    <Button
-                      onClick={() => handleReturnClick(item)}
-                      variant="outline"
-                      className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 font-semibold"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Request Return
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <ReturnRequestDialog
-        isOpen={showReturnDialog}
-        onClose={() => {
-          setShowReturnDialog(false);
-          setSelectedProduct(null);
-        }}
-        product={selectedProduct}
-        orderId={order.id}
-        userId={userId}
-        onSuccess={handleReturnSuccess}
-        API_BASE_URL={API_BASE_URL}
-      />
-    </>
-  );
-};
-
-const OrderStatusTracker = ({ status, deliveryDate }) => {
-  const statuses = ['CREATED', 'CONFIRMED', 'SHIPPED', 'DELIVERED'];
-  const currentIndex = statuses.indexOf(status);
-  const isCancelled = status === 'CANCELLED';
-
-  const getStatusIcon = (statusName, index) => {
-    if (isCancelled) {
-      return <XCircle className="w-7 h-7 text-red-500" />;
-    }
-    if (index < currentIndex) {
-      return <CheckCircle className="w-7 h-7 text-emerald-500" />;
-    }
-    if (index === currentIndex) {
-      if (statusName === 'DELIVERED') {
-        return <CheckCircle className="w-7 h-7 text-emerald-500" />;
-      }
-      return (
-        <div className="relative">
-          <Clock className="w-7 h-7 text-blue-600" />
-          <div className="absolute inset-0 animate-ping">
-            <Clock className="w-7 h-7 text-blue-400 opacity-75" />
-          </div>
-        </div>
-      );
-    }
-    return <div className="w-7 h-7 rounded-full border-3 border-gray-300 bg-white shadow-sm" />;
-  };
-
-  if (isCancelled) {
-    return (
-      <div className="py-6">
-        <div className="flex items-center justify-center gap-4 p-6 bg-red-50 rounded-xl border border-red-200">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <XCircle className="w-8 h-8 text-red-500" />
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)' }}>
+      <div className={`bg-white border border-[#e8e4de] rounded-sm w-full max-h-[90vh] overflow-y-auto ${wide ? 'max-w-3xl' : 'max-w-md'}`}
+        style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="sticky top-0 bg-white z-10 flex items-start justify-between px-6 pt-5 pb-4 border-b border-[#e8e4de]">
           <div>
-            <p className="font-bold text-red-900 text-lg">Order Cancelled</p>
-            <p className="text-sm text-red-700">This order has been cancelled</p>
+            {eyebrow && <p className="text-[10px] tracking-[0.2em] uppercase text-[#888] mb-0.5">{eyebrow}</p>}
+            <h2 className="text-xl font-semibold text-[#1a1a1a]">{title}</h2>
           </div>
+          <button onClick={onClose}
+            className="w-7 h-7 border border-[#e8e4de] rounded-sm flex items-center justify-center text-[#888] hover:bg-[#1a1a1a] hover:text-white hover:border-[#1a1a1a] transition-all flex-shrink-0 mt-0.5">
+            <X size={13} />
+          </button>
+        </div>
+        <div className="px-6 py-5">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   ORDER STATUS TRACKER
+───────────────────────────────────────────── */
+const StatusTracker = ({ status, deliveryDate }: any) => {
+  const steps = ['CREATED', 'CONFIRMED', 'SHIPPED', 'DELIVERED'];
+  const idx = steps.indexOf(status);
+  const cancelled = status === 'CANCELLED';
+
+  if (cancelled) {
+    return (
+      <div className="flex items-center gap-3 p-4 bg-[#fdecea] border border-[#f5b7b1] rounded-sm">
+        <XCircle size={18} className="text-[#c0392b] flex-shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-[#922b21]">Order Cancelled</p>
+          <p className="text-xs text-[#c0392b] mt-0.5">This order has been cancelled.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-8">
-      <div className="relative px-4">
-        <div className="absolute top-3.5 left-8 right-8 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700 ease-out rounded-full shadow-sm"
-            style={{ width: `${(currentIndex / (statuses.length - 1)) * 100}%` }}
-          />
+    <div className="space-y-4">
+      {/* Progress bar */}
+      <div className="relative flex items-center justify-between">
+        <div className="absolute left-0 right-0 top-3.5 h-0.5 bg-[#e8e4de]">
+          <div className="h-full bg-[#1a1a1a] transition-all duration-500"
+            style={{ width: `${(idx / (steps.length - 1)) * 100}%` }} />
         </div>
-
-        <div className="relative flex justify-between">
-          {statuses.map((statusName, index) => (
-            <div key={statusName} className="flex flex-col items-center">
-              <div className={`bg-white p-2 rounded-full shadow-md transition-all duration-300 ${
-                index <= currentIndex ? 'scale-110' : 'scale-100'
-              }`}>
-                {getStatusIcon(statusName, index)}
+        {steps.map((s, i) => {
+          const done    = i < idx;
+          const current = i === idx;
+          return (
+            <div key={s} className="flex flex-col items-center gap-2 z-10">
+              <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center bg-white transition-all ${done || current ? 'border-[#1a1a1a]' : 'border-[#e8e4de]'}`}>
+                {done ? <CheckCircle2 size={14} className="text-[#1a1a1a]" />
+                  : current ? <div className="w-2.5 h-2.5 rounded-full bg-[#1a1a1a] animate-pulse" />
+                  : <div className="w-2.5 h-2.5 rounded-full bg-[#e8e4de]" />}
               </div>
-              <p className={`mt-3 text-xs sm:text-sm font-semibold transition-colors ${
-                index <= currentIndex ? 'text-gray-900' : 'text-gray-400'
-              }`}>
-                {statusName}
-              </p>
+              <span className={`text-[9px] tracking-[0.1em] uppercase font-semibold ${done || current ? 'text-[#1a1a1a]' : 'text-[#ccc]'}`}>
+                {s}
+              </span>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      <div className="mt-8 p-5 bg-blue-50 rounded-xl border border-blue-100 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="p-2.5 bg-white rounded-lg shadow-sm">
-            <Truck className="w-6 h-6 text-blue-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-gray-900">
-              {status === 'DELIVERED' ? 'Delivered on' : 'Expected Delivery'}
-            </p>
-            <p className="text-base font-semibold text-blue-700 mt-0.5">
-              {deliveryDate 
-                ? new Date(deliveryDate).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })
-                : 'Delivery date will be updated soon'}
-            </p>
-          </div>
+      {/* Delivery info */}
+      <div className="flex items-center gap-3 p-3 bg-[#faf9f7] border border-[#e8e4de] rounded-sm">
+        <Truck size={15} className="text-[#888] flex-shrink-0" />
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.1em] text-[#888] font-semibold">
+            {status === 'DELIVERED' ? 'Delivered on' : 'Expected Delivery'}
+          </p>
+          <p className="text-sm font-medium text-[#1a1a1a] mt-0.5">
+            {deliveryDate
+              ? new Date(deliveryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
+              : 'Delivery date will be updated soon'}
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-const CancelConfirmationDialog = ({ isOpen, onClose, onConfirm, isCOD, isProcessing }) => {
+/* ─────────────────────────────────────────────
+   RETURN REQUEST DIALOG
+───────────────────────────────────────────── */
+const ReturnRequestDialog = ({ open, onClose, product, orderId, userId, onSuccess }: any) => {
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!reason.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/return/request/return`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, productId: product.product.id, reason: reason.trim(), userId }),
+      });
+      const data = await res.json();
+      if (res.ok) { onSuccess('Return request submitted successfully'); onClose(); setReason(''); }
+      else alert(data.error || 'Failed to submit');
+    } catch { alert('Error submitting return request'); }
+    finally { setSubmitting(false); }
+  };
+
+  if (!open || !product) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-[100vw] sm:w-full bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-gray-900">Confirm Order Cancellation</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <Alert className="border-yellow-200 bg-yellow-50">
-            <AlertCircle className="h-5 w-5 text-yellow-600" />
-            <AlertDescription className="ml-2">
-              <p className="font-semibold text-gray-900 mb-2">Are you sure you want to cancel this order?</p>
-              {isCOD ? (
-                <p className="text-sm text-gray-600">
-                  This COD order will be cancelled and removed immediately from your order list.
-                </p>
-              ) : (
-                <p className="text-sm text-gray-600">
-                  A refund request will be created and processed by our admin team within 5-7 business days. The order will remain visible with CANCELLED status.
-                </p>
-              )}
-            </AlertDescription>
-          </Alert>
+    <Modal open={open} onClose={onClose} title="Request Return" eyebrow="Returns">
+      <div className="flex gap-3 mb-5 bg-[#faf9f7] border border-[#e8e4de] rounded-sm p-3">
+        <img src={product.product?.primaryImage1} alt={product.product?.name}
+          className="w-14 h-14 object-cover rounded-sm border border-[#e8e4de] flex-shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[#1a1a1a] line-clamp-2">{product.product?.name}</p>
+          <p className="text-xs text-[#888] mt-0.5">Qty: {product.quantity} · ₹{product.price}</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isProcessing}
-            className="flex-1 font-semibold"
-          >
-            Keep Order
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isProcessing}
-            className="flex-1 bg-red-600 hover:bg-red-700 font-semibold"
-          >
-            {isProcessing ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <XCircle className="w-4 h-4 mr-2" />
-                Yes, Cancel Order
-              </>
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      <div className="space-y-1.5 mb-4">
+        <label className="block text-[10px] tracking-[0.14em] uppercase font-semibold text-[#888]">
+          Reason for Return <span className="text-[#c0392b]">*</span>
+        </label>
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          placeholder="Describe why you want to return this product…"
+          rows={4}
+          className="w-full px-3 py-2.5 text-sm border border-[#e8e4de] rounded-sm bg-white text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors resize-none placeholder:text-[#ccc]"
+          disabled={submitting}
+        />
+      </div>
+
+      <div className="flex items-start gap-2 px-3 py-2.5 bg-[#eaf3fb] border border-[#aed6f1] rounded-sm mb-5">
+        <AlertCircle size={13} className="text-[#2980b9] flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-[#1a5276] leading-relaxed">Your request will be reviewed. You'll be notified once approved.</p>
+      </div>
+
+      <div className="flex gap-3">
+        <button onClick={onClose} disabled={submitting}
+          className="flex-1 border border-[#e8e4de] text-[#888] py-2.5 text-[10px] tracking-[0.14em] uppercase font-semibold rounded-sm hover:border-[#1a1a1a] hover:text-[#1a1a1a] transition-colors disabled:opacity-40">
+          Cancel
+        </button>
+        <button onClick={handleSubmit} disabled={submitting || !reason.trim()}
+          className="flex-1 bg-[#1a1a1a] text-white py-2.5 text-[10px] tracking-[0.14em] uppercase font-semibold rounded-sm hover:bg-[#333] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          {submitting ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <RotateCcw size={12} />}
+          Submit Request
+        </button>
+      </div>
+    </Modal>
   );
 };
 
-const OrderDetailsDialog = ({ order, isOpen, onClose, onCancelRequest }) => {
+/* ─────────────────────────────────────────────
+   ORDER DETAIL MODAL
+───────────────────────────────────────────── */
+const OrderDetailModal = ({ order, open, onClose, onCancelRequest }: any) => {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  if (!order) return null;
+  const [processing, setProcessing] = useState(false);
+  const [returnDialog, setReturnDialog]       = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [productsOpen, setProductsOpen]       = useState(false);
 
+  if (!order) return null;
   const canCancel = order.orderStatus === 'CREATED' || order.orderStatus === 'CONFIRMED';
-  const statusConfig = getOrderStatusConfig(order.orderStatus);
-  const isCOD = order.paymentMethod === 'COD';
-  
-  const handleCancelClick = () => {
-    setShowCancelConfirm(true);
-  };
-  
+
   const handleConfirmCancel = async () => {
-    setIsProcessing(true);
+    setProcessing(true);
     await onCancelRequest(order.id, order.paymentMethod);
-    setIsProcessing(false);
-    setShowCancelConfirm(false);
+    setProcessing(false); setShowCancelConfirm(false);
   };
+
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full bg-white">
-          <DialogHeader className="bg-white sticky top-0 z-10 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle className="text-xl sm:text-2xl font-bold">Order Details</DialogTitle>
-                <p className="text-sm text-gray-500 mt-1">Order #{order.id.slice(0, 12)}...</p>
-              </div>
-              <Badge className={`${statusConfig.color} px-4 py-1.5 text-sm font-semibold border`}>
-                {order.orderStatus}
-              </Badge>
-            </div>
-          </DialogHeader>
-          
-          <div className="mt-6 space-y-6">
-            <div className="border rounded-2xl p-6 bg-white shadow-sm">
-              <h3 className="text-lg font-bold mb-2 text-gray-900">Order Status</h3>
-              <OrderStatusTracker status={order.orderStatus} deliveryDate={order.deliveryDate} />
-            </div>
+      <Modal open={open} onClose={onClose} title={`Order #${order.id.slice(0, 10)}…`} eyebrow="Order Detail" wide>
+        <div className="space-y-6">
 
-            <div className="flex items-center gap-4 p-5 bg-white rounded-xl border shadow-sm">
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <Calendar className="w-6 h-6 text-gray-700" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Order Date</p>
-                <p className="text-base font-bold text-gray-900 mt-0.5">
-                  {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
+          {/* Status + date */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2 text-xs text-[#888]">
+              <Calendar size={13} />{fmtDate(order.createdAt)}
             </div>
+            <StatusBadge status={order.orderStatus} meta={STATUS_META} />
+          </div>
 
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Order Items
-              </h3>
-              <div className="space-y-3">
-                {order.items?.map((item) => (
-                  <div key={item.id} className="group flex gap-4 p-5 bg-white rounded-xl border hover:border-gray-300 transition-all hover:shadow-md">
-                    <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border group-hover:border-gray-200 transition-all">
-                      {item.product?.primaryImage1 ? (
-                        <img 
-                          src={item.product.primaryImage1} 
-                          alt={item.product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                          <Package className="w-10 h-10 text-gray-300" />
-                        </div>
+          {/* Tracker */}
+          <div className="bg-[#faf9f7] border border-[#e8e4de] rounded-sm p-4">
+            <p className="text-[9px] tracking-[0.18em] uppercase text-[#aaa] font-semibold mb-4">Order Status</p>
+            <StatusTracker status={order.orderStatus} deliveryDate={order.deliveryDate} />
+          </div>
+
+          {/* Items */}
+          <div>
+            <p className="text-[9px] tracking-[0.18em] uppercase text-[#aaa] font-semibold mb-3">Items ({order.items?.length})</p>
+            <div className="space-y-2">
+              {order.items?.map((item: any) => {
+                const returnMeta = RETURN_META[item.returnStatus];
+                const canReturn = item.isReturnable && !item.returnStatus && order.orderStatus === 'DELIVERED';
+                return (
+                  <div key={item.id} className="flex gap-3 p-3 bg-[#faf9f7] border border-[#e8e4de] rounded-sm">
+                    <img src={item.product?.primaryImage1} alt={item.product?.name}
+                      className="w-14 h-14 object-cover rounded-sm border border-[#e8e4de] flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#1a1a1a] line-clamp-1">{item.product?.name}</p>
+                      <p className="text-xs text-[#888] mt-0.5">Qty: {item.quantity} · ₹{item.price}</p>
+                      {returnMeta && <div className="mt-1.5"><StatusBadge status={item.returnStatus} meta={RETURN_META} /></div>}
+                      {!item.isReturnable && !item.returnStatus && <p className="text-[10px] text-[#aaa] mt-1">Not eligible for return</p>}
+                      {canReturn && (
+                        <button onClick={() => { setSelectedProduct(item); setReturnDialog(true); }}
+                          className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] hover:opacity-60 transition-opacity">
+                          <RotateCcw size={10} /> Request Return
+                        </button>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 mb-2 text-base">
-                        {item.product?.name || 'Product'}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-4 text-sm">
-                        <div className="px-3 py-1 bg-gray-50 rounded-full border">
-                          <span className="text-gray-700 font-medium">Qty: {item.quantity}</span>
-                        </div>
-                        <div className="px-3 py-1 bg-blue-50 rounded-full border border-blue-100">
-                          <span className="text-blue-700 font-medium">₹{item.price}</span>
-                        </div>
-                        <div className="px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                          <span className="text-emerald-700 font-bold">Total: ₹{item.price * item.quantity}</span>
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            <div className="p-6 bg-white rounded-2xl border shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Price Breakdown</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-base">
-                  <span className="text-gray-600 font-medium">Subtotal</span>
-                  <span className="text-gray-900 font-semibold">₹{order.totalAmount}</span>
-                </div>
-                <Separator className="my-3" />
-                <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <span className="text-lg font-bold text-gray-900">Grand Total</span>
-                  <span className="text-2xl font-bold text-emerald-700">₹{order.totalAmount}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="p-5 bg-white rounded-xl border shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <CreditCard className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-600">Payment Method</span>
-                </div>
-                <p className="font-bold text-gray-900 text-lg ml-11">{order.paymentMethod}</p>
-              </div>
-              <div className="p-5 bg-white rounded-xl border shadow-sm">
-                <span className="text-sm font-medium text-gray-600 block mb-3">Payment Status</span>
-                <Badge className={`${
-                  order.paymentStatus === 'PENDING' 
-                    ? 'bg-yellow-500/10 text-yellow-700 border-yellow-200' 
-                    : 'bg-green-500/10 text-green-700 border-green-200'
-                } px-4 py-1.5 text-sm font-bold border-2`}>
-                  {order.paymentStatus}
-                </Badge>
-              </div>
-            </div>
-
-            {canCancel && (
-              <div className="pt-4">
-                <Button
-                  variant="destructive"
-                  onClick={handleCancelClick}
-                  className="w-full py-6 text-white bg-red-600 hover:bg-red-700 font-bold shadow-md hover:shadow-lg transition-all"
-                >
-                  <XCircle className="w-5 h-5 mr-2" />
-                  Request Order Cancellation
-                </Button>
-              </div>
-            )}
           </div>
-        </DialogContent>
-      </Dialog>
 
-      <CancelConfirmationDialog
-        isOpen={showCancelConfirm}
-        onClose={() => setShowCancelConfirm(false)}
-        onConfirm={handleConfirmCancel}
-        isCOD={isCOD}
-        isProcessing={isProcessing}
+          {/* Price */}
+          <div className="bg-[#faf9f7] border border-[#e8e4de] rounded-sm p-4 space-y-2">
+            <p className="text-[9px] tracking-[0.18em] uppercase text-[#aaa] font-semibold mb-2">Price Summary</p>
+            <div className="flex justify-between text-sm text-[#555]"><span>Subtotal</span><span>₹{order.subtotal || order.totalAmount}</span></div>
+            {order.shippingCharge > 0 && <div className="flex justify-between text-sm text-[#555]"><span>Shipping</span><span>₹{order.shippingCharge}</span></div>}
+            <div className="h-px bg-[#e8e4de] my-2" />
+            <div className="flex justify-between font-semibold text-[#1a1a1a]"><span>Total</span><span>₹{order.totalAmount}</span></div>
+          </div>
+
+          {/* Payment */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-[#faf9f7] border border-[#e8e4de] rounded-sm">
+              <p className="text-[9px] tracking-[0.14em] uppercase text-[#aaa] font-semibold mb-1">Payment Method</p>
+              <p className="text-sm font-medium text-[#1a1a1a]">{order.paymentMethod}</p>
+            </div>
+            <div className="p-3 bg-[#faf9f7] border border-[#e8e4de] rounded-sm">
+              <p className="text-[9px] tracking-[0.14em] uppercase text-[#aaa] font-semibold mb-1">Payment Status</p>
+              <p className="text-sm font-medium text-[#1a1a1a]">{order.paymentStatus}</p>
+            </div>
+          </div>
+
+          {/* Cancel */}
+          {canCancel && (
+            <button onClick={() => setShowCancelConfirm(true)}
+              className="w-full border border-[#f5b7b1] text-[#c0392b] bg-[#fdecea] py-3 text-[10px] tracking-[0.16em] uppercase font-semibold rounded-sm hover:bg-[#f9d5d0] transition-colors flex items-center justify-center gap-2">
+              <XCircle size={13} /> Cancel Order
+            </button>
+          )}
+        </div>
+      </Modal>
+
+      {/* Cancel confirm */}
+      <Modal open={showCancelConfirm} onClose={() => setShowCancelConfirm(false)} title="Cancel Order?" eyebrow="Confirm Action">
+        <p className="text-sm text-[#666] mb-5 leading-relaxed">
+          {order.paymentMethod === 'COD'
+            ? 'This COD order will be immediately cancelled.'
+            : 'A refund request will be created and processed within 5–7 business days.'}
+        </p>
+        <div className="flex gap-3">
+          <button onClick={() => setShowCancelConfirm(false)} disabled={processing}
+            className="flex-1 border border-[#e8e4de] text-[#888] py-2.5 text-[10px] tracking-[0.14em] uppercase font-semibold rounded-sm hover:border-[#1a1a1a] hover:text-[#1a1a1a] transition-colors disabled:opacity-40">
+            Keep Order
+          </button>
+          <button onClick={handleConfirmCancel} disabled={processing}
+            className="flex-1 bg-[#c0392b] text-white py-2.5 text-[10px] tracking-[0.14em] uppercase font-semibold rounded-sm hover:bg-[#a93226] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+            {processing ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <XCircle size={12} />}
+            Yes, Cancel
+          </button>
+        </div>
+      </Modal>
+
+      {/* Return request */}
+      <ReturnRequestDialog
+        open={returnDialog}
+        onClose={() => { setReturnDialog(false); setSelectedProduct(null); }}
+        product={selectedProduct}
+        orderId={order.id}
+        userId={typeof window !== 'undefined' ? localStorage.getItem('arttagUserId') : null}
+        onSuccess={(msg: string) => { setReturnDialog(false); setSelectedProduct(null); onClose(); }}
       />
     </>
   );
 };
 
-export default function OrderSection({ showAlert }) {
-  const [activeTab, setActiveTab] = useState('ALL');
-  const [selectedOrder, setSelectedOrder] : any = useState(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false);
-  const [isProductsOpen, setIsProductsOpen] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const userId = typeof window !== 'undefined' ? localStorage.getItem("arttagUserId") : null;
+/* ─────────────────────────────────────────────
+   MAIN ORDER SECTION
+───────────────────────────────────────────── */
+const ORDER_TABS = [
+  { id: 'ALL',       label: 'All',       icon: ShoppingBag },
+  { id: 'DELIVERED', label: 'Delivered', icon: CheckCircle2 },
+];
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export default function OrderSection({ showAlert }: any) {
+  const [activeTab, setActiveTab]       = useState('ALL');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [detailOpen, setDetailOpen]     = useState(false);
+  const [trackOpen, setTrackOpen]       = useState(false);
+  const [orders, setOrders]             = useState<any[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState('');
 
-  React.useEffect(() => {
-    fetchOrders();
-  }, [userId]);
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('arttagUserId') : null;
+
+  React.useEffect(() => { fetchOrders(); }, [userId]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/payment/get/all/user/${userId}/orders`);
-      const data = await response.json();
-
-      if (data.success) {
-        setOrders(data.orders || []);
-      } else {
-        setError(data.message || 'Failed to fetch orders');
-      }
-    } catch (err) {
-      console.error('Fetch orders error:', err);
-      setError('Failed to load orders. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch(`${API_BASE_URL}/payment/get/all/user/${userId}/orders`);
+      const data = await res.json();
+      if (data.success) setOrders(data.orders || []);
+      else setError(data.message || 'Failed to fetch orders');
+    } catch { setError('Failed to load orders.'); }
+    finally { setLoading(false); }
   };
 
-  const filteredOrders = activeTab === 'ALL' 
-    ? orders 
-    : orders.filter((order : any) => order.orderStatus === activeTab);
-
-  const openOrderDetails = (order) => {
-    setSelectedOrder(order);
-    setIsDetailsOpen(true);
-  };
-
-  const openOrderStatus = (order) => {
-    setSelectedOrder(order);
-    setIsStatusOpen(true);
-  };
-
-  const openOrderProducts = (order) => {
-    setSelectedOrder(order);
-    setIsProductsOpen(true);
-  };
-
-  const handleCancelRequest = async (orderId, paymentMethod) => {
+  const handleCancelRequest = async (orderId: string, paymentMethod: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/payment/cancel/${orderId}`, {
+      const res = await fetch(`${API_BASE_URL}/payment/cancel/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: userId,
-          reason: 'Customer requested cancellation' 
-        })
+        body: JSON.stringify({ userId, reason: 'Customer requested cancellation' }),
       });
-      
-      const data = await response.json();
-      
+      const data = await res.json();
       if (data.success) {
-        if (paymentMethod === 'COD') {
-          showAlert?.('COD order cancelled successfully', 'success');
-        } else {
-          showAlert?.('Cancellation request submitted. Refund will be processed by admin within 5-7 business days.', 'success');
-        }
-        setIsDetailsOpen(false);
-        await fetchOrders();
-      } else {
-        showAlert?.(data.message || 'Failed to cancel order', 'error');
-      }
-    } catch (error) {
-      console.error('Cancel order error:', error);
-      showAlert?.('Error cancelling order. Please try again.', 'error');
-    }
+        showAlert?.(paymentMethod === 'COD' ? 'Order cancelled' : 'Cancellation requested. Refund in 5–7 days.');
+        setDetailOpen(false); await fetchOrders();
+      } else showAlert?.(data.message || 'Failed to cancel', 'error');
+    } catch { showAlert?.('Error cancelling order', 'error'); }
   };
 
-  const handleReturnSuccess = (message) => {
-    showAlert?.(message, 'success');
-    fetchOrders();
-  };
+  const filtered = activeTab === 'ALL' ? orders : orders.filter((o: any) => o.orderStatus === activeTab);
+
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <CardContent className="p-4 sm:p-6 lg:p-8">
-      <div>
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Orders</h2>
-          <p className="text-gray-600">Track and manage your orders</p>
-        </div>
-        
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-gray-900"></div>
-              <Package className="absolute inset-0 m-auto w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-600 mt-6 font-medium">Loading your orders...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <div className="inline-flex p-6 bg-red-50 rounded-full mb-4">
-              <XCircle className="w-16 h-16 text-red-400" />
-            </div>
-            <p className="text-red-600 mb-4 font-semibold text-lg">{error}</p>
-            <Button onClick={fetchOrders} variant="outline" size="lg" className="font-semibold">
-              Try Again
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="mb-6 sm:mb-8 bg-gray-50 rounded-2xl p-2 border-2">
-              <div className="flex gap-2 overflow-x-auto">
-                {ORDER_STATUS_TABS.map((tab) => {
-                  const Icon = tab.icon;
-                  const count = tab.id === 'ALL' 
-                    ? orders.length 
-                    : orders.filter((o : any) => o.orderStatus === tab.id).length;
-                  
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 sm:px-6 py-3 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${
-                        activeTab === tab.id
-                          ? 'bg-white text-gray-900 shadow-md scale-105'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                      <span className={`ml-1 text-xs px-2.5 py-0.5 rounded-full font-bold ${
-                        activeTab === tab.id
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+    <div className="p-6 sm:p-8">
 
-            {filteredOrders.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="inline-flex p-8 bg-gray-50 rounded-full mb-6">
-                  <Package className="w-20 h-20 text-gray-300" />
-                </div>
-                <p className="text-xl font-bold text-gray-900 mb-2">No orders found</p>
-                <p className="text-gray-500">
-                  {activeTab === 'ALL' 
-                    ? 'Start shopping to see your orders here' 
-                    : `No ${activeTab.toLowerCase()} orders`}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredOrders.map((order : any) => {
-                  const statusConfig = getOrderStatusConfig(order.orderStatus);
-                  const StatusIcon = statusConfig.icon;
-                  const isDelivered = order.orderStatus === 'DELIVERED';
-                  
-                  return (
-                    <Card key={order.id} className="border-1 hover:border-gray-300 transition-all hover:shadow-xl group overflow-hidden">
-                      <div className={`h-1.5 bg-gradient-to-r ${statusConfig.gradient}`} />
-                      <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-5">
-                          <div className="flex items-start gap-4">
-                            <div className={`p-3 rounded-xl bg-gradient-to-br ${statusConfig.gradient} shadow-sm`}>
-                              <StatusIcon className="w-6 h-6 text-gray-700" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-base text-gray-900">Order #{order.id.slice(0, 12)}...</p>
-                              <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(order.createdAt).toLocaleDateString('en-US', { 
-                                  year: 'numeric', 
-                                  month: 'short', 
-                                  day: 'numeric' 
-                                })}
-                              </div>
-                              {order.deliveryDate && (
-                                <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                                  <Truck className="w-3.5 h-3.5" />
-                                  Delivery: {new Date(order.deliveryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <Badge className={`${statusConfig.color} px-4 py-1.5 text-sm font-bold border-2 shadow-sm`}>
-                            {order.orderStatus}
-                          </Badge>
-                        </div>
-
-                        <Separator className="my-1" />
-
-                        <div className="grid grid-cols-2 gap-4 mb-1">
-                          <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-xs text-gray-600 font-medium mb-1">Items</p>
-                            <p className="text-lg font-bold text-gray-900">
-                              {order.items?.length} item{order.items?.length !== 1 ? 's' : ''}
-                            </p>
-                          </div>
-                          <div className="p-4 bg-blue-50 rounded-xl">
-                            <p className="text-xs text-gray-600 font-medium mb-1">Payment</p>
-                            <p className="text-base font-bold text-blue-700">{order.paymentMethod}</p>
-                          </div>
-                        </div>
-
-                        <div className="p-5 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border-2 border-emerald-100 mb-5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-bold text-gray-700">Total Amount</span>
-                            <span className="text-2xl font-bold text-emerald-700">₹{order.totalAmount}</span>
-                          </div>
-                        </div>
-
-                        <div className={`grid grid-cols-1 ${isDelivered ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={() => openOrderStatus(order)}
-                            className="font-bold border-1 hover:border-gray-400 hover:shadow-md transition-all"
-                          >
-                            <MapPin className="w-4 h-4 mr-2" />
-                            Track Order
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="lg"
-                            onClick={() => openOrderDetails(order)}
-                            className="font-bold shadow-md hover:shadow-lg transition-all bg-gray-900 hover:bg-gray-800 text-white"
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
-                          {isDelivered && (
-                            <Button
-                              variant="outline"
-                              size="lg"
-                              onClick={() => openOrderProducts(order)}
-                              className="font-bold border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
-                            >
-                              <Package className="w-4 h-4 mr-2" />
-                              View Products
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        <OrderDetailsDialog
-          order={selectedOrder}
-          isOpen={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
-          onCancelRequest={handleCancelRequest}
-        />
-
-        <OrderProductsDialog
-          order={selectedOrder}
-          isOpen={isProductsOpen}
-          onClose={() => setIsProductsOpen(false)}
-          userId={userId}
-          onSuccess={handleReturnSuccess}
-          API_BASE_URL={API_BASE_URL}
-        />
-
-        <Dialog open={isStatusOpen} onOpenChange={setIsStatusOpen}>
-          <DialogContent className="max-w-2xl w-[95vw] sm:w-full bg-white">
-            <DialogHeader className="bg-white">
-              <DialogTitle className="text-2xl font-bold">Track Your Order</DialogTitle>
-              <p className="text-sm text-gray-600 mt-1">Order #{selectedOrder?.id.slice(0, 12)}...</p>
-            </DialogHeader>
-            {selectedOrder && (
-              <OrderStatusTracker 
-                status={selectedOrder.orderStatus} 
-                deliveryDate={selectedOrder.deliveryDate}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
+      {/* Header */}
+      <div className="mb-7">
+        <p className="text-[10px] tracking-[0.2em] uppercase text-[#888] mb-0.5">Your</p>
+        <h2 className="text-xl font-semibold text-[#1a1a1a]">Orders</h2>
       </div>
-    </CardContent>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-[#e8e4de] to-transparent mb-7" />
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-[#e8e4de]">
+        {ORDER_TABS.map(tab => {
+          const Icon = tab.icon;
+          const count = tab.id === 'ALL' ? orders.length : orders.filter((o: any) => o.orderStatus === tab.id).length;
+          const active = activeTab === tab.id;
+          return (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-[10px] tracking-[0.12em] uppercase font-semibold border-b-2 -mb-px transition-colors ${
+                active ? 'border-[#1a1a1a] text-[#1a1a1a]' : 'border-transparent text-[#888] hover:text-[#555]'
+              }`}>
+              <Icon size={13} />
+              {tab.label}
+              <span className={`px-1.5 py-0.5 rounded-sm text-[9px] font-bold ${active ? 'bg-[#1a1a1a] text-white' : 'bg-[#f0ece6] text-[#888]'}`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="w-6 h-6 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs tracking-[0.1em] uppercase text-[#888]">Loading orders…</p>
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <XCircle size={36} className="text-[#d4cfc8]" />
+          <p className="text-sm text-[#c0392b]">{error}</p>
+          <button onClick={fetchOrders} className="text-[10px] uppercase tracking-wider font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] hover:opacity-60 transition-opacity">Try Again</button>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <Package size={36} className="text-[#d4cfc8]" />
+          <p className="text-sm font-light text-[#888]">{activeTab === 'ALL' ? 'No orders yet' : `No ${activeTab.toLowerCase()} orders`}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((order: any) => {
+            const sm = STATUS_META[order.orderStatus] || STATUS_META.CREATED;
+            return (
+              <div key={order.id}
+                className="border border-[#e8e4de] rounded-sm bg-white hover:border-[#d4cfc8] hover:shadow-sm transition-all overflow-hidden">
+                {/* Status stripe */}
+                <div className="h-0.5" style={{ background: sm.dot }} />
+
+                <div className="p-4">
+                  {/* Row 1: order id + status */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <p className="text-xs font-semibold text-[#1a1a1a] font-mono">#{order.id.slice(0, 12)}…</p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-[#888] mt-0.5">
+                        <Calendar size={11} />{fmtDate(order.createdAt)}
+                      </div>
+                    </div>
+                    <StatusBadge status={order.orderStatus} meta={STATUS_META} />
+                  </div>
+
+                  {/* Row 2: items + payment + total */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {[
+                      { label: 'Items', value: `${order.items?.length} item${order.items?.length !== 1 ? 's' : ''}` },
+                      { label: 'Payment', value: order.paymentMethod },
+                      { label: 'Total', value: `₹${order.totalAmount}` },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="bg-[#faf9f7] border border-[#f0ece6] rounded-sm p-2.5">
+                        <p className="text-[9px] uppercase tracking-[0.1em] text-[#aaa] font-semibold mb-0.5">{label}</p>
+                        <p className="text-xs font-semibold text-[#1a1a1a] truncate">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setSelectedOrder(order); setTrackOpen(true); }}
+                      className="flex-1 border border-[#e8e4de] text-[#555] py-2 text-[10px] tracking-[0.12em] uppercase font-semibold rounded-sm hover:border-[#1a1a1a] hover:text-[#1a1a1a] transition-colors flex items-center justify-center gap-1.5">
+                      <MapPin size={11} /> Track
+                    </button>
+                    <button
+                      onClick={() => { setSelectedOrder(order); setDetailOpen(true); }}
+                      className="flex-1 bg-[#1a1a1a] text-white py-2 text-[10px] tracking-[0.12em] uppercase font-semibold rounded-sm hover:bg-[#333] transition-colors flex items-center justify-center gap-1.5">
+                      <Eye size={11} /> View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Detail modal */}
+      <OrderDetailModal order={selectedOrder} open={detailOpen} onClose={() => setDetailOpen(false)} onCancelRequest={handleCancelRequest} />
+
+      {/* Track modal */}
+      <Modal open={trackOpen && !!selectedOrder} onClose={() => setTrackOpen(false)} title="Track Order" eyebrow="Shipment Status">
+        {selectedOrder && <StatusTracker status={selectedOrder.orderStatus} deliveryDate={selectedOrder.deliveryDate} />}
+      </Modal>
+    </div>
   );
 }
