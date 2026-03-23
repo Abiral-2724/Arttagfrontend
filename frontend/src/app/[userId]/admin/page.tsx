@@ -1,489 +1,249 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Grid3x3, ShoppingCart, BarChart3, Users, Settings, Menu, X, TrendingUp, TrendingDown, DollarSign, Pin, PinIcon, IndianRupeeIcon, TicketSlash, Undo2, Store, Gift, Wind } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, Pie, PieChart, XAxis, YAxis } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import axios from 'axios';
+import React, { useState } from 'react';
+import {
+  Package, Grid3x3, ShoppingCart, PinIcon, IndianRupeeIcon,
+  TicketSlash, Undo2, Store, Gift, Wind, ChevronRight,
+  ArrowUpRight,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { Spinner } from '@/components/ui/spinner';
 import Navbar from '@/components/Navbar';
 import FooterPart from '@/components/FooterPart';
-import Link from 'next/link';
+
+/* ─────────────────────────────────────────────
+   NAV ITEMS
+───────────────────────────────────────────── */
+const NAV_ITEMS = (userId: any, router: any) => [
+  {
+    id: 'products',   label: 'Products',          sub: 'Manage product catalogue',
+    icon: Package,    path: `/${userId}/admin/product`,
+  },
+  {
+    id: 'categories', label: 'Categories',         sub: 'Organise store categories',
+    icon: Grid3x3,    path: `/${userId}/admin/category`,
+  },
+  {
+    id: 'orders',     label: 'Orders',             sub: 'Track & manage orders',
+    icon: ShoppingCart, path: `/${userId}/admin/orders`,
+  },
+  {
+    id: 'pincodes',   label: 'Pincodes',           sub: 'Delivery zone pincodes',
+    icon: PinIcon,    path: `/${userId}/admin/pincode`,
+  },
+  {
+    id: 'coupons',    label: 'Coupons',            sub: 'Promotional coupon codes',
+    icon: IndianRupeeIcon, path: `/${userId}/admin/coupens`,
+  },
+  {
+    id: 'refunds',    label: 'Refund Requests',    sub: 'Process payment refunds',
+    icon: TicketSlash, path: `/${userId}/admin/refund`,
+  },
+  {
+    id: 'returns',    label: 'Return Requests',    sub: 'Handle product returns',
+    icon: Undo2,      path: `/${userId}/admin/return`,
+  },
+  {
+    id: 'stores',     label: 'Store Locations',    sub: 'View & manage stores',
+    icon: Store,      path: `/${userId}/admin/addstore`,
+  },
+  {
+    id: 'gifting',    label: 'Corporate Gifting',  sub: 'Corporate gifting requests',
+    icon: Gift,       path: `/${userId}/admin/gifting`,
+  },
+  {
+    id: 'blogs',      label: 'Blogs',              sub: 'Create & manage blog posts',
+    icon: Wind,       path: `/${userId}/admin/blog`,
+  },
+];
+
+/* ─────────────────────────────────────────────
+   SECTION GROUPINGS
+───────────────────────────────────────────── */
+const SECTIONS = [
+  {
+    heading: 'Catalogue',
+    ids: ['products', 'categories'],
+  },
+  {
+    heading: 'Commerce',
+    ids: ['orders', 'refunds', 'returns'],
+  },
+  {
+    heading: 'Promotions',
+    ids: ['pincodes', 'coupons'],
+  },
+  {
+    heading: 'Engage',
+    ids: ['stores', 'gifting', 'blogs'],
+  },
+];
 
 export default function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dashboardData, setDashboardData]: any = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]: any = useState(null);
-
-  const [isChecking, setIsChecking] = useState(true);
-  process.env.NEXT_PUBLIC_API_BASE_URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { userId } = useParams();
+  const router     = useRouter();
 
-  const router = useRouter();
-
-  const handleViewproduct = () => {
-    router.push(`/${userId}/admin/product`);
-  };
-  const handleviewCategory = () => {
-    router.push(`/${userId}/admin/category`);
-  };
-  const handleviewOrder = () => {
-    router.push(`/${userId}/admin/orders`);
-  };
-
-  // useEffect(() => {
-  //   const checkAccess = async () => {
-  //     try {
-  //       const storedUserId = localStorage.getItem("arttagUserId");
-  //       const storedToken = localStorage.getItem("arttagtoken");
-
-  //       // 🔹 Instant redirect if no user or mismatch
-  //       if (!storedUserId || !storedToken || storedUserId !== userId) {
-  //         router.replace("/login");
-  //         return;
-  //       }
-
-  //       // 🔹 Verify role via backend
-  //       const response = await axios.get(`${API_BASE_URL}/user/${userId}/get/profile`);
-
-  //       if (!response.data.success || response.data.user.role !== "ADMIN") {
-  //         router.replace("/login");
-  //         return;
-  //       }
-
-  //     } catch (error) {
-  //       console.error("Error verifying user:", error);
-  //       router.replace("/login");
-  //     } finally {
-  //       setIsChecking(false); // ✅ stop loading only when verification is done
-  //     }
-  //   };
-
-  //   if (userId) checkAccess();
-  // }, [userId, router]);
-
-
-  // useEffect(() => {
-  //   fetchDashboardData();
-  // }, []);
-
-  // const fetchDashboardData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     setError(null);
-  //     // Replace with your actual API endpoint
-  //     const response = await fetch(`${API_BASE_URL}/product/all/website/details`);
-  //     const data = await response.json();
-
-  //     if (data.success) {
-  //       setDashboardData(data.data);
-  //     } else {
-  //       setError(data.message || 'Failed to fetch dashboard data');
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.message || 'Failed to fetch dashboard data');
-  //     console.error('Error fetching dashboard data:', err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const calculatePercentageChange = (current, lastMonth) => {
-    if (lastMonth === 0) return { value: '+100%', positive: true };
-    const change = ((current - lastMonth) / lastMonth) * 100;
-    return {
-      value: `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`,
-      positive: change >= 0
-    };
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const ordersChartConfig = {
-    orders: {
-      label: "Orders",
-      color: "blue",
-    },
-  };
-
-  const revenueChartConfig = {
-    revenue: {
-      label: "Revenue",
-      color: "red",
-    },
-  };
-
-  const orderStatusChartConfig = {
-    visitors: { label: "Orders" },
-    pending: { label: "Pending", color: "orange" },
-    processing: { label: "Processing", color: "blue" },
-    completed: { label: "Completed", color: "green" },
-    cancelled: { label: "Cancelled", color: "red" },
-  };
-
-  const orderStatusData = [
-    { status: "pending", count: 45, fill: "orange" },
-    { status: "processing", count: 89, fill: "blue" },
-    { status: "completed", count: 320, fill: "green" },
-    { status: "cancelled", count: 12, fill: "red" },
-  ];
-
-  const totalOrders = orderStatusData.reduce((sum, item) => sum + item.count, 0);
-
-  // if (loading) {
-  //   return (
-  //     <>
-  //       {
-  //         isChecking ? (
-  //           <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
-  //             <Link href={'/'}>
-  //               <div className="flex items-center gap-2">
-  //                 <div className="w-auto h-14">
-  //                   <svg
-  //                     xmlns="http://www.w3.org/2000/svg"
-  //                     viewBox="0 0 270 54"
-  //                     className="h-full w-auto"
-  //                   >
-  //                     <defs>
-  //                       <style>
-  //                         {`
-  //                 .st0 {
-  //                   font-family: MuktaMahee-Regular, 'Mukta Mahee';
-  //                   font-size: 49.69px;
-  //                 }
-  //                 `}
-  //                       </style>
-  //                     </defs>
-  //                     <g>
-  //                       <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
-  //                       <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
-  //                       <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
-  //                     </g>
-  //                     <text className="st0" transform="translate(84.95 40.38)">
-  //                       <tspan x="0" y="0">Arttag</tspan>
-  //                     </text>
-  //                   </svg>
-  //                 </div>
-  //               </div>
-  //             </Link>
-  //             <Spinner className='text-blue-700 text-5xl'></Spinner>
-  //             <p className="text-gray-600 text-sm">Verifying request</p>
-  //           </div>) : (<div className="min-h-screen bg-gray-50 flex items-center justify-center">
-  //             <div className="text-center">
-  //               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-  //               <p className="text-gray-600 font-medium">Loading dashboard data...</p>
-  //             </div>
-  //           </div>)
-  //       }
-  //     </>
-
-
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-  //       <Alert variant="destructive" className="max-w-md">
-  //         <AlertDescription>
-  //           {error}
-  //           <Button onClick={fetchDashboardData} className="mt-4 w-full">
-  //             Retry
-  //           </Button>
-  //         </AlertDescription>
-  //       </Alert>
-  //     </div>
-  //   );
-  // }
-
-  const stats = [
-    {
-      label: 'Total Products',
-      value: dashboardData?.totalProducts || 0,
-      change: calculatePercentageChange(
-        dashboardData?.totalProducts || 0,
-        dashboardData?.productsLastMonth || 0
-      ),
-      icon: Package,
-      bgColor: 'bg-blue-500',
-    },
-    {
-      label: 'Categories',
-      value: dashboardData?.totalCategories || 0,
-      change: { value: `+${dashboardData?.categoriesLastMonth || 0}`, positive: true },
-      icon: Grid3x3,
-      bgColor: 'bg-purple-500',
-    },
-    {
-      label: 'Total Orders',
-      value: dashboardData?.totalOrders || 0,
-      change: { value: `+${dashboardData?.ordersLastMonth || 0} last month`, positive: true },
-      icon: ShoppingCart,
-      bgColor: 'bg-orange-500',
-    },
-    {
-      label: 'Total Revenue',
-      value: formatCurrency(dashboardData?.totalRevenue || 0),
-      change: calculatePercentageChange(
-        dashboardData?.totalRevenue || 0,
-        dashboardData?.monthlyTrends?.[dashboardData.monthlyTrends.length - 2]?.revenue || 0
-      ),
-      icon: DollarSign,
-      bgColor: 'bg-green-500',
-    },
-  ];
-
-  const handleviewpincode = () => {
-    router.push(`/${userId}/admin/pincode`);
-  };
-
-  const handleviewcoupens = () => {
-    router.push(`/${userId}/admin/coupens`);
-  };
-  const handleviewrefundRequest = () => {
-    router.push(`/${userId}/admin/refund`);
-  };
-
-  const handleviewreturnRequest = () => {
-    router.push(`/${userId}/admin/return`);
-  };
-
-  const handleviewstoreRequest = () => {
-    router.push(`/${userId}/admin/addstore`);
-  };
-
-  const handleviewGiftingRequest = () => {
-    router.push(`/${userId}/admin/gifting`);
-  };
-
-  const handleviewBlogRequest = () => {
-    router.push(`/${userId}/admin/blog`);
-  };
-
-
-  const navigationItems = [
-    { id: 'products', label: 'View Products', icon: Package, description: 'Manage your product catalog', color: 'blue', function: handleViewproduct },
-    { id: 'categories', label: 'View Categories', icon: Grid3x3, description: 'Organize product categories', color: 'purple', function: handleviewCategory },
-    { id: 'orders', label: 'View Orders', icon: ShoppingCart, description: 'Track and manage orders', color: 'orange', function: handleviewOrder },
-    { id: 'pincodes', label: 'View Pincode', icon: PinIcon, description: 'Track and manage pincode', color: 'green', function: handleviewpincode },
-    { id: 'coupens', label: 'View Coupens', icon: IndianRupeeIcon, description: 'Track and manage Coupen', color: 'blue', function: handleviewcoupens },
-    { id: 'refunds', label: 'View Refunds Request', icon: TicketSlash, description: 'Track and manage Refund request', color: 'red', function: handleviewrefundRequest },
-    { id: 'returns', label: 'View Returns Request', icon: Undo2, description: 'Track and manage Return request', color: 'blue', function: handleviewreturnRequest },
-    { id: 'Store', label: 'View Stores Details', icon: Store, description: 'View and manage stores', color: 'red', function: handleviewstoreRequest },
-    { id: 'Corporate Gifting', label: 'View Corporate Gifting Request', icon: Gift, description: 'View and manage gifting request', color: 'orange', function: handleviewGiftingRequest },
-    { id: 'Blogs', label: 'View Blogs', icon: Wind, description: 'View and manage Blogs', color: 'purple', function: handleviewBlogRequest },
-  ];
-
-  const handleclickhome = () => {
-    router.push('/')
-  }
+  const items = NAV_ITEMS(userId, router);
+  const byId  = Object.fromEntries(items.map(i => [i.id, i]));
 
   return (
-    <div>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <Navbar></Navbar>
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Stats Grid */}
-          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardDescription className="text-sm font-medium">
-                      {stat.label}
-                    </CardDescription>
-                    <div className={`h-10 w-10 rounded-full ${stat.bgColor} flex items-center justify-center`}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${stat.change.positive ? 'text-green-600' : 'text-red-600'}`}>
-                      {stat.change.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {stat.change.value}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div> */}
+        .dash-serif { font-family: 'Cormorant Garamond', serif; }
 
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Monthly Orders Bar Chart */}
-            {/* <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Monthly Orders</CardTitle>
-                <CardDescription>Total orders placed each month</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={ordersChartConfig}>
-                  <BarChart
-                    accessibilityLayer
-                    data={dashboardData?.monthlyTrends || []}
-                    layout="vertical"
-                    margin={{ right: 16 }}
-                  >
-                    <CartesianGrid horizontal={false} />
-                    <YAxis
-                      dataKey="month"
-                      type="category"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      tickFormatter={(value) => value.slice(0, 3)}
-                      hide
-                    />
-                    <XAxis dataKey="orders" type="number" hide />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                    <Bar dataKey="orders" layout="vertical" fill="blue" radius={4}>
-                      <LabelList dataKey="month" position="insideLeft" offset={8} fontSize={12} fill="white" />
-                      <LabelList dataKey="orders" position="right" offset={8} fontSize={12} />
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="flex-col items-start gap-2 text-sm">
-                <div className="flex gap-2 leading-none font-medium">
-                  {dashboardData?.ordersLastMonth > 0 ? 'Orders trend is stable' : 'Growing steadily'} <TrendingUp className="h-4 w-4" />
-                </div>
-                <div className="text-gray-500 leading-none">
-                  Showing orders for the last 12 months
-                </div>
-              </CardFooter>
-            </Card> */}
+        .dash-divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e8e4de 30%, #e8e4de 70%, transparent);
+        }
 
-            {/* Order Status Pie Chart */}
-            {/* <Card className="flex flex-col">
-              <CardHeader className="items-center pb-0">
-                <CardTitle>Order Status</CardTitle>
-                <CardDescription>Current order distribution</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 pb-0">
-                <ChartContainer config={orderStatusChartConfig} className="mx-auto aspect-square max-h-[250px]">
-                  <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey="count" hideLabel />} />
-                    <Pie data={orderStatusData} dataKey="count">
-                      <LabelList dataKey="status" className="fill-white" stroke="none" fontSize={12} />
-                    </Pie>
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="flex-col gap-2 text-sm">
-                <div className="flex items-center gap-2 leading-none font-medium">
-                  {totalOrders} total orders tracked
-                </div>
-                <div className="text-gray-500 leading-none">
-                  Real-time order status breakdown
-                </div>
-              </CardFooter>
-            </Card> */}
+        /* Nav card */
+        .dash-card {
+          background: #fff;
+          border: 1px solid #e8e4de;
+          border-radius: 2px;
+          padding: 20px;
+          cursor: pointer;
+          transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          position: relative;
+          overflow: hidden;
+        }
+        .dash-card:hover {
+          box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+          border-color: #d4cfc8;
+          transform: translateY(-2px);
+        }
+        .dash-card:hover .dash-card-arrow { opacity: 1; transform: translate(0, 0); }
+        .dash-card:hover .dash-card-icon { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-            {/* Revenue Trend Line Chart */}
-            {/* <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle>Revenue Trend</CardTitle>
-                <CardDescription>Monthly revenue over the last 12 months</CardDescription>
-              </CardHeader>
-              <CardContent >
-                <ChartContainer config={revenueChartConfig} className='mb-[-10px]'>
-                  <LineChart
-                    accessibilityLayer
-                    data={dashboardData?.monthlyTrends || []}
-                    margin={{ top: 20, left: 12, right: 12 }}
-                  >
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="month"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      tickFormatter={(value) => value.slice(0, 3)}
-                    />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-                    <Line
-                      dataKey="revenue"
-                      type="natural"
-                      stroke="green"
-                      strokeWidth={2}
-                      dot={{ fill: "green" }}
-                      activeDot={{ r: 6 }}
-                    >
-                      <LabelList
-                        position="top"
-                        offset={12}
-                        fontSize={12}
-                        formatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                      />
-                    </Line>
-                  </LineChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="flex-col items-start gap-2 text-sm mt-3">
-                <div className="flex gap-2 leading-none font-medium">
-                  Revenue trending upward <TrendingUp className="h-4 w-4" />
-                </div>
-                <div className="text-gray-500 leading-none">
-                  Total revenue: {formatCurrency(dashboardData?.totalRevenue || 0)}
-                </div>
-              </CardFooter>
-            </Card> */}
+        .dash-card-icon {
+          width: 40px; height: 40px; border-radius: 2px;
+          border: 1px solid #e8e4de; background: #f5f3ef;
+          display: flex; align-items: center; justify-content: center;
+          color: #888; transition: all 0.22s; flex-shrink: 0;
+        }
+
+        .dash-card-arrow {
+          position: absolute; top: 16px; right: 16px;
+          opacity: 0; transform: translate(-4px, 4px);
+          transition: all 0.22s;
+          color: #aaa;
+        }
+
+        /* Section heading */
+        .dash-section-heading {
+          font-size: 9px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          font-weight: 600;
+          color: #aaa;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #f0ece6;
+        }
+
+        /* Welcome banner */
+        .dash-banner {
+          background: #1a1a1a;
+          border-radius: 2px;
+          padding: 32px 40px;
+          color: #fff;
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          flex-wrap: wrap;
+          margin-bottom: 32px;
+          position: relative;
+          overflow: hidden;
+        }
+        .dash-banner::before {
+          content: '';
+          position: absolute;
+          top: -40px; right: -40px;
+          width: 200px; height: 200px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.03);
+        }
+        .dash-banner::after {
+          content: '';
+          position: absolute;
+          bottom: -60px; right: 60px;
+          width: 280px; height: 280px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.02);
+        }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .dash-fade { animation: fadeUp 0.4s ease both; }
+        .dash-fade-1 { animation-delay: 0.05s; }
+        .dash-fade-2 { animation-delay: 0.1s; }
+        .dash-fade-3 { animation-delay: 0.15s; }
+        .dash-fade-4 { animation-delay: 0.2s; }
+      `}</style>
+
+      <Navbar />
+
+      <div className="max-w-[1300px] mx-auto px-4 sm:px-8 lg:px-12 py-10">
+
+        {/* ── Welcome banner ── */}
+        <div className="dash-banner">
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p className="text-[10px] tracking-[0.24em] uppercase text-[#888] mb-1">Admin Portal</p>
+            <h1 className="dash-serif text-4xl sm:text-5xl font-light text-white leading-tight">
+              Arttag Dashboard
+            </h1>
+            <p className="text-[#666] text-sm mt-2">Welcome back. Use the sections below to manage your store.</p>
           </div>
-
-          {/* Main Navigation Cards */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const bgColorClass = `bg-${item.color}-500`;
-                const hoverBgClass = `hover:bg-${item.color}-600`;
-                return (
-                  <Card
-                    key={item.id}
-                    className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-gray-200 hover:border-blue-400 overflow-hidden"
-                    onClick={() => setActiveSection(item.id)}
-                  >
-                    <CardHeader className="relative">
-                      <div className={`h-14 w-14 rounded-xl ${bgColorClass} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="h-7 w-7 text-white" />
-                      </div>
-                      <CardTitle className="text-xl">{item.label}</CardTitle>
-                      <CardDescription>{item.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="relative">
-                      <Button className={`w-full ${bgColorClass} ${hoverBgClass} text-white transition-all duration-300`}
-                        onClick={item.function}
-                      >
-                        {item.label}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div className="dash-divider" style={{ background: 'rgba(255,255,255,0.08)', marginBottom: 0 }} />
           </div>
         </div>
+
+        {/* ── Section groups ── */}
+        <div className="space-y-10">
+          {SECTIONS.map((section, si) => (
+            <div key={section.heading} className={`dash-fade dash-fade-${si + 1}`}>
+              <p className="dash-section-heading">{section.heading}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {section.ids.map(id => {
+                  const item = byId[id];
+                  if (!item) return null;
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.id}
+                      className="dash-card"
+                      onClick={() => router.push(item.path)}
+                    >
+                      <div className="dash-card-icon">
+                        <Icon size={18} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1a1a1a]">{item.label}</p>
+                        <p className="text-xs text-[#888] mt-0.5 leading-relaxed">{item.sub}</p>
+                      </div>
+                      <div className="dash-card-arrow">
+                        <ArrowUpRight size={14} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Bottom divider ── */}
+        <div className="dash-divider mt-12" />
       </div>
 
-      <div className="border-t border-gray-300 my-0"></div>
-      <FooterPart></FooterPart>
-
+      <FooterPart />
     </div>
-
   );
 }
