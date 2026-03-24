@@ -1,529 +1,364 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, ShoppingBag, Truck, CheckCircle2, Package, Tag, Gift, CreditCard, Banknote, Smartphone } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  ArrowLeft, ShoppingBag, Truck, CheckCircle2, Package,
+  Tag, Gift, CreditCard, Banknote, ArrowRight, AlertCircle, Loader2,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Spinner } from '@/components/ui/spinner';
 import Navbar from '@/components/Navbar';
 
-export default function CheckoutPage() {
-  const [selectedPayment, setSelectedPayment] = useState('');
-  const [orderSummary, setOrderSummary] = useState({
-    totalItem: 0,
-    totalamount: 0,
-    shippingCharge: 0,
-    couponCode: null,
-    couponDiscountPercentage: 0,
-    isAddingAsGift: false,
-    addAsGiftPrice: 0
-  });
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const paymentMethods = [
+  {
+    id: 'ONLINE',
+    name: 'Online Payment',
+    sub: 'UPI, Cards, Net Banking, Wallets',
+    icon: CreditCard,
+  },
+  {
+    id: 'CASEONDELIVERY',
+    name: 'Cash on Delivery',
+    sub: 'Pay when your order arrives',
+    icon: Banknote,
+  },
+];
+
+export default function PaymentPage() {
   const { userId, addressId } = useParams();
   const router = useRouter();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // Load Razorpay script
+  const [selectedPayment, setSelectedPayment] = useState('');
+  const [orderSummary, setOrderSummary]       = useState({
+    totalItem: 0, totalamount: 0, shippingCharge: 0,
+    couponCode: null as string | null, couponDiscountPercentage: 0,
+    isAddingAsGift: false, addAsGiftPrice: 0,
+  });
+  const [cartItems, setCartItems]     = useState<any[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState('');
+  const [submitting, setSubmitting]   = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
+    const script    = document.createElement('script');
+    script.src      = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async    = true;
+    script.onload   = () => setRazorpayLoaded(true);
     document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    return () => { document.body.removeChild(script); };
   }, []);
 
-  const paymentMethods = [
-    {
-      id: 'ONLINE',
-      name: 'Online Payment (UPI, Cards, Net Banking)',
-      icon: <CreditCard className="w-6 h-6" />,
-      offers: 'Multiple payment options available',
-      hasOffers: true
-    },
-    {
-      id: 'CASEONDELIVERY',
-      name: 'Cash on Delivery',
-      icon: <Banknote className="w-6 h-6" />,
-      offers: null,
-      hasOffers: false
-    }
-  ];
-
-  useEffect(() => {
-    fetchCartDetails();
-  }, []);
+  useEffect(() => { fetchCartDetails(); }, []);
 
   const fetchCartDetails = async () => {
     try {
-      const cartResponse = await fetch(`${API_BASE_URL}/cart/${userId}/get/all/user/cart/product`);
-      const cartData = await cartResponse.json();
-
-      if (cartData.success) {
-        setCartItems(cartData.cart || []);
-      }
-
-      const summaryResponse = await fetch(`${API_BASE_URL}/cart/${userId}/cart/summary`);
-      const summaryData = await summaryResponse.json();
-
-      if (summaryData.success) {
+      const [cartRes, sumRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/cart/${userId}/get/all/user/cart/product`),
+        fetch(`${API_BASE_URL}/cart/${userId}/cart/summary`),
+      ]);
+      const cartData = await cartRes.json();
+      const sumData  = await sumRes.json();
+      if (cartData.success) setCartItems(cartData.cart || []);
+      if (sumData.success) {
         setOrderSummary({
-          totalItem: summaryData.totalItem || 0,
-          totalamount: summaryData.totalamount || 0,
-          shippingCharge: summaryData.shippingCharge || 0,
-          couponCode: summaryData.couponCode || null,
-          couponDiscountPercentage: summaryData.couponDiscountPercentage || 0,
-          isAddingAsGift: summaryData.isAddingAsGift || false,
-          addAsGiftPrice: summaryData.addAsGiftPrice || 0
+          totalItem: sumData.totalItem || 0, totalamount: sumData.totalamount || 0,
+          shippingCharge: sumData.shippingCharge || 0, couponCode: sumData.couponCode || null,
+          couponDiscountPercentage: sumData.couponDiscountPercentage || 0,
+          isAddingAsGift: sumData.isAddingAsGift || false, addAsGiftPrice: sumData.addAsGiftPrice || 0,
         });
-      } else {
-        setError(summaryData.message || 'Failed to load cart details');
-      }
+      } else setError(sumData.message || 'Failed to load cart details');
       setLoading(false);
-    } catch (err) {
-      setError('Failed to load cart details. Please check your connection.');
-      setLoading(false);
-      console.error(err);
-    }
+    } catch { setError('Failed to load cart details.'); setLoading(false); }
   };
 
-  const couponDiscountAmount = orderSummary.couponDiscountPercentage > 0
-    ? Math.round((orderSummary.totalamount * orderSummary.couponDiscountPercentage) / 100)
-    : 0;
+  const couponDiscount = orderSummary.couponDiscountPercentage > 0
+    ? Math.round((orderSummary.totalamount * orderSummary.couponDiscountPercentage) / 100) : 0;
+  const afterDiscount  = orderSummary.totalamount - couponDiscount;
+  const grandTotal     = afterDiscount + orderSummary.shippingCharge + (orderSummary.isAddingAsGift ? orderSummary.addAsGiftPrice : 0);
 
-  const amountAfterDiscount = orderSummary.totalamount - couponDiscountAmount;
-  const grandTotal = amountAfterDiscount + orderSummary.shippingCharge + (orderSummary.isAddingAsGift ? orderSummary.addAsGiftPrice : 0);
-  ;
-
-  const clearCartAfterOrder = async () => {
+  const clearCart = async () => {
     try {
-      const deleteResponse = await fetch(`${API_BASE_URL}/cart/delete/all/items/cart`, {
+      await fetch(`${API_BASE_URL}/cart/delete/all/items/cart`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: userId })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
       });
-
-      const deleteData = await deleteResponse.json();
-      
-      if (!deleteData.success) {
-        console.warn('Cart items could not be deleted:', deleteData.message);
-      }
-    } catch (deleteErr) {
-      console.warn('Failed to delete cart items:', deleteErr);
-    }
+    } catch { console.warn('Cart clear failed'); }
   };
 
-  const handleRazorpayPayment = async (orderData) => {
+  const handleRazorpay = async (orderData: any) => {
     try {
-      // Create Razorpay order
-      const razorpayOrderResponse = await fetch(`${API_BASE_URL}/payment/create/order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          amount: grandTotal // Amount in rupees
-        })
+      const res  = await fetch(`${API_BASE_URL}/payment/create/order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amount: grandTotal }),
       });
+      const rpOrder = await res.json();
+      if (!rpOrder.id) throw new Error('Failed to create Razorpay order');
 
-      const razorpayOrderData = await razorpayOrderResponse.json();
-
-      if (!razorpayOrderData.id) {
-        throw new Error('Failed to create Razorpay order');
-      }
-
-      // Razorpay checkout options
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: razorpayOrderData.amount, // Amount in paise
-        currency: razorpayOrderData.currency,
-        name: 'Arttag',
-        description: 'Order Payment',
-        order_id: razorpayOrderData.id,
-        handler: async function (response) {
+        amount: rpOrder.amount, currency: rpOrder.currency,
+        name: 'Arttag', description: 'Order Payment', order_id: rpOrder.id,
+        handler: async (response: any) => {
           try {
-            // Verify payment
-            const verifyResponse = await fetch(`${API_BASE_URL}/payment/verify`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              })
+            const verRes  = await fetch(`${API_BASE_URL}/payment/verify`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature }),
             });
-
-            const verifyData = await verifyResponse.json();
-
-            if (verifyData.success) {
-              // Place order in your system
-              const placeOrderResponse = await fetch(`${API_BASE_URL}/payment/place/user/new/order`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  ...orderData,
-                  razorpayOrderId: response.razorpay_order_id,
-                  razorpayPaymentId: response.razorpay_payment_id
-                })
+            const verData = await verRes.json();
+            if (verData.success) {
+              const poRes  = await fetch(`${API_BASE_URL}/payment/place/user/new/order`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...orderData, razorpayOrderId: response.razorpay_order_id, razorpayPaymentId: response.razorpay_payment_id }),
               });
-
-              const placeOrderData = await placeOrderResponse.json();
-
-              if (placeOrderData.success) {
-                await clearCartAfterOrder();
-                router.push(`/${userId}/order/success`);
-              } else {
-                setError(placeOrderData.message || 'Failed to place order');
-              }
-            } else {
-              setError('Payment verification failed');
-            }
-          } catch (error) {
-            console.error('Payment verification error:', error);
-            setError('Payment verification failed. Please contact support.');
-          } finally {
-            setSubmitting(false);
-          }
+              const poData = await poRes.json();
+              if (poData.success) { await clearCart(); router.push(`/${userId}/order/success`); }
+              else setError(poData.message || 'Failed to place order');
+            } else setError('Payment verification failed');
+          } catch { setError('Payment verification failed. Please contact support.'); }
+          finally { setSubmitting(false); }
         },
-        modal: {
-          ondismiss: function() {
-            setSubmitting(false);
-            setError('Payment cancelled. Please try again.');
-          }
-        },
-        prefill: {
-          name: '',
-          email: '',
-          contact: ''
-        },
-        theme: {
-          color: '#0891b2'
-        }
+        modal: { ondismiss: () => { setSubmitting(false); setError('Payment cancelled.'); } },
+        theme: { color: '#1a1a1a' },
       };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (err) {
-      console.error('Razorpay error:', err);
-      setError('Failed to initialize payment. Please try again.');
-      setSubmitting(false);
-    }
+      new (window as any).Razorpay(options).open();
+    } catch { setError('Failed to initialize payment.'); setSubmitting(false); }
   };
 
   const handlePlaceOrder = async () => {
-    if (!selectedPayment) {
-      setError('Please select a payment method');
-      return;
-    }
-
-    // if (selectedPayment === 'ONLINE' && !razorpayLoaded) {
-    //   setError('Payment gateway is loading. Please wait...');
-    //   return;
-    // }
-
-    setSubmitting(true);
-    setError('');
-
+    if (!selectedPayment) { setError('Please select a payment method'); return; }
+    setSubmitting(true); setError('');
     try {
-      const subtotalValue = orderSummary.totalamount;
-      const discountValue = couponDiscountAmount || 0;
-      const shippingValue = orderSummary.shippingCharge || 0;
-      const taxValue = 0;
-      
       const orderData = {
-        userId: userId,
-        subtotal: subtotalValue,
-        discountAmount: discountValue,
-        shippingCharge: shippingValue,
-        taxAmount: taxValue,
-        cart: cartItems,
-        addressId: addressId,
-        paymentType: selectedPayment
+        userId, subtotal: orderSummary.totalamount, discountAmount: couponDiscount,
+        shippingCharge: orderSummary.shippingCharge, taxAmount: 0,
+        cart: cartItems, addressId, paymentType: selectedPayment,
       };
-
       if (selectedPayment === 'ONLINE') {
-        // Handle Razorpay payment
-        await handleRazorpayPayment(orderData);
+        await handleRazorpay(orderData);
       } else {
-        // Handle COD
-        const response = await fetch(`${API_BASE_URL}/payment/place/user/new/order`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(orderData)
+        const res  = await fetch(`${API_BASE_URL}/payment/place/user/new/order`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData),
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-          await clearCartAfterOrder();
-          router.push(`/${userId}/order/success`);
-        } else {
-          setError(data.message || 'Failed to place order');
-        }
+        const data = await res.json();
+        if (data.success) { await clearCart(); router.push(`/${userId}/order/success`); }
+        else setError(data.message || 'Failed to place order');
         setSubmitting(false);
       }
-    } catch (err) {
-      setError('Failed to place order. Please try again.');
-      console.error(err);
-      setSubmitting(false);
-    }
-    
+    } catch { setError('Failed to place order. Please try again.'); setSubmitting(false); }
   };
 
+  /* ── Loading ── */
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-2">
-        <Link href={'/'}>
-          <div className="flex items-center gap-2">
-            <div className="w-auto h-14">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 270 54"
-                className="h-full w-auto"
-              >
-                <defs>
-                  <style>
-                    {`
-                .st0 {
-                  font-family: MuktaMahee-Regular, 'Mukta Mahee';
-                  font-size: 49.69px;
-                }
-                `}
-                  </style>
-                </defs>
-                <g>
-                  <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
-                  <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
-                  <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
-                </g>
-                <text className="st0" transform="translate(84.95 40.38)">
-                  <tspan x="0" y="0">Arttag</tspan>
-                </text>
-              </svg>
-            </div>
-          </div>
-        </Link>
-        <Spinner className='text-blue-700 text-5xl' />
-        <p className="text-gray-600 text-sm">Loading payment options...</p>
+      <div className="min-h-screen bg-[#faf9f7] flex flex-col items-center justify-center gap-4"
+        style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap');`}</style>
+        <Link href="/"><span style={{ fontFamily: "'Cormorant Garamond', serif" }}
+          className="text-3xl font-light tracking-[0.24em] text-[#1a1a1a]">ARTTAG</span></Link>
+        <div className="w-6 h-6 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] tracking-[0.18em] uppercase text-[#888]">Loading payment options…</p>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        .py-serif { font-family: 'Cormorant Garamond', serif; }
+        .py-divider { height: 1px; background: linear-gradient(to right, transparent, #e8e4de 30%, #e8e4de 70%, transparent); }
+        .py-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+
+        .py-method {
+          border: 1px solid #e8e4de; border-radius: 2px; padding: 16px 18px;
+          background: #fff; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+          display: flex; align-items: center; gap: 14px;
+        }
+        .py-method.selected { border-color: #1a1a1a; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .py-method:hover:not(.selected) { border-color: #d4cfc8; }
+
+        .py-radio {
+          width: 18px; height: 18px; border: 1.5px solid #d4cfc8; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s;
+        }
+        .py-method.selected .py-radio { border-color: #1a1a1a; }
+        .py-radio-dot { width: 8px; height: 8px; border-radius: 50%; background: #1a1a1a; }
+
+        .py-primary {
+          width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+          background: #1a1a1a; color: #fff; border: none; padding: 14px;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+          border-radius: 2px; cursor: pointer; transition: background 0.2s; font-family: 'DM Sans', sans-serif;
+        }
+        .py-primary:hover:not(:disabled) { background: #333; }
+        .py-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .py-outline {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: transparent; color: #888; border: 1px solid #e8e4de;
+          padding: 9px 16px; font-size: 10px; font-weight: 600;
+          letter-spacing: 0.12em; text-transform: uppercase; border-radius: 2px;
+          cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+        }
+        .py-outline:hover { border-color: #1a1a1a; color: #1a1a1a; }
+      `}</style>
+
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
-        <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-          {error && (
-            <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">{error}</AlertDescription>
-            </Alert>
-          )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-            {/* Payment Methods */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              <Card className="border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-slate-50 to-teal-50 p-4 sm:p-6">
-                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2 sm:gap-3">
-                    <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-                    <span>Payment Method</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment} className="space-y-3">
-                    {paymentMethods.map((method) => (
-                      <div
-                        key={method.id}
-                        className={`relative p-4 sm:p-5 border-2 rounded-xl transition-all duration-200 cursor-pointer ${
-                          selectedPayment === method.id
-                            ? 'border-teal-600 bg-teal-50 shadow-md'
-                            : 'border-slate-200 hover:border-teal-300 bg-white'
-                        }`}
-                        onClick={() => setSelectedPayment(method.id)}
-                      >
-                        <div className="flex items-center gap-4">
-                          <RadioGroupItem value={method.id} id={method.id} className="border-2 flex-shrink-0" />
-                          
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="text-slate-700 flex-shrink-0">
-                              {method.icon}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <Label htmlFor={method.id} className="font-bold text-slate-900 text-base cursor-pointer block">
-                                {method.name}
-                              </Label>
-                              {method.hasOffers && (
-                                <p className="text-sm text-teal-600 font-medium mt-1">{method.offers}</p>
-                              )}
-                            </div>
-                          </div>
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-8 lg:px-12 py-10">
 
-                          <div className="flex-shrink-0">
-                            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <p className="text-[10px] tracking-[0.26em] uppercase text-[#888] mb-1">Step 2 of 2</p>
+          <h1 className="py-serif text-4xl sm:text-5xl font-light text-[#1a1a1a]">Payment</h1>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-[#fdecea] border border-[#f5b7b1] rounded-sm text-sm text-[#c0392b] mb-6">
+            <AlertCircle size={14} className="flex-shrink-0" /> {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+
+          {/* ── LEFT: Payment Methods ── */}
+          <div className="space-y-4">
+            <div className="bg-white border border-[#e8e4de] rounded-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e8e4de]">
+                <CreditCard size={16} className="text-[#888]" />
+                <h2 className="text-base font-semibold text-[#1a1a1a]">Payment Method</h2>
+              </div>
+              <div className="p-5 space-y-3">
+                {paymentMethods.map((m) => {
+                  const Icon = m.icon;
+                  const sel  = selectedPayment === m.id;
+                  return (
+                    <div key={m.id} className={`py-method ${sel ? 'selected' : ''}`}
+                      onClick={() => setSelectedPayment(m.id)}>
+                      <div className="py-radio">{sel && <div className="py-radio-dot" />}</div>
+                      <div className="w-9 h-9 border border-[#e8e4de] rounded-sm bg-[#f5f3ef] flex items-center justify-center flex-shrink-0">
+                        <Icon size={16} className="text-[#888]" />
                       </div>
-                    ))}
-                  </RadioGroup>
-                </CardContent>
-              </Card>
-
-              <Link href={`/${userId}/cart`} className="inline-block">
-                <Button
-                  variant="ghost"
-                  className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 flex items-center gap-2 font-semibold text-sm sm:text-base"
-                >
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  Back to Cart
-                </Button>
-              </Link>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1a1a1a]">{m.name}</p>
+                        <p className="text-xs text-[#aaa] mt-0.5">{m.sub}</p>
+                      </div>
+                      {sel && (
+                        <span className="text-[9px] tracking-[0.1em] uppercase font-semibold px-2 py-0.5 bg-[#1a1a1a] text-white rounded-sm flex-shrink-0">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Order Summary Sidebar */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-8 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-slate-50 to-teal-50">
-                  <CardTitle className="text-xl font-bold flex items-center gap-3">
-                    <ShoppingBag className="w-6 h-6" />
-                    Order Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Package className="w-4 h-4" />
-                        <span>Items ({orderSummary.totalItem})</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">₹{orderSummary.totalamount.toLocaleString()}</span>
-                    </div>
+            <Link href={`/${userId}/cart`} className="inline-block">
+              <button className="py-outline"><ArrowLeft size={12} /> Back to Cart</button>
+            </Link>
+          </div>
 
-                    {orderSummary.couponDiscountPercentage > 0 && (
-                      <>
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-300">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Tag className="w-5 h-5 text-green-600" />
-                            <span className="font-bold text-green-800 text-sm">Coupon Applied</span>
-                          </div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm text-slate-700 font-medium">{orderSummary.couponCode}</span>
-                            <span className="flex items-center gap-1 text-green-700 font-bold">
-                              {orderSummary.couponDiscountPercentage}% OFF
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center pt-2 border-t border-green-200 mt-2">
-                            <span className="text-sm text-slate-600">Discount Amount</span>
-                            <span className="font-bold text-green-600">-₹{couponDiscountAmount.toLocaleString()}</span>
-                          </div>
-                        </div>
+          {/* ── RIGHT: Order Summary ── */}
+          <div className="bg-white border border-[#e8e4de] rounded-sm overflow-hidden lg:sticky lg:top-8">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e8e4de]">
+              <ShoppingBag size={16} className="text-[#888]" />
+              <h2 className="text-base font-semibold text-[#1a1a1a]">Order Summary</h2>
+            </div>
 
-                        <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                          <span className="text-slate-600 font-medium">Subtotal After Discount</span>
-                          <span className="font-bold text-green-600">₹{amountAfterDiscount.toLocaleString()}</span>
-                        </div>
-                      </>
-                    )}
+            <div className="p-5 space-y-4">
+              <div className="py-row">
+                <div className="flex items-center gap-2 text-[#666]"><Package size={13} /><span>Items ({orderSummary.totalItem})</span></div>
+                <span className="font-semibold text-[#1a1a1a]">₹{orderSummary.totalamount.toLocaleString()}</span>
+              </div>
 
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Truck className="w-4 h-4" />
-                        <span>Delivery</span>
-                      </div>
-                      <span className="font-semibold text-slate-900">
-                        {orderSummary.shippingCharge === 0 ? (
-                          <span className="text-green-600 font-bold">FREE</span>
-                        ) : (
-                          `₹${orderSummary.shippingCharge.toLocaleString()}`
-                        )}
-                      </span>
-                    </div>
-
-                    {orderSummary.isAddingAsGift && (
-                      <div className="bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg p-4 border-2 border-pink-300">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Gift className="w-5 h-5 text-pink-600" />
-                            <div>
-                              <span className="font-bold text-pink-800 text-sm block">Gift Packaging</span>
-                              <span className="text-xs text-slate-600">Premium gift wrap included</span>
-                            </div>
-                          </div>
-                          <span className="font-bold text-pink-600">₹{orderSummary.addAsGiftPrice.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-400">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-lg font-bold text-slate-900">Total Amount</span>
-                        <span className="text-2xl font-bold text-blue-900">₹{grandTotal.toLocaleString()}</span>
-                      </div>
-                      {orderSummary.couponDiscountPercentage > 0 && (
-                        <p className="text-xs text-green-700 font-medium mt-1">
-                          You saved ₹{couponDiscountAmount.toLocaleString()} with this coupon!
-                        </p>
-                      )}
-                      <p className="text-xs text-slate-600 mt-1">All taxes included</p>
-                    </div>
+              {orderSummary.couponDiscountPercentage > 0 && (
+                <div className="bg-[#eafaf1] border border-[#a9dfbf] rounded-sm p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Tag size={13} className="text-[#27ae60]" />
+                    <span className="text-[10px] tracking-[0.1em] uppercase font-semibold text-[#1e8449]">Coupon Applied</span>
                   </div>
-
-                  <Button
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed py-6 text-base font-bold"
-                    onClick={handlePlaceOrder}
-                    disabled={!selectedPayment || submitting || (selectedPayment === 'ONLINE' && !razorpayLoaded)}
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        {selectedPayment === 'ONLINE' ? 'Processing...' : 'Placing Order...'}
-                      </>
-                    ) : selectedPayment ? (
-                      <>
-                        {selectedPayment === 'ONLINE' ? 'Pay Now' : 'Place Order'}
-                        <CheckCircle2 className="w-5 h-5 ml-2" />
-                      </>
-                    ) : (
-                      'Select Payment Method'
-                    )}
-                  </Button>
-
-                  <div className="pt-4 border-t border-slate-200 space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      <span>100% Secure payments</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      <span>Easy returns & refunds</span>
-                    </div>
+                  <div className="py-row">
+                    <span className="text-xs text-[#555]">{orderSummary.couponCode}</span>
+                    <span className="text-xs font-semibold text-[#27ae60]">{orderSummary.couponDiscountPercentage}% off</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="py-row mt-1 pt-1 border-t border-[#a9dfbf]">
+                    <span className="text-xs text-[#666]">Discount</span>
+                    <span className="text-xs font-bold text-[#1e8449]">−₹{couponDiscount.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+
+              {orderSummary.couponDiscountPercentage > 0 && (
+                <div className="py-row">
+                  <span className="text-xs text-[#666]">After discount</span>
+                  <span className="font-semibold text-[#27ae60]">₹{afterDiscount.toLocaleString()}</span>
+                </div>
+              )}
+
+              <div className="py-row">
+                <div className="flex items-center gap-2 text-[#666]"><Truck size={13} /><span>Delivery</span></div>
+                {orderSummary.shippingCharge === 0
+                  ? <span className="text-xs font-bold text-[#27ae60]">FREE</span>
+                  : <span className="font-semibold text-[#1a1a1a]">₹{orderSummary.shippingCharge.toLocaleString()}</span>
+                }
+              </div>
+
+              {orderSummary.isAddingAsGift && (
+                <div className="bg-[#fef5e7] border border-[#f5cba7] rounded-sm p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Gift size={13} className="text-[#e67e22]" />
+                      <div>
+                        <p className="text-[10px] uppercase font-semibold text-[#935116] tracking-[0.08em]">Gift Packaging</p>
+                        <p className="text-[10px] text-[#aaa]">Premium gift wrap</p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-[#e67e22]">₹{orderSummary.addAsGiftPrice.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="py-divider" />
+
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] tracking-[0.12em] uppercase text-[#aaa] font-semibold mb-0.5">Total</p>
+                  <p className="text-2xl font-semibold text-[#1a1a1a]">₹{grandTotal.toLocaleString()}</p>
+                  <p className="text-[10px] text-[#aaa] mt-0.5">All taxes included</p>
+                </div>
+                {couponDiscount > 0 && (
+                  <span className="text-[10px] text-[#27ae60] font-semibold tracking-[0.06em]">
+                    Saved ₹{couponDiscount.toLocaleString()}
+                  </span>
+                )}
+              </div>
+
+              <button
+                className="py-primary"
+                onClick={handlePlaceOrder}
+                disabled={!selectedPayment || submitting || (selectedPayment === 'ONLINE' && !razorpayLoaded)}
+              >
+                {submitting
+                  ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />{selectedPayment === 'ONLINE' ? 'Processing…' : 'Placing Order…'}</>
+                  : selectedPayment
+                    ? <><span>{selectedPayment === 'ONLINE' ? 'Pay Now' : 'Place Order'}</span><ArrowRight size={13} /></>
+                    : 'Select Payment Method'
+                }
+              </button>
+
+              <div className="space-y-1.5 pt-1">
+                {['100% Secure payments', 'Easy returns & refunds'].map(t => (
+                  <div key={t} className="flex items-center gap-2">
+                    <CheckCircle2 size={12} className="text-[#27ae60]" />
+                    <span className="text-[11px] text-[#888]">{t}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

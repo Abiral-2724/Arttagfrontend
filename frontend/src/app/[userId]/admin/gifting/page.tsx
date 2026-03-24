@@ -1,471 +1,536 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  ChevronDown, 
-  ChevronLeft, 
-  ChevronRight,
-  MoreVertical,
-  Check,
-  X,
-  Clock,
-  Mail,
-  Building2,
-  Phone,
-  Package,
-  Calendar,
-  RefreshCw
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Search, ChevronLeft, ChevronRight, Check, X, Clock,
+  Mail, Building2, Phone, Package, Calendar, RefreshCw,
+  MoreVertical, Download, ChevronDown, TrendingUp, CheckCircle2, AlertCircle,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
-const CorporateGiftingAdmin = () => {
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [showStatusDropdown, setShowStatusDropdown] = useState(null);
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [isSearching, setIsSearching] = useState(false);
-  
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ;
-  const LIMIT = 10;
+const STATUS_META: Record<string, { label: string; dot: string; text: string; bg: string; border: string }> = {
+  APPROVED: { label: 'Approved', dot: '#27ae60', text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf' },
+  REJECTED: { label: 'Rejected', dot: '#c0392b', text: '#922b21', bg: '#fdecea', border: '#f5b7b1' },
+  PENDING:  { label: 'Pending',  dot: '#e67e22', text: '#935116', bg: '#fef5e7', border: '#f5cba7' },
+};
 
-  // Fetch all requests with filters
+const CorporateGiftingAdmin = () => {
+  const [requests, setRequests]           = useState<any[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [searchTerm, setSearchTerm]       = useState('');
+  const [statusFilter, setStatusFilter]   = useState('ALL');
+  const [currentPage, setCurrentPage]     = useState(1);
+  const [totalPages, setTotalPages]       = useState(1);
+  const [total, setTotal]                 = useState(0);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [expandedMsg, setExpandedMsg]     = useState<string | null>(null);
+  const [sortBy]                          = useState('createdAt');
+  const [sortOrder]                       = useState('desc');
+  const [isSearching, setIsSearching]     = useState(false);
+  const [updatingId, setUpdatingId]       = useState<string | null>(null);
+  const dropdownRef                       = useRef<HTMLDivElement>(null);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const LIMIT    = 10;
+
+  /* ── Fetch ── */
   const fetchRequests = async (page = 1) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: LIMIT.toString(),
-        sortBy,
-        sortOrder,
+        page: page.toString(), limit: LIMIT.toString(), sortBy, sortOrder,
       });
-
-      if (statusFilter !== 'ALL') {
-        params.append('status', statusFilter);
-      }
-
-      const response = await fetch(`${API_BASE}/corporate/get/all/request?${params}`);
-      const data = await response.json();
-
+      if (statusFilter !== 'ALL') params.append('status', statusFilter);
+      const res  = await fetch(`${API_BASE}/corporate/get/all/request?${params}`);
+      const data = await res.json();
       if (data.success) {
         setRequests(data.data);
         setTotal(data.pagination.total);
         setTotalPages(data.pagination.totalPages);
         setCurrentPage(page);
       }
-    } catch (error) {
-      console.error('Error fetching requests:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  // Search by company name or email
   const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      fetchRequests(1);
-      setIsSearching(false);
-      return;
-    }
-
-    setLoading(true);
-    setIsSearching(true);
+    if (!searchTerm.trim()) { fetchRequests(1); setIsSearching(false); return; }
+    setLoading(true); setIsSearching(true);
     try {
-      const response = await fetch(
-        `${API_BASE}/corporate/search?search=${encodeURIComponent(searchTerm.trim())}`
-      );
-      const data = await response.json();
-
+      const res  = await fetch(`${API_BASE}/corporate/search?search=${encodeURIComponent(searchTerm.trim())}`);
+      const data = await res.json();
       if (data.success) {
         setRequests(data.data);
         setTotal(data.count);
-        setTotalPages(1);
-        setCurrentPage(1);
+        setTotalPages(1); setCurrentPage(1);
       }
-    } catch (error) {
-      console.error('Error searching:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  // Update request status
-  const updateStatus = async (id, newStatus) => {
+  const updateStatus = async (id: string, newStatus: string) => {
+    setUpdatingId(id);
     try {
-      const response = await fetch(`${API_BASE}/corporate/update/status`, {
+      const res = await fetch(`${API_BASE}/corporate/update/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
       });
-
-      const data = await response.json();
-
+      const data = await res.json();
       if (data.success) {
-        // Refresh the list
-        if (isSearching) {
-          handleSearch();
-        } else {
-          fetchRequests(currentPage);
-        }
-        setShowStatusDropdown(null);
+        setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
       }
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
+    } catch (e) { console.error(e); }
+    finally { setUpdatingId(null); setActiveDropdown(null); }
   };
 
-  // Export to CSV
   const exportToCSV = () => {
     const headers = ['Name', 'Company', 'Email', 'Contact', 'Quantity', 'Status', 'Date', 'Message'];
-    const csvData = requests.map(req => [
-      req.name,
-      req.companyName,
-      req.companyEmail,
-      req.contact,
-      req.quantity,
-      req.status,
-      new Date(req.createdAt).toLocaleDateString(),
-      req.askAnything || ''
+    const rows = requests.map(r => [
+      r.name, r.companyName, r.companyEmail, r.contact,
+      r.quantity, r.status,
+      new Date(r.createdAt).toLocaleDateString(),
+      r.askAnything || '',
     ]);
-
-    const csv = [
-      headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `corporate-requests-${new Date().toISOString().split('T')[0]}.csv`;
+    const csv = [headers, ...rows].map(row => row.map(c => `"${c}"`).join(',')).join('\n');
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+      download: `corporate-${new Date().toISOString().split('T')[0]}.csv`,
+    });
     a.click();
   };
 
+  useEffect(() => { fetchRequests(1); }, [statusFilter, sortBy, sortOrder]);
+
+  /* close dropdown on outside click */
   useEffect(() => {
-    fetchRequests(1);
-  }, [statusFilter, sortBy, sortOrder]);
+    const h = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'APPROVED':
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'REJECTED':
-        return 'bg-red-100 text-red-700 border-red-200';
-      case 'PENDING':
-      default:
-        return 'bg-amber-100 text-amber-700 border-amber-200';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'APPROVED':
-        return <Check size={14} />;
-      case 'REJECTED':
-        return <X size={14} />;
-      case 'PENDING':
-      default:
-        return <Clock size={14} />;
-    }
-  };
+  /* ── Derived stats ── */
+  const pendingCount  = requests.filter(r => r.status === 'PENDING').length;
+  const approvedCount = requests.filter(r => r.status === 'APPROVED').length;
+  const rejectedCount = requests.filter(r => r.status === 'REJECTED').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <Navbar></Navbar>
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+        .corp-serif { font-family: 'DM Sans', sans-serif; }
+
+        .corp-divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e8e4de 30%, #e8e4de 70%, transparent);
+        }
+
+        /* Inputs */
+        .corp-input {
+          padding: 9px 12px;
+          font-size: 13px;
+          border: 1px solid #e8e4de;
+          border-radius: 2px;
+          background: #fff;
+          color: #1a1a1a;
+          font-family: 'DM Sans', sans-serif;
+          outline: none;
+          transition: border-color 0.2s;
+          width: 100%;
+        }
+        .corp-input:focus { border-color: #1a1a1a; }
+        .corp-input::placeholder { color: #ccc; }
+
+        /* Select */
+        .corp-select {
+          padding: 9px 32px 9px 12px;
+          font-size: 12px;
+          letter-spacing: 0.05em;
+          border: 1px solid #e8e4de;
+          border-radius: 2px;
+          background: #fff;
+          color: #1a1a1a;
+          font-family: 'DM Sans', sans-serif;
+          outline: none;
+          appearance: none;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .corp-select:focus { border-color: #1a1a1a; }
+
+        /* Buttons */
+        .corp-primary-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: #1a1a1a; color: #fff; border: none;
+          padding: 9px 18px; font-size: 10px; font-weight: 600;
+          letter-spacing: 0.14em; text-transform: uppercase;
+          border-radius: 2px; cursor: pointer;
+          transition: background 0.2s;
+          font-family: 'DM Sans', sans-serif;
+          white-space: nowrap;
+        }
+        .corp-primary-btn:hover { background: #333; }
+
+        .corp-outline-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: transparent; color: #888; border: 1px solid #e8e4de;
+          padding: 8px 14px; font-size: 10px; font-weight: 600;
+          letter-spacing: 0.12em; text-transform: uppercase;
+          border-radius: 2px; cursor: pointer;
+          transition: all 0.2s;
+          font-family: 'DM Sans', sans-serif;
+          white-space: nowrap;
+        }
+        .corp-outline-btn:hover { border-color: #1a1a1a; color: #1a1a1a; }
+
+        /* Table */
+        .corp-table { width: 100%; border-collapse: collapse; }
+        .corp-th {
+          font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+          font-weight: 600; color: #aaa; padding: 10px 16px;
+          text-align: left; background: #faf9f7;
+          border-bottom: 1px solid #e8e4de;
+        }
+        .corp-td { padding: 14px 16px; border-bottom: 1px solid #f0ece6; vertical-align: top; }
+        .corp-tr { transition: background 0.15s; }
+        .corp-tr:hover { background: #faf9f7; }
+        .corp-tr:last-child .corp-td { border-bottom: none; }
+
+        /* Status badge */
+        .corp-status {
+          display: inline-flex; align-items: center; gap: 5px;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+          text-transform: uppercase; padding: 3px 10px;
+          border-radius: 2px; border: 1px solid; white-space: nowrap;
+        }
+
+        /* Action dropdown */
+        .corp-dropdown {
+          position: absolute; right: 0; top: 100%; margin-top: 4px;
+          background: #fff; border: 1px solid #e8e4de; border-radius: 2px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          z-index: 50; min-width: 160px; overflow: hidden;
+        }
+        .corp-dropdown-item {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 14px; font-size: 11px; font-weight: 500;
+          letter-spacing: 0.06em; text-transform: uppercase;
+          cursor: pointer; transition: background 0.12s;
+          font-family: 'DM Sans', sans-serif;
+          border: none; background: transparent; width: 100%; text-align: left;
+        }
+
+        /* Stat card */
+        .corp-stat {
+          background: #fff; border: 1px solid #e8e4de; border-radius: 2px;
+          padding: 16px 20px; flex: 1; min-width: 0;
+          transition: box-shadow 0.2s;
+        }
+        .corp-stat:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+        /* Message panel */
+        .corp-msg-panel {
+          background: #faf9f7; border: 1px solid #e8e4de; border-radius: 2px;
+          margin-top: 6px; padding: 10px 12px;
+          font-size: 13px; color: #555; line-height: 1.65;
+        }
+
+        /* Skeleton */
+        .corp-skel {
+          background: linear-gradient(90deg, #f5f3ef 0%, #ece9e3 50%, #f5f3ef 100%);
+          background-size: 200% 100%;
+          animation: corpSkel 1.4s ease-in-out infinite;
+          border-radius: 2px;
+        }
+        @keyframes corpSkel {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        /* Pagination btn */
+        .corp-page-btn {
+          width: 32px; height: 32px; display: flex;
+          align-items: center; justify-content: center;
+          border-radius: 2px; border: 1px solid #e8e4de;
+          background: #fff; font-size: 12px; font-weight: 600;
+          color: #888; cursor: pointer; transition: all 0.15s;
+        }
+        .corp-page-btn:hover:not(:disabled) { border-color: #1a1a1a; color: #1a1a1a; }
+        .corp-page-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+        .corp-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      `}</style>
+
+      <Navbar />
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-10">
+
+        {/* ── Page header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+          <div>
+            <p className="text-[10px] tracking-[0.22em] uppercase text-[#888] mb-1">Admin · Enquiries</p>
+            <h1 className="corp-serif text-4xl font-light text-[#1a1a1a]">Corporate Gifting</h1>
+            <p className="text-sm text-[#888] mt-1.5">Manage and respond to all corporate gifting requests.</p>
+          </div>
+          <button className="corp-outline-btn self-start sm:self-auto" onClick={exportToCSV} title="Export CSV">
+            <Download size={13} /> Export CSV
+          </button>
+        </div>
+
+        <div className="corp-divider mb-8" />
+
+        {/* ── Stat cards ── */}
+        <div className="flex gap-4 mb-8 flex-wrap">
+          {[
+            { label: 'Total',    value: total,         color: '#1a1a1a' },
+            { label: 'Pending',  value: pendingCount,  color: '#e67e22' },
+            { label: 'Approved', value: approvedCount, color: '#27ae60' },
+            { label: 'Rejected', value: rejectedCount, color: '#c0392b' },
+          ].map(s => (
+            <div key={s.label} className="corp-stat">
+              <p className="text-[9px] tracking-[0.18em] uppercase text-[#aaa] font-semibold mb-1">{s.label}</p>
+              <p className="corp-serif text-3xl font-light" style={{ color: s.color }}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Controls bar ── */}
+        <div className="bg-white border border-[#e8e4de] rounded-sm p-4 mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          {/* Search */}
+          <div className="relative flex-1 min-w-0">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaa]" />
+            <input
+              type="text"
+              placeholder="Search by company or email…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              className="corp-input pl-9"
+            />
+          </div>
+
+          {/* Status filter */}
+          <div className="relative flex-shrink-0">
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="corp-select">
+              <option value="ALL">All Status</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+            <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aaa] pointer-events-none" />
+          </div>
+
+          <button onClick={handleSearch} className="corp-primary-btn flex-shrink-0">
+            <Search size={13} /> Search
+          </button>
+          <button
+            onClick={() => { setSearchTerm(''); setIsSearching(false); fetchRequests(1); }}
+            className="corp-outline-btn flex-shrink-0"
+          >
+            <RefreshCw size={13} /> Reset
+          </button>
+        </div>
+
+        {/* ── Table ── */}
+        <div className="bg-white border border-[#e8e4de] rounded-sm overflow-hidden">
+
+          {/* Table header label */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#e8e4de]">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                Corporate Gifting
-              </h1>
-              <p className="text-slate-600 mt-1">
-                Manage and track all corporate gifting requests
+              <h2 className="corp-serif text-xl font-light text-[#1a1a1a]">All Requests</h2>
+              <p className="text-[10px] tracking-[0.1em] uppercase text-[#aaa] mt-0.5">
+                {loading ? 'Loading…' : `${total} request${total !== 1 ? 's' : ''}`}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm text-slate-500">Total Requests</p>
-                <p className="text-2xl font-bold text-slate-900">{total}</p>
-              </div>
-            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Controls Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search by company name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none bg-white px-6 py-3 pr-10 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer font-medium"
-              >
-                <option value="ALL">All Status</option>
-                <option value="PENDING">Pending</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-              </select>
-              <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
-            </div>
-
-            {/* Action Buttons */}
-            <button
-              onClick={handleSearch}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
-            >
-              <Search size={18} />
-              Search
-            </button>
-
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setIsSearching(false);
-                fetchRequests(1);
-              }}
-              className="px-6 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-colors flex items-center gap-2"
-            >
-              <RefreshCw size={18} />
-              Reset
-            </button>
-
-            {/* <button
-              onClick={exportToCSV}
-              disabled={requests.length === 0}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              <Download size={18} />
-              Export
-            </button> */}
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200 border-t-indigo-600"></div>
+            <div className="p-6 space-y-3">
+              {Array(6).fill(0).map((_, i) => (
+                <div key={i} className="corp-skel h-14" style={{ animationDelay: `${i * 80}ms` }} />
+              ))}
             </div>
           ) : requests.length === 0 ? (
-            <div className="text-center py-20">
-              <Package className="mx-auto text-slate-300 mb-4" size={64} />
-              <p className="text-xl font-semibold text-slate-600">No requests found</p>
-              <p className="text-slate-500 mt-2">Try adjusting your filters or search terms</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Package size={40} className="text-[#d4cfc8]" />
+              <p className="corp-serif text-2xl font-light text-[#888]">No requests found</p>
+              <p className="text-xs tracking-[0.08em] text-[#bbb]">Try adjusting your filters or search</p>
             </div>
           ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Contact Info
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Company
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {requests.map((request) => (
-                      <tr key={request.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="space-y-2">
-                            <div className="font-semibold text-slate-900">{request.name}</div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <Mail size={14} />
-                              {request.companyEmail}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <Phone size={14} />
-                              {request.contact}
-                            </div>
-                          </div>
+            <div className="overflow-x-auto">
+              <table className="corp-table">
+                <thead>
+                  <tr>
+                    {['Contact', 'Company', 'Qty', 'Message', 'Status', 'Date', ''].map(h => (
+                      <th key={h} className="corp-th">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((req: any) => {
+                    const sm = STATUS_META[req.status] || STATUS_META.PENDING;
+                    const isUpdating = updatingId === req.id;
+                    return (
+                      <tr key={req.id} className="corp-tr">
+                        {/* Contact */}
+                        <td className="corp-td">
+                          <p className="text-sm font-semibold text-[#1a1a1a] mb-1">{req.name}</p>
+                          <p className="text-xs text-[#888] flex items-center gap-1.5 mb-0.5">
+                            <Mail size={11} className="flex-shrink-0" />{req.companyEmail}
+                          </p>
+                          <p className="text-xs text-[#888] flex items-center gap-1.5">
+                            <Phone size={11} className="flex-shrink-0" />{req.contact}
+                          </p>
                         </td>
-                        <td className="px-6 py-4">
+
+                        {/* Company */}
+                        <td className="corp-td">
                           <div className="flex items-center gap-2">
-                            <Building2 size={18} className="text-slate-400" />
-                            <span className="font-medium text-slate-900">{request.companyName}</span>
+                            <Building2 size={14} className="text-[#aaa] flex-shrink-0" />
+                            <span className="text-sm font-medium text-[#1a1a1a]">{req.companyName}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <Package size={18} className="text-slate-400" />
-                            <span className="font-semibold text-slate-900">{request.quantity}</span>
+
+                        {/* Quantity */}
+                        <td className="corp-td">
+                          <div className="flex items-center gap-1.5">
+                            <Package size={13} className="text-[#aaa]" />
+                            <span className="text-sm font-semibold text-[#1a1a1a]">{req.quantity}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${getStatusColor(request.status)}`}>
-                            {getStatusIcon(request.status)}
-                            {request.status}
+
+                        {/* Message toggle */}
+                        <td className="corp-td max-w-[200px]">
+                          {req.askAnything ? (
+                            <div>
+                              <button
+                                onClick={() => setExpandedMsg(expandedMsg === req.id ? null : req.id)}
+                                className="text-[10px] tracking-[0.1em] uppercase font-semibold text-[#888] flex items-center gap-1 hover:text-[#1a1a1a] transition-colors"
+                              >
+                                {expandedMsg === req.id ? 'Hide' : 'Show'} message
+                                <ChevronDown size={11} className={`transition-transform ${expandedMsg === req.id ? 'rotate-180' : ''}`} />
+                              </button>
+                              {expandedMsg === req.id && (
+                                <div className="corp-msg-panel mt-2">{req.askAnything}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-[#ccc] italic">No message</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="corp-td">
+                          <span
+                            className="corp-status"
+                            style={{ color: sm.text, background: sm.bg, borderColor: sm.border }}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sm.dot }} />
+                            {sm.label}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-sm text-slate-600">
-                            <Calendar size={14} />
-                            {new Date(request.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
+
+                        {/* Date */}
+                        <td className="corp-td">
+                          <div className="flex items-center gap-1.5 text-xs text-[#888]">
+                            <Calendar size={11} />
+                            {new Date(req.createdAt).toLocaleDateString('en-IN', {
+                              year: 'numeric', month: 'short', day: 'numeric',
                             })}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="relative">
+
+                        {/* Actions */}
+                        <td className="corp-td">
+                          <div className="relative" ref={activeDropdown === req.id ? dropdownRef : null}>
                             <button
-                              onClick={() => setShowStatusDropdown(showStatusDropdown === request.id ? null : request.id)}
-                              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                              onClick={() => setActiveDropdown(activeDropdown === req.id ? null : req.id)}
+                              disabled={isUpdating}
+                              className="w-8 h-8 flex items-center justify-center border border-[#e8e4de] bg-[#faf9f7] rounded-sm text-[#888] hover:border-[#1a1a1a] hover:text-[#1a1a1a] hover:bg-white transition-all"
                             >
-                              <MoreVertical size={18} className="text-slate-600" />
+                              {isUpdating
+                                ? <div className="w-3 h-3 border-2 border-[#888] border-t-transparent rounded-full animate-spin" />
+                                : <MoreVertical size={14} />
+                              }
                             </button>
 
-                            {showStatusDropdown === request.id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-10">
-                                <button
-                                  onClick={() => updateStatus(request.id, 'PENDING')}
-                                  className="w-full px-4 py-2 text-left hover:bg-amber-50 flex items-center gap-2 text-amber-700 font-medium"
-                                >
-                                  <Clock size={16} />
-                                  Mark as Pending
-                                </button>
-                                <button
-                                  onClick={() => updateStatus(request.id, 'APPROVED')}
-                                  className="w-full px-4 py-2 text-left hover:bg-emerald-50 flex items-center gap-2 text-emerald-700 font-medium"
-                                >
-                                  <Check size={16} />
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() => updateStatus(request.id, 'REJECTED')}
-                                  className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-700 font-medium"
-                                >
-                                  <X size={16} />
-                                  Reject
-                                </button>
+                            {activeDropdown === req.id && (
+                              <div className="corp-dropdown">
+                                <p className="text-[9px] tracking-[0.15em] uppercase text-[#aaa] px-3 pt-3 pb-1 font-semibold">Set Status</p>
+                                {[
+                                  { status: 'PENDING',  icon: <Clock size={12} />,  label: 'Mark Pending',  col: '#e67e22' },
+                                  { status: 'APPROVED', icon: <Check size={12} />,  label: 'Approve',       col: '#27ae60' },
+                                  { status: 'REJECTED', icon: <X size={12} />,      label: 'Reject',        col: '#c0392b' },
+                                ].map(opt => (
+                                  <button
+                                    key={opt.status}
+                                    onClick={() => updateStatus(req.id, opt.status)}
+                                    className="corp-dropdown-item"
+                                    style={{ color: opt.col }}
+                                  >
+                                    {opt.icon} {opt.label}
+                                  </button>
+                                ))}
                               </div>
                             )}
                           </div>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ── Pagination ── */}
+          {!loading && !isSearching && totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-[#e8e4de] bg-[#faf9f7]">
+              <p className="text-xs text-[#888]">
+                Showing <strong className="text-[#1a1a1a]">{((currentPage - 1) * LIMIT) + 1}</strong> – <strong className="text-[#1a1a1a]">{Math.min(currentPage * LIMIT, total)}</strong> of <strong className="text-[#1a1a1a]">{total}</strong>
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  className="corp-page-btn"
+                  disabled={currentPage === 1}
+                  onClick={() => fetchRequests(currentPage - 1)}
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                {[...Array(Math.min(totalPages, 7))].map((_, i) => {
+                  const page = totalPages <= 7 ? i + 1
+                    : currentPage <= 4 ? i + 1
+                    : currentPage >= totalPages - 3 ? totalPages - 6 + i
+                    : currentPage - 3 + i;
+                  return (
+                    <button
+                      key={page}
+                      className={`corp-page-btn ${currentPage === page ? 'active' : ''}`}
+                      onClick={() => fetchRequests(page)}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+                <button
+                  className="corp-page-btn"
+                  disabled={currentPage === totalPages}
+                  onClick={() => fetchRequests(currentPage + 1)}
+                >
+                  <ChevronRight size={14} />
+                </button>
               </div>
-
-              {/* Pagination */}
-              {!isSearching && totalPages > 1 && (
-                <div className="border-t border-slate-200 px-6 py-4 flex items-center justify-between bg-slate-50">
-                  <div className="text-sm text-slate-600">
-                    Showing {((currentPage - 1) * LIMIT) + 1} to {Math.min(currentPage * LIMIT, total)} of {total} requests
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => fetchRequests(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      <ChevronLeft size={18} />
-                      Previous
-                    </button>
-                    
-                    <div className="flex items-center gap-1">
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => fetchRequests(i + 1)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                            currentPage === i + 1
-                              ? 'bg-indigo-600 text-white'
-                              : 'text-slate-700 hover:bg-white border border-slate-300'
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => fetchRequests(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      Next
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
-
-        {/* Request Details Expandable Section */}
-        {requests.length > 0 && (
-          <div className="mt-6 space-y-4">
-            {requests.map((request) => (
-              request.askAnything && (
-                <details key={`details-${request.id}`} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                  <summary className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors font-semibold text-slate-900 flex items-center justify-between">
-                    <span>Message from {request.name} - {request.companyName}</span>
-                    <ChevronDown size={20} className="text-slate-400" />
-                  </summary>
-                  <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
-                    <p className="text-slate-700 leading-relaxed">{request.askAnything}</p>
-                  </div>
-                </details>
-              )
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Click outside to close dropdown */}
-      {showStatusDropdown && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setShowStatusDropdown(null)}
-        />
+      {/* Close dropdown on outside click */}
+      {activeDropdown && (
+        <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
       )}
     </div>
   );
