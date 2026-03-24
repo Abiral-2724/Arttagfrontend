@@ -1,86 +1,69 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import Navbar from '@/components/Navbar';
-import { Spinner } from '@/components/ui/spinner';
 import FooterPart from '@/components/FooterPart';
 import Link from 'next/link';
+import { Package, AlertCircle, ChevronRight } from 'lucide-react';
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
-  const [subcategories, setSubcategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [categoryName, setCategoryName] = useState("");
-  const [error, setError]: any = useState(null);
   const router = useRouter();
 
-  const handleclicksubcategory = (subcategoryId: string) => {
-    router.push(`${categoryId}/subcategory/${subcategoryId}/${categoryName}`)
-  }
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [categoryName, setCategoryName]   = useState('');
+  const [error, setError]                 = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSubcategories = async () => {
+    if (!categoryId) return;
+    const fetch = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        const response = await axios.get(
+        setLoading(true); setError(null);
+        const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/category/get/${categoryId}/all/subcategory`
         );
-        setCategoryName(response.data.parentCategory.name)
-        if (response.data.success) {
-          setSubcategories(response.data.subcategories);
+        if (res.data.success) {
+          setCategoryName(res.data.parentCategory?.name || '');
+          setSubcategories(res.data.subcategories || []);
         }
-      } catch (error) {
-        console.error('Error fetching subcategories:', error);
-        setError('Failed to load subcategories. Please try again later.');
+      } catch {
+        setError('Failed to load subcategories. Please try again.');
       } finally {
         setLoading(false);
       }
     };
-
-    if (categoryId) {
-      fetchSubcategories();
-    }
+    fetch();
   }, [categoryId]);
 
+  /* ── Loading ── */
   if (loading) {
     return (
-      <div>
-        <Navbar></Navbar>
-       
-      <div style={{ fontFamily: "'DM Sans', sans-serif" }} className="min-h-screen bg-[#faf9f7] flex flex-col items-center justify-center gap-8">
-        <Link href="/">
-          <span style={{ fontFamily: "'Cormorant Garamond', serif" }} className="text-3xl font-light tracking-[0.2em] text-[#1a1a1a]">ARTTAG</span>
-        </Link>
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs tracking-[0.15em] uppercase text-[#888]">Loading Category</p>
+      <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap');`}</style>
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-40 gap-4">
+          <div className="w-6 h-6 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[#888]">Loading…</p>
         </div>
       </div>
-    
-      </div>
-
     );
   }
 
+  /* ── Error ── */
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center py-20">
-          <div className="inline-block p-6 bg-red-100 rounded-full mb-4">
-            <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <p className="text-red-600 text-xl font-semibold">{error}</p>
+      <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-40 gap-4">
+          <AlertCircle size={36} className="text-[#d4cfc8]" />
+          <p className="text-sm text-[#c0392b]">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            className="text-[10px] tracking-[0.14em] uppercase font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] hover:opacity-60 transition-opacity"
           >
-            Retry
+            Try Again
           </button>
         </div>
       </div>
@@ -88,92 +71,149 @@ const CategoryPage = () => {
   }
 
   return (
-    <div>
-      <div className="min-h-screen bg-white">
-        <Navbar></Navbar>
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white">
-          <div className="max-w-[1400px] mx-auto px-6 py-10">
-            <h1 className="text-2xl md:text-3xl font-mono text-center tracking-tight text-gray-800">
-              {categoryName}
-            </h1>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        .cp-serif { font-family: 'Cormorant Garamond', serif; }
+        .cp-divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e8e4de 30%, #e8e4de 70%, transparent);
+        }
 
-        {/* Subcategories Grid */}
-        <div className="max-w-[900px] mx-auto px-6 py-16">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-14">
-            {subcategories.map((subcategory: any) => (
-              <button
-                key={subcategory.id}
-                onClick={() => handleclicksubcategory(subcategory.id)}
-              >
-                <div
-                  className="group cursor-pointer flex flex-col items-center"
-                  onClick={() => console.log('Clicked:', subcategory.name)}
-                >
-                  {/* Circular image background */}
-                  <div className="w-35 h-35 md:w-42 md:h-42 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden shadow-sm transition-transform duration-300 group-hover:scale-105">
-                    <img
-                      src={subcategory.imageUrl}
-                      alt={subcategory.name}
-                      className="w-3/4 h-3/4 object-contain transition-transform duration-300 group-hover:scale-110"
-                      onError={(e: any) => {
-                        e.target.src =
-                          'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80';
-                      }}
-                    />
-                  </div>
+        /* Sub card */
+        .cp-sub-card {
+          display: flex; flex-direction: column; align-items: center;
+          cursor: pointer; padding: 20px 12px;
+          border: 1px solid transparent; border-radius: 2px;
+          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+          text-align: center;
+        }
+        .cp-sub-card:hover {
+          border-color: #e8e4de;
+          background: #fff;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+        }
 
-                  {/* Title */}
-                  <h3 className="mt-4 text-center font-medium text-sm md:text-lg uppercase tracking-wide text-gray-900">
-                    {subcategory.name}
-                  </h3>
-                </div>
-              </button>
+        /* Image ring */
+        .cp-img-ring {
+          width: 100px; height: 100px;
+          border-radius: 50%;
+          border: 1px solid #e8e4de;
+          background: #fff;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          flex-shrink: 0;
+          margin-bottom: 14px;
+        }
+        .cp-sub-card:hover .cp-img-ring {
+          border-color: #1a1a1a;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 640px) {
+          .cp-img-ring { width: 120px; height: 120px; }
+        }
+        @media (min-width: 768px) {
+          .cp-img-ring { width: 140px; height: 140px; }
+        }
 
-            ))}
-          </div>
+        .cp-sub-card img {
+          width: 72%; height: 72%;
+          object-fit: contain;
+          transition: transform 0.35s ease;
+        }
+        .cp-sub-card:hover img { transform: scale(1.08); }
 
-          {/* Empty State */}
-          {subcategories.length === 0 && (
-            <div className="text-center py-20">
-              <div className="inline-block p-6 bg-gray-100 rounded-full mb-4">
-                <svg
-                  className="w-16 h-16 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                  />
-                </svg>
-              </div>
-              <p className="text-gray-600 text-xl font-semibold">
-                No subcategories available
-              </p>
-              <p className="text-gray-500 mt-2">
-                Check back later for new categories
-              </p>
-            </div>
+        /* Sub name */
+        .cp-sub-name {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #555;
+          line-height: 1.4;
+          transition: color 0.15s;
+        }
+        .cp-sub-card:hover .cp-sub-name { color: #1a1a1a; }
+
+        /* Skeleton */
+        .cp-skel {
+          background: linear-gradient(90deg, #f5f3ef 0%, #ece9e3 50%, #f5f3ef 100%);
+          background-size: 200% 100%;
+          animation: cpSkel 1.4s ease-in-out infinite;
+          border-radius: 50%;
+        }
+        @keyframes cpSkel {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+
+      <Navbar />
+
+      {/* ── Header ── */}
+      <div className="border-b border-[#e8e4de] bg-white">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-12 py-10 sm:py-14">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-[10px] tracking-[0.12em] uppercase text-[#aaa] mb-5">
+            <Link href="/" className="hover:text-[#555] transition-colors">Home</Link>
+            <ChevronRight size={11} />
+            <Link href="/allcategory" className="hover:text-[#555] transition-colors">Categories</Link>
+            {categoryName && (
+              <>
+                <ChevronRight size={11} />
+                <span className="text-[#1a1a1a]">{categoryName}</span>
+              </>
+            )}
+          </nav>
+
+          <h1 className="cp-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#1a1a1a]">
+            {categoryName || 'Category'}
+          </h1>
+          {subcategories.length > 0 && (
+            <p className="text-[10px] tracking-[0.14em] uppercase text-[#aaa] mt-3">
+              {subcategories.length} subcategor{subcategories.length !== 1 ? 'ies' : 'y'}
+            </p>
           )}
         </div>
-
-        {/* Decorative line at bottom */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-12"></div>
-
-
       </div>
 
-      <div className="border-t border-gray-300 my-0"></div>
-      <FooterPart></FooterPart>
+      {/* ── Subcategory grid ── */}
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20">
+
+        {subcategories.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Package size={40} className="text-[#d4cfc8]" />
+            <p className="cp-serif text-2xl font-light text-[#888]">No subcategories yet</p>
+            <p className="text-xs text-[#bbb]">Check back soon</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {subcategories.map((sub: any) => (
+              <button
+                key={sub.id}
+                onClick={() => router.push(`${categoryId}/subcategory/${sub.id}/${categoryName}`)}
+                className="cp-sub-card"
+              >
+                <div className="cp-img-ring">
+                  <img
+                    src={sub.imageUrl}
+                    alt={sub.name}
+                    onError={(e: any) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&q=80';
+                    }}
+                  />
+                </div>
+                <span className="cp-sub-name">{sub.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="cp-divider" />
+      <FooterPart />
     </div>
-
-
   );
 };
 

@@ -404,6 +404,11 @@ const ProductDetailPage = () => {
             min-height: 600px;
           }
         }
+
+        @keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
       `}</style>
 
       <Navbar />
@@ -924,40 +929,85 @@ const ProductDetailPage = () => {
         </div>
       )}
 
-      {/* ── Top Categories ──────────────────────────────────────── */}
-      <div className="bg-white py-16 md:py-24">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-16">
-          <div className="mb-10">
-            <p className="text-xs tracking-[0.18em] uppercase text-[#888] mb-2">Browse by</p>
-            <h2 className="serif text-3xl md:text-4xl font-light text-[#1a1a1a]">Top Categories</h2>
-          </div>
+ {/* ── Top Categories ── */}
+<div className="bg-white py-16 md:py-24">
+  <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-16">
 
-          {isLoadingCategories ? (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <Carousel opts={{ align: "start", loop: false }} className="w-full">
-              <CarouselContent className="-ml-4 md:-ml-6">
-                {subcategories.map((category) => (
-                  <CarouselItem key={category.id} className="pl-4 md:pl-6 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
-                    <div onClick={() => handleCategoryClick(category)} className="flex flex-col items-center gap-3 cursor-pointer group">
-                      <div className="w-full aspect-square rounded-full overflow-hidden bg-[#f5f3ef] shadow-sm group-hover:shadow-lg transition-all duration-300 ring-2 ring-transparent group-hover:ring-[#1a1a1a] ring-offset-2">
-                        <img src={category.imageUrl} alt={category.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      </div>
-                      <span className="text-xs font-medium text-center text-[#1a1a1a] tracking-wide group-hover:opacity-60 transition-opacity line-clamp-2">
-                        {category.name}
-                      </span>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-0 border border-[#e8e4de] bg-white hover:bg-[#1a1a1a] hover:text-white shadow-none" />
-              <CarouselNext className="right-0 border border-[#e8e4de] bg-white hover:bg-[#1a1a1a] hover:text-white shadow-none" />
-            </Carousel>
-          )}
-        </div>
+    <div className="mb-10">
+      <p className="text-[10px] tracking-[0.22em] uppercase text-[#888] mb-1.5">Browse by</p>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', serif" }}
+        className="text-3xl md:text-4xl font-light text-[#1a1a1a]">
+        Top Categories
+      </h2>
+    </div>
+
+    <div className="h-px bg-gradient-to-r from-transparent via-[#e8e4de] to-transparent mb-10" />
+
+    {isLoadingCategories ? (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array(4).fill(0).map((_, i) => (
+          <div key={i} className="space-y-3">
+            <div className="aspect-[3/4] rounded-sm"
+              style={{
+                background: 'linear-gradient(90deg,#f5f3ef 0%,#ece9e3 50%,#f5f3ef 100%)',
+                backgroundSize: '200% 100%',
+                animation: `shimmer 1.4s ease-in-out infinite`,
+                animationDelay: `${i * 70}ms`,
+              }} />
+            <div className="h-2.5 w-3/4 rounded" style={{ background: '#f0ece6' }} />
+            <div className="h-2.5 w-1/2 rounded" style={{ background: '#f0ece6' }} />
+          </div>
+        ))}
       </div>
+    ) : (
+      <Carousel opts={{ align: "start", loop: false }} className="w-full">
+        <CarouselContent className="-ml-4">
+          {subcategories.map((category) => (
+            <CarouselItem
+              key={category.id}
+              className="pl-4 basis-1/2 sm:basis-1/3 lg:basis-1/4"
+            >
+              <div
+                onClick={() => handleCategoryClick(category)}
+                className="cursor-pointer group"
+              >
+                {/* Image — identical to similar-card */}
+                <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f3ef] rounded-sm mb-3">
+                  <img
+                    src={category.imageUrl}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
+                    onError={(e: any) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&q=80';
+                    }}
+                  />
+                </div>
+
+                {/* Label */}
+                <div className="space-y-1 px-0.5">
+                  <h3 className="text-sm font-medium text-[#1a1a1a] line-clamp-2 group-hover:opacity-60 transition-opacity">
+                    {category.name}
+                  </h3>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+
+        <CarouselPrevious className="
+          -left-4 w-8 h-8 rounded-sm border border-[#e8e4de]
+          bg-white text-[#888] shadow-none
+          hover:bg-[#1a1a1a] hover:text-white hover:border-[#1a1a1a]
+          transition-all duration-150" />
+        <CarouselNext className="
+          -right-4 w-8 h-8 rounded-sm border border-[#e8e4de]
+          bg-white text-[#888] shadow-none
+          hover:bg-[#1a1a1a] hover:text-white hover:border-[#1a1a1a]
+          transition-all duration-150" />
+      </Carousel>
+    )}
+  </div>
+</div>
 
       <CustomerReviewSection productId={productId} userId={userId} productName={productName} />
 
