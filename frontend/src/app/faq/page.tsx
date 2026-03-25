@@ -1,90 +1,99 @@
 'use client'
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
+const faqs = [
+  { q: 'What products do you offer?',         a: 'Premium skins for laptops, mobiles, and gadgets — crafted with high-quality materials and precision-cut designs.' },
+  { q: 'Are the skins easy to apply?',        a: 'Yes. Every skin comes with bubble-free adhesive and a precision cut, making application straightforward even for first-timers.' },
+  { q: 'Will skins damage my device?',        a: 'No. We use safe, residue-free adhesive that peels off cleanly without leaving marks or damaging your device.' },
+  { q: 'Can I order a custom design?',        a: 'Absolutely. We offer custom design options — reach out to us at support@arttag.in to discuss your requirements.' },
+  { q: 'What is the delivery time?',          a: 'Standard delivery takes 5–7 working days. Actual timelines may vary slightly depending on your location.' },
+  { q: 'What if I receive a damaged product?', a: 'Contact us within 7 days of delivery with your order ID and photo proof. We\'ll arrange a replacement promptly.' },
+];
+
 export default function FAQPage() {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-    const faqs = [
-        {
-            question: "What products do you offer?",
-            answer: "Premium skins for laptops, mobiles, and gadgets."
-        },
-        {
-            question: "Are the skins easy to apply?",
-            answer: "Yes, they come with bubble-free adhesive."
-        },
-        {
-            question: "Will skins damage my device?",
-            answer: "No, they use safe, residue-free adhesive."
-        },
-        {
-            question: "Can I order a custom design?",
-            answer: "Yes."
-        },
-        {
-            question: "Delivery time?",
-            answer: "5–7 working days."
-        },
-        {
-            question: "What if I receive a damaged product?",
-            answer: "Contact us within 7 days with proof."
+  return (
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        .faq-serif { font-family: 'Cormorant Garamond', serif; }
+        .faq-divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e8e4de 30%, #e8e4de 70%, transparent);
         }
-    ];
+        .faq-item {
+          border-bottom: 1px solid #f0ece6;
+          overflow: hidden;
+        }
+        .faq-item:first-child { border-top: 1px solid #f0ece6; }
+        .faq-answer {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.35s ease, opacity 0.25s ease;
+          opacity: 0;
+        }
+        .faq-answer.open {
+          max-height: 400px;
+          opacity: 1;
+        }
+      `}</style>
 
-    const toggleFAQ = (index: number) => {
-        setOpenIndex(openIndex === index ? null : index);
-    };
+      <Navbar />
 
-    return (
-        <div>
-            <Navbar></Navbar>
-            <div className="min-h-screen bg-white">
-                {/* Content Section */}
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
+      <div className="max-w-[760px] mx-auto px-4 sm:px-8 lg:px-12 py-16 sm:py-20">
 
-                    {/* Main Title */}
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 mb-12 sm:mb-16">
-                        FAQs
-                    </h1>
-
-                    {/* FAQ Items */}
-                    <div className="space-y-4 sm:space-y-5">
-                        {faqs.map((faq, index) => (
-                            <div
-                                key={index}
-                                className="border border-slate-200 rounded-lg overflow-hidden hover:border-slate-300 transition-colors"
-                            >
-                                <button
-                                    onClick={() => toggleFAQ(index)}
-                                    className="w-full flex items-center justify-between p-5 sm:p-6 text-left hover:bg-slate-50 transition-colors"
-                                >
-                                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 pr-4">
-                                        {index + 1}. {faq.question}
-                                    </h2>
-                                    <ChevronDown
-                                        className={`w-5 h-5 sm:w-6 sm:h-6 text-slate-600 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''
-                                            }`}
-                                    />
-                                </button>
-
-                                <div
-                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                                        }`}
-                                >
-                                    <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0">
-                                        <p className="text-base sm:text-lg text-slate-700 leading-relaxed border-t border-slate-100 pt-4">
-                                            {faq.answer}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                </div>
-            </div>
+        {/* Header */}
+        <div className="mb-12">
+          <p className="text-[10px] tracking-[0.28em] uppercase text-[#888] mb-3">Help</p>
+          <h1 className="faq-serif text-5xl sm:text-6xl font-light text-[#1a1a1a] mb-4">
+            Frequently Asked<br />Questions
+          </h1>
+          <div className="faq-divider" />
         </div>
-    );
+
+        {/* FAQ list */}
+        <div>
+          {faqs.map((faq, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div key={i} className="faq-item">
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 py-5 text-left group"
+                >
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className="faq-serif text-lg font-light text-[#ccc] w-6 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="text-sm sm:text-base font-medium text-[#1a1a1a] group-hover:text-[#555] transition-colors">
+                      {faq.q}
+                    </span>
+                  </div>
+                  <div className={`w-6 h-6 border border-[#e8e4de] rounded-sm flex items-center justify-center flex-shrink-0 transition-all ${isOpen ? 'bg-[#1a1a1a] border-[#1a1a1a] rotate-45' : 'bg-transparent'}`}>
+                    <Plus size={13} className={isOpen ? 'text-white' : 'text-[#888]'} />
+                  </div>
+                </button>
+                <div className={`faq-answer ${isOpen ? 'open' : ''}`}>
+                  <p className="text-sm text-[#555] leading-relaxed pb-5 pl-10">
+                    {faq.a}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer note */}
+        <div className="faq-divider mt-12 mb-8" />
+        <p className="text-xs text-[#aaa] leading-relaxed">
+          Can't find what you're looking for?{' '}
+          <a href="mailto:support@arttag.in" className="text-[#1a1a1a] border-b border-[#d4cfc8] hover:border-[#1a1a1a] transition-colors">
+            Contact our support team
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  );
 }
