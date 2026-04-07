@@ -1,12 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ShoppingCart, User, Search, ChevronDown, ArrowRight, Play } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -14,192 +8,127 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import Footer from '../components/Footer'
+import Footer from '../components/Footer';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AutoScroll from 'embla-carousel-auto-scroll';
 import TopCategorySlider from '@/components/TopCategory';
 
+/* ─── Data ─── */
 const carouselSlides = [
-  {
-    title: 'POP ADAPTERS',
-    subtitle: "India's 1st Foldable Pin Adapter.",
-    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967739/6_nissci.svg',
-    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-  },
-  {
-    title: 'STACK COLLECTION',
-    subtitle: 'Organize Your Space.',
-    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967756/5_osfu1j.svg',
-    link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
-  },
-  {
-    title: '',
-    subtitle: '',
-    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967712/3_o9ejzq.svg',
-    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-  },
-  {
-    title: 'WATCHBANDS',
-    subtitle: 'Upgrade your watch drobe with our latest styles.',
-    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967536/2_bgjulo.svg',
-    link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-  },
-  {
-    title: 'LOOP POWER BANKS',
-    subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
-    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1769967747/4_lovdny.svg',
-    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-  },
+  { title: 'POP ADAPTERS',     subtitle: "India's 1st Foldable Pin Adapter.", image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561453/3_h5uk21.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
+  { title: 'STACK COLLECTION', subtitle: 'Organize Your Space.',               image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561460/4_yns9bm.png', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632' },
+  { title: '',                 subtitle: '',                                    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561453/3_h5uk21.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
 ];
 
-interface Subcategory {
-  id: string;
-  name: string;
-  imageUrl: string;
-  parentId: string;
-  createdAt: string;
-}
+const shopByCategories = [
+  { title: 'Travel & Lifestyle', image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773209284/IMG_5611_wygjc4.jpg', link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
+  { title: 'Work Bags',          image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773209386/IMG_5609_zjwnfq.jpg', link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629' },
+  { title: 'Backpacks',          image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773209479/IMG_5592_fms8zt.jpg', link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632' },
+];
 
-interface SubcategoriesResponse {
-  success: boolean;
-  message: string;
-  subcategories: Subcategory[];
-}
+const trendingCollections = [
+  { title: 'Laptop Backpacks', description: 'Pack Your Everyday Essentials', image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773209719/IMG_5588_fhj1sk.png', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS' },
+  { title: 'Tote Bags',        description: 'Your Everyday Essential.',      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773209569/IMG_5520_yrowcz.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/BAGS%20&%20WALLETS' },
+  { title: 'Laptop Sleeves',   description: 'Protect Your Essentials',      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_800/v1773148508/IMG_5145_hsiahs.jpg', link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/BAGS%20&%20WALLETS' },
+];
 
+const instagramImages = [
+  'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop',
+];
 
-export default function DailyObjectsReplica() {
-  const [userId, setUserId] = useState("");
-  const [currentSlide, setCurrentSlide] = useState(0);
+interface Subcategory { id: string; name: string; imageUrl: string; parentId: string; createdAt: string; }
+interface SubcategoriesResponse { success: boolean; message: string; subcategories: Subcategory[]; }
+
+export default function HomePage() {
   const [api, setApi]: any = useState(null);
+  const [activeSlide, setActiveSlide] = useState(0);
   const router = useRouter();
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const categorySliderRef : any = useRef<HTMLDivElement>(null);
-  const topCategorySliderRef : any = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const topCategorySliderRef = useRef<HTMLDivElement>(null);
+  const categorySliderRef    = useRef<HTMLDivElement>(null);
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
-    fetchSubcategories();
+    const fetch_ = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const res  = await fetch(`${API_BASE}/category/get/all/subcategory`);
+        const data: SubcategoriesResponse = await res.json();
+        if (data.success) setSubcategories(data.subcategories);
+      } catch { console.error('Failed to fetch subcategories'); }
+      finally { setIsLoadingCategories(false); }
+    };
+    fetch_();
   }, []);
 
-  const fetchSubcategories = async () => {
-    setIsLoadingCategories(true);
-    try {
-      const response = await fetch(`${API_BASE}/category/get/all/subcategory`);
-      const data: SubcategoriesResponse = await response.json();
-      if (data.success) {
-        setSubcategories(data.subcategories);
-      }
-    } catch (error) {
-      console.error('Failed to fetch subcategories:', error);
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
-
-
-  useEffect(() => {
-    const id = localStorage.getItem("arttagUserId");
-    if (id) {
-      setUserId(id);
-    }
-  }, []);
-
-  // Auto-slide effect
   useEffect(() => {
     if (!api) return;
-
-    const interval = setInterval(() => {
-      api.scrollNext();
-    }, 3000);
-
-    return () => clearInterval(interval);
+    api.on('select', () => setActiveSlide(api.selectedScrollSnap()));
+    const t = setInterval(() => api.scrollNext(), 4500);
+    return () => clearInterval(t);
   }, [api]);
 
-  const handleShopNow = (link) => {
-    router.push(link);
+  const handleCategoryClick = (sub: Subcategory) => {
+    window.location.href = `/product/category/${sub.parentId}/subcategory/${sub.id}/${sub.name.toLowerCase().replace(/\s+/g, '-')}`;
   };
 
-  const scrollSlider = (direction: 'left' | 'right', sliderRef: React.RefObject<HTMLDivElement>) => {
-    if (sliderRef.current) {
-      const scrollAmount = 300;
-      const newScrollLeft = direction === 'left'
-        ? sliderRef.current.scrollLeft - scrollAmount
-        : sliderRef.current.scrollLeft + scrollAmount;
-
-      sliderRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth'
-      });
-    }
+  const scrollSlider = (dir: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) ref.current.scrollTo({ left: ref.current.scrollLeft + (dir === 'left' ? -280 : 280), behavior: 'smooth' });
   };
-
-  const handleCategoryClick = (subcategory: Subcategory) => {
-    const categoryId = subcategory.parentId;
-    const subcategoryId = subcategory.id;
-    const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
-
-    window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
-  };
-
-  const shopByCategories = [
-    {
-      title: 'Travel and lifestyle',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209284/IMG_5611_wygjc4.jpg',
-      link: 'product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13'
-    },
-    {
-      title: 'Work bags',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209386/IMG_5609_zjwnfq.jpg',
-      link: 'product/category/d7928347-cf87-4f84-ac22-71614aa6e629'
-    },
-    {
-      title: 'Backpacks',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209479/IMG_5592_fms8zt.jpg',
-      link: 'product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632'
-    }
-  ];
-
-  const trendingCollections = [
-    {
-      title: 'Laptop backpacks',
-      description: 'Pack Your Everyday Essentials',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209719/IMG_5588_fhj1sk.png',
-      link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS'
-    },
-    {
-      title: 'Tote Bags',
-      description: 'Your Everyday Essential.',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773209569/IMG_5520_yrowcz.png',
-      link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/BAGS%20&%20WALLETS'
-    },
-    {
-      title: 'Laptop sleeves',
-      description: 'Protect Your Essentials',
-      image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1773148508/IMG_5145_hsiahs.jpg',
-      link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/BAGS%20&%20WALLETS'
-    }
-  ];
-
 
   return (
-    <div className="bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="bg-[#faf9f7] min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        .hp-serif   { font-family:'Cormorant Garamond',serif; }
+        .hp-divider { height:1px; background:linear-gradient(to right,transparent,#e8e4de 30%,#e8e4de 70%,transparent); }
+        .hp-eyebrow { font-size:10px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#888; }
 
-<style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+        /* Cards */
+        .hp-card { position:relative; overflow:hidden; border-radius:2px; }
+        .hp-card-img { transition:transform 0.65s cubic-bezier(0.4,0,0.2,1); }
+        .hp-card:hover .hp-card-img { transform:scale(1.05); }
+        .hp-arrow-box { transition:all 0.2s ease; }
+        .hp-card:hover .hp-arrow-box { background:#fff; border-color:#fff; }
+        .hp-card:hover .hp-arrow-box svg { color:#1a1a1a; }
 
-        .serif { font-family: 'Cormorant Garamond', serif; }
-        .sans { font-family: 'DM Sans', sans-serif; }
-`}</style>
-      {/* Header */}
-      <Navbar page={"Home"} />
+        /* Hero */
+        .hp-hero-img { transition:transform 8s ease; }
 
-      {/* Hero Carousel */}
-      {/* FIX 1: Smoother height progression — added md:h-[85vh] step so tablet doesn't jump straight to full-screen */}
+        /* Insta */
+        .hp-insta { position:relative; overflow:hidden; border-radius:2px; }
+        .hp-insta img { transition:transform 0.55s ease; }
+        .hp-insta:hover img { transform:scale(1.07); }
+        .hp-insta-overlay { position:absolute; inset:0; background:rgba(0,0,0,0); transition:background 0.3s; display:flex; align-items:center; justify-content:center; }
+        .hp-insta:hover .hp-insta-overlay { background:rgba(0,0,0,0.28); }
+        .hp-insta-icon { opacity:0; transition:opacity 0.3s; }
+        .hp-insta:hover .hp-insta-icon { opacity:1; }
+
+        /* Skeleton */
+        .hp-skel {
+          background:linear-gradient(90deg,#f5f3ef 0%,#ece9e3 50%,#f5f3ef 100%);
+          background-size:200% 100%;
+          animation:hpSkel 1.4s ease-in-out infinite;
+          border-radius:2px;
+        }
+        @keyframes hpSkel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .scrollbar-hide::-webkit-scrollbar { display:none; }
+        .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none; }
+      `}</style>
+
+      <Navbar page="Home" />
+
+      {/* ══════════════════════════ HERO ══════════════════════════ */}
       <Carousel className="w-full" opts={{ loop: true }} setApi={setApi}>
         <CarouselContent>
           {carouselSlides.map((slide, index) => (
@@ -260,87 +189,59 @@ export default function DailyObjectsReplica() {
         </CarouselNext>
       </Carousel>
 
-      {/* Shop by Category Section */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        {/* FIX 5: Heading — added md size step */}
-        <h2 className="text-xl sm:text-2xl md:text-[28px] ml-2 sm:ml-3 md:ml-5 text-black font-bold mb-4 sm:mb-5 tracking-tight uppercase">
-          SHOP BY CATEGORY
-        </h2>
+      {/* ══════════════════════════ SHOP BY CATEGORY ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20">
+        <p className="hp-eyebrow mb-1.5">Collections</p>
+        <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-8">Shop by Category</h2>
+        <div className="hp-divider mb-10" />
 
-        {/* FIX 6: Mobile slider now only shows on true mobile (below md/768px).
-            Tablets (md+) get the 3-col grid which is far better for that screen size. */}
-        <div className="md:hidden relative group">
-          <button
-            onClick={() => scrollSlider('left', categorySliderRef)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-700" />
-          </button>
-
-          <div
-            ref={categorySliderRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory"
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            {shopByCategories.map((category, index) => (
-              <Link key={index} href={category.link} className="flex-shrink-0 w-[72vw] snap-center">
-                <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <img
-                      src={category.image}
-                      alt={category.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-
-                    <div className="absolute bottom-6 left-6 right-20 flex items-center justify-between">
-                      <h3 className="text-white text-lg font-black uppercase tracking-tight">
-                        {category.title}
-                      </h3>
-                      <button className="absolute -right-14 rounded-full border-1 border-white w-10 h-10 flex items-center justify-center transition-transform group-hover/item:scale-110 flex-shrink-0">
-                        <ArrowRight className='text-white w-4 h-4' />
-                      </button>
+        {/* Mobile slider */}
+        <div className="md:hidden relative group/slider">
+          <div ref={categorySliderRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory">
+            {shopByCategories.map((cat, i) => (
+              <Link key={i} href={cat.link} className="flex-shrink-0 w-[76vw] snap-center">
+                <div className="hp-card aspect-[3/4]">
+                  <img src={cat.image} alt={cat.title} className="hp-card-img w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+                    <h3 className="hp-serif text-2xl font-light text-white">{cat.title}</h3>
+                    <div className="hp-arrow-box w-9 h-9 border border-white/50 rounded-sm flex items-center justify-center">
+                      <ArrowRight size={14} className="text-white" />
                     </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
-
-          <button
-            onClick={() => scrollSlider('right', categorySliderRef)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-700" />
-          </button>
         </div>
 
-        {/* FIX 7: Grid now shows from md (768px) upward — tablet gets a proper 3-col grid */}
-        <div className="hidden md:grid md:grid-cols-3 gap-6 max-w-8xl mx-auto">
-          {shopByCategories.map((category, index) => (
-            <Link key={index} href={category.link}>
-              <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-                <div className="aspect-[3/4] relative overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 sm:bottom-4 md:bottom-5 left-3 sm:left-4 md:left-5 right-3 sm:right-4 md:right-5">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white text-base sm:text-lg md:text-xl font-black uppercase tracking-tight pr-3">
-                        {category.title}
-                      </h3>
-                      <button className="rounded-full border border-white w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                        <ArrowRight className="text-white w-3 h-3 sm:w-4 sm:h-4" />
-                      </button>
-                    </div>
+        {/* Desktop grid */}
+        <div className="hidden md:grid md:grid-cols-3 gap-5">
+          {shopByCategories.map((cat, i) => (
+            <Link key={i} href={cat.link}>
+              <div className="hp-card aspect-[3/4]">
+                {/*
+                  Cloudinary transformation in the URL:
+                  f_auto → WebP/AVIF depending on browser
+                  q_auto → auto quality (usually 70-80)
+                  w_800  → resize to 800px (enough for a 3-col grid card)
+                  This alone cuts image size by 60-80%
+                */}
+                <img
+                  src={cat.image}
+                  alt={cat.title}
+                  className="hp-card-img w-full h-full object-cover"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+                  <div>
+                    <p className="text-white/55 text-[10px] tracking-[0.16em] uppercase mb-1">Explore</p>
+                    <h3 className="hp-serif text-2xl sm:text-3xl font-light text-white">{cat.title}</h3>
+                  </div>
+                  <div className="hp-arrow-box w-10 h-10 border border-white/50 rounded-sm flex items-center justify-center flex-shrink-0">
+                    <ArrowRight size={15} className="text-white" />
                   </div>
                 </div>
               </div>
@@ -349,17 +250,19 @@ export default function DailyObjectsReplica() {
         </div>
       </section>
 
-      {/* Promotional Banner */}
-      <section className="max-w-[1440px] mx-auto px-0 pb-3 sm:pb-5">
+      {/* ══════════════════════════ PROMO BANNER ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-0 mb-2">
         <div className="relative overflow-hidden">
           <img
-            src="https://images.dailyobjects.com/marche/assets/images/other-2/brighten-Desk-Landing-Page-Banner.jpg?tr=cm-pad_crop,v-3"
-            alt="Brighten Your Everyday"
+            src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1775561347/1_tglkqn.png"
+            alt="Arttag Collection"
             className="w-full h-auto object-cover"
+            loading="lazy"
           />
         </div>
       </section>
 
+      {/* ══════════════════════════ TOP CATEGORIES ══════════════════════════ */}
       <TopCategorySlider
         isLoadingCategories={isLoadingCategories}
         topCategorySliderRef={topCategorySliderRef}
@@ -367,73 +270,47 @@ export default function DailyObjectsReplica() {
         handleCategoryClick={handleCategoryClick}
       />
 
-      {/* Trending Collections Section */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <div className="flex justify-between items-center mb-6 sm:mb-8 ml-2 sm:ml-3 md:ml-5">
-          <h2 className="text-xl sm:text-2xl md:text-[26px] font-sans ml-2 sm:ml-3 md:ml-5 text-black font-bold tracking-tight uppercase">
-            TRENDING COLLECTIONS
-          </h2>
-        </div>
+      {/* ══════════════════════════ TRENDING COLLECTIONS ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20">
+        <p className="hp-eyebrow mb-1.5">What's Hot</p>
+        <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-8">Trending Collections</h2>
+        <div className="hp-divider mb-10" />
 
-        {/* FIX 8: Mobile slider — only shows below md (768px) */}
-        <div className="md:hidden relative">
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
-            {trendingCollections.map((collection, index) => (
-              <Link key={index} href={collection.link} className="flex-shrink-0 w-[72vw] snap-center">
-                <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4]">
-                  <img
-                    src={collection.image}
-                    alt={collection.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-
-                  <div className="absolute bottom-8 left-6 right-6">
-                    <h3 className="text-white text-2xl font-black uppercase tracking-tight mb-3">
-                      {collection.title}
-                    </h3>
-                    <p className="text-white/90 text-sm font-light mb-5 leading-relaxed">
-                      {collection.description}
-                    </p>
-                    <button className="flex items-center gap-2 text-white font-semibold text-sm group/btn hover:gap-3 transition-all">
-                      Shop now!
-                      <div className="rounded-full border-2 border-white w-8 h-8 flex items-center justify-center group-hover/btn:bg-white transition-all">
-                        <ArrowRight className="w-4 h-4 group-hover/btn:text-black transition-colors" />
-                      </div>
-                    </button>
+        {/* Mobile */}
+        <div className="md:hidden flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory">
+          {trendingCollections.map((col, i) => (
+            <Link key={i} href={col.link} className="flex-shrink-0 w-[76vw] snap-center">
+              <div className="hp-card aspect-[3/4]">
+                <img src={col.image} alt={col.title} className="hp-card-img w-full h-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                <div className="absolute bottom-7 left-6 right-6">
+                  <p className="text-white/55 text-[10px] tracking-[0.14em] uppercase mb-1.5">{col.description}</p>
+                  <h3 className="hp-serif text-2xl font-light text-white mb-4">{col.title}</h3>
+                  <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] uppercase font-semibold text-white">
+                    Shop Now <ArrowRight size={11} />
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            </Link>
+          ))}
         </div>
 
-        {/* FIX 9: Desktop grid — now starts at md (768px) and uses a proper gap instead of per-item ml-6 */}
-        <div className="hidden md:grid md:grid-cols-3 gap-6">
-          {trendingCollections.map((collection, index) => (
-            <Link key={index} href={collection.link}>
-              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/4]">
-                <img
-                  src={collection.image}
-                  alt={collection.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-
-                <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-6 sm:left-8 right-6 sm:right-8">
-                  <h3 className="text-white text-xl sm:text-2xl md:text-[28px] font-black uppercase tracking-tight mb-2 sm:mb-3">
-                    {collection.title}
-                  </h3>
-                  <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-4 sm:mb-6 leading-relaxed">
-                    {collection.description}
-                  </p>
-
-                  <button className="flex items-center gap-2 text-white font-light text-sm sm:text-base group/btn hover:gap-3 transition-all">
-                    Shop now!
-                    <div className="rounded-full border-1 border-white w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center group-hover/btn:bg-white transition-all">
-                      <ArrowRight className="w-3 h-4 sm:w-5 sm:h-5 group-hover/btn:text-black transition-colors" />
+        {/* Desktop */}
+        <div className="hidden md:grid md:grid-cols-3 gap-5">
+          {trendingCollections.map((col, i) => (
+            <Link key={i} href={col.link}>
+              <div className="hp-card aspect-[3/4] group">
+                <img src={col.image} alt={col.title} className="hp-card-img w-full h-full object-cover" loading="lazy" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                <div className="absolute bottom-8 left-8 right-8">
+                  <p className="text-white/50 text-[10px] tracking-[0.16em] uppercase mb-1.5">{col.description}</p>
+                  <h3 className="hp-serif text-3xl font-light text-white mb-5">{col.title}</h3>
+                  <div className="flex items-center gap-2.5 text-[10px] tracking-[0.16em] uppercase font-semibold text-white">
+                    <span className="group-hover:opacity-70 transition-opacity">Shop Now</span>
+                    <div className="hp-arrow-box w-7 h-7 border border-white/50 rounded-sm flex items-center justify-center">
+                      <ArrowRight size={11} className="text-white" />
                     </div>
-                  </button>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -441,127 +318,80 @@ export default function DailyObjectsReplica() {
         </div>
       </section>
 
-      {/* ─── Corporate Gifting Section ─── */}
-      <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
-        <div className="relative overflow-hidden group cursor-pointer">
-
-          <div className="relative w-full aspect-[16/9] sm:aspect-[16/7] md:aspect-[13/6]">
-            <img
-              src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
-              alt="Corporate Gifting"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-
-            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 md:bottom-12 md:left-12 lg:bottom-16 lg:left-16 max-w-[85%] sm:max-w-[60%] md:max-w-[50%]">
-              {/* FIX 10: Corporate heading — sm:text-2xl added for a proper tablet intermediate size */}
-              <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-[42px] font-black text-white uppercase tracking-tight leading-tight mb-1.5 sm:mb-2 md:mb-3 drop-shadow-lg">
-                CORPORATE GIFTING
-              </h2>
-              <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-3 sm:mb-4 md:mb-5 drop-shadow-md leading-relaxed">
-                It is the season to celebrate and nurture everlasting bonds. Build lasting relationships with our bespoke corporate solutions.
-              </p>
-              <button
-                className="bg-white text-black px-3 sm:px-5 md:px-7 py-2 sm:py-2.5 md:py-3 text-[10px] sm:text-xs md:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
-                onClick={() => router.push('/corporateGifting')}
-              >
-                ENQUIRE NOW
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </section>
-      {/* ─── End Corporate Gifting Section ─── */}
-
-      {/* ─── Step Inside DailyObjects Section ─── */}
-      <section className="max-w-[1440px] mx-auto px-0 py-3 sm:py-5">
-        <div className="relative overflow-hidden group cursor-pointer">
-
-          {/* FIX 11: Desktop image now shows from md (was sm) — tablet gets the proper landscape crop */}
+      {/* ══════════════════════════ CORPORATE GIFTING ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-0 py-2">
+        <div className="hp-card relative w-full cursor-pointer" style={{ aspectRatio: '16/7' }}
+          onClick={() => router.push('/corporateGifting')}>
           <img
-            src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
-            alt="Step Inside Arttag Store"
-            className="hidden md:block w-full object-cover"
-            style={{ aspectRatio: '16/7', objectPosition: 'center' }}
+            src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
+            alt="Corporate Gifting"
+            className="hp-card-img w-full h-full object-cover"
+            loading="lazy"
           />
-
-          {/* Mobile image — shows below md (768px) */}
-          <img
-            src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1772104937/IMG_5132_g3drr6.png"
-            alt="Step Inside Arttag Store"
-            className="block md:hidden w-full object-cover"
-            style={{ aspectRatio: '4/5' }}
-          />
-
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/30" />
-
-          {/* FIX 12: Content text — added md sizes for tablet */}
-          <div className="absolute bottom-6 left-4 sm:bottom-10 sm:left-8 md:bottom-20 md:left-14">
-            <h2 className="text-lg sm:text-2xl md:text-[36px] font-black text-white uppercase tracking-tight leading-tight mb-2 sm:mb-3 drop-shadow-lg">
-              STEP INSIDE<br />Arttag
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-end px-6 sm:px-12 lg:px-20 pb-8 sm:pb-12 lg:pb-16 max-w-2xl">
+            <p className="hp-eyebrow text-white/55 mb-2">For Business</p>
+            <h2 className="hp-serif text-3xl sm:text-4xl md:text-5xl font-light text-white leading-tight mb-3">
+              Corporate Gifting
             </h2>
-            <p className="text-white/90 text-xs sm:text-sm md:text-base lg:text-lg font-light mb-3 sm:mb-5 drop-shadow-md">
-              Experience our products in real life
+            <p className="text-white/70 text-sm font-light mb-6 leading-relaxed hidden sm:block max-w-sm">
+              Build lasting relationships with bespoke corporate gifting solutions.
             </p>
-            <button className="bg-white text-black px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg">
-              VISIT US!
+            <button className="self-start inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-6 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
+              Enquire Now <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
       </section>
-      {/* ─── End Step Inside Section ─── */}
 
-      {/* ─── Everyday Inspiration Section ─── */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <div className="text-center mb-6 sm:mb-8 md:mb-10">
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-black text-black uppercase tracking-tight">
-            EVERYDAY INSPIRATION
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-light">
-            Follow @arttag.india to join the #arttagcommunity
+      {/* ══════════════════════════ STEP INSIDE ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-0 py-2">
+        <div className="hp-card relative w-full cursor-pointer" style={{ aspectRatio: '16/7' }}
+          onClick={() => router.push('/findstore')}>
+          <img
+            src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772104937/IMG_5132_g3drr6.png"
+            alt="Visit Arttag Store"
+            className="hp-card-img w-full h-full object-cover"
+            style={{ objectPosition: 'center' }}
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute bottom-8 sm:bottom-14 lg:bottom-20 left-6 sm:left-12 lg:left-20">
+            <p className="hp-eyebrow text-white/55 mb-2">Our Stores</p>
+            <h2 className="hp-serif text-3xl sm:text-4xl md:text-5xl font-light text-white leading-tight mb-5">
+              Step Inside<br />Arttag
+            </h2>
+            <button className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-6 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
+              Find a Store <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════ INSTAGRAM ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20">
+        <div className="text-center mb-8">
+          <p className="hp-eyebrow mb-1.5">Community</p>
+          <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-2">Everyday Inspiration</h2>
+          <p className="text-[#888] text-xs tracking-[0.1em]">
+            Follow <span className="text-[#1a1a1a]">@arttag.india</span> · #arttagcommunity
           </p>
         </div>
+        <div className="hp-divider mb-8" />
 
-        {/* FIX 13: Carousel basis — added sm:basis-[32%] to smooth the jump from 42% to 28% */}
         <Carousel
           opts={{ align: 'start', loop: true, dragFree: true }}
-          plugins={[
-            AutoScroll({
-              speed: 1.5,
-              stopOnInteraction: false,
-              stopOnMouseEnter: true,
-            }),
-          ]}
+          plugins={[AutoScroll({ speed: 1.2, stopOnInteraction: false, stopOnMouseEnter: true })]}
           className="w-full"
         >
           <CarouselContent className="-ml-2">
-            {[
-              { image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&h=500&fit=crop', alt: 'Style 1' },
-              { image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop', alt: 'Style 2' },
-              { image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop', alt: 'Style 3' },
-              { image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop', alt: 'Style 4' },
-              { image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop', alt: 'Style 5' },
-              { image: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=500&fit=crop', alt: 'Style 6' },
-              { image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=500&fit=crop', alt: 'Style 7' },
-              { image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop', alt: 'Style 8' },
-            ].map((item, index) => (
-              <CarouselItem key={index} className="pl-2 basis-[42%] sm:basis-[32%] md:basis-[22%] lg:basis-[18%]">
-                <div className="relative overflow-hidden group cursor-pointer aspect-[3/5]">
-                  <img
-                    src={item.image}
-                    alt={item.alt}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            {instagramImages.map((img, i) => (
+              <CarouselItem key={i} className="pl-2 basis-[44%] sm:basis-[30%] md:basis-[20%] lg:basis-[16%]">
+                <div className="hp-insta aspect-[3/5]">
+                  <img src={img} alt={`Arttag community ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                  <div className="hp-insta-overlay">
+                    <svg className="hp-insta-icon w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                     </svg>
                   </div>
                 </div>
@@ -570,37 +400,29 @@ export default function DailyObjectsReplica() {
           </CarouselContent>
         </Carousel>
       </section>
-      {/* ─── End Everyday Inspiration Section ─── */}
 
-      {/* ─── HOW TO PASTE LAPTOP SKINS — Video Section ─── */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <div className="ml-2 sm:ml-3 md:ml-5 mb-6 sm:mb-8 md:mb-10">
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-sans text-black font-bold tracking-tight uppercase">
-            HOW TO PASTE LAPTOP SKINS ?
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base mt-1.5 font-light">
-            Follow our step by step guide for a perfect, bubble free finish every time.
-          </p>
-        </div>
-
-        <div className="ml-2 sm:ml-3 md:ml-5 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-black">
+      {/* ══════════════════════════ VIDEO ══════════════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20 bg-white">
+        <p className="hp-eyebrow mb-1.5">Guide</p>
+        <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-1">How to Paste Laptop Skins</h2>
+        <p className="text-[#888] text-sm mb-8">Step-by-step guide for a perfect, bubble-free finish every time.</p>
+        <div className="hp-divider mb-8" />
+        <div className="rounded-sm overflow-hidden bg-black border border-[#e8e4de]">
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute inset-0 w-full h-full"
               src="https://www.youtube.com/embed/CVM8Ly19iyg?rel=0&modestbranding=1&color=white"
               title="How to Paste Laptop Skins?"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              loading="lazy"
             />
           </div>
         </div>
       </section>
-      {/* ─── End Video Section ─── */}
 
-      <section>
-        <Footer />
-      </section>
+      <Footer />
     </div>
   );
 }
