@@ -17,9 +17,10 @@ import TopCategorySlider from '@/components/TopCategory';
 
 /* ─── Data ─── */
 const carouselSlides = [
-  { title: 'POP ADAPTERS',     subtitle: "India's 1st Foldable Pin Adapter.", image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561453/3_h5uk21.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
-  { title: 'STACK COLLECTION', subtitle: 'Organize Your Space.',               image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561460/4_yns9bm.png', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632' },
+  { title: '',     subtitle: "", image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561461/2_ja806e.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
+  { title: '', subtitle: '',               image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561460/4_yns9bm.png', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632' },
   { title: '',                 subtitle: '',                                    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561453/3_h5uk21.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
+  { title: '',                 subtitle: '',                                    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1775561347/1_tglkqn.png', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13' },
 ];
 
 const shopByCategories = [
@@ -82,10 +83,6 @@ export default function HomePage() {
     window.location.href = `/product/category/${sub.parentId}/subcategory/${sub.id}/${sub.name.toLowerCase().replace(/\s+/g, '-')}`;
   };
 
-  const scrollSlider = (dir: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) ref.current.scrollTo({ left: ref.current.scrollLeft + (dir === 'left' ? -280 : 280), behavior: 'smooth' });
-  };
-
   return (
     <div className="bg-[#faf9f7] min-h-screen" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
@@ -94,6 +91,64 @@ export default function HomePage() {
         .hp-divider { height:1px; background:linear-gradient(to right,transparent,#e8e4de 30%,#e8e4de 70%,transparent); }
         .hp-eyebrow { font-size:10px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:#888; }
 
+        /*
+         * hp-banner — the ONE pattern used for hero slides, corporate gifting,
+         * and step-inside. The image sets its OWN height via h-auto so nothing
+         * ever gets cropped. The text is absolutely positioned INSIDE via inset:0.
+         */
+        .hp-banner {
+          position: relative;
+          width: 100%;
+          /* overflow hidden so nothing bleeds out */
+          overflow: hidden;
+          display: block;
+        }
+        .hp-banner-img {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+        /* Mobile: cap at 75vw so portrait images don't dominate */
+        @media (max-width: 640px) {
+          .hp-banner-img {
+            max-height: 75vw;
+            object-fit: cover;
+            object-position: center center;
+          }
+        }
+        /* Tablet */
+        @media (min-width: 641px) and (max-width: 1023px) {
+          .hp-banner-img {
+            max-height: 60vw;
+            object-fit: cover;
+            object-position: center center;
+          }
+        }
+        /* Desktop: hero 82vh, section banners (corporate / store) 52vh */
+        @media (min-width: 1024px) {
+          .hp-banner-hero .hp-banner-img {
+            max-height: 82vh;
+            object-fit: cover;
+            object-position: center center;
+          }
+          .hp-banner-section .hp-banner-img {
+            max-height: 74vh;
+            object-fit: cover;
+            object-position: center center;
+          }
+        }
+        /* Text overlay — always inside the image via position:absolute + inset:0 */
+        .hp-banner-body {
+          position: absolute;
+          /* inset 0 = fills entire image area exactly */
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          /* responsive padding using clamp so it scales on every screen */
+          padding: clamp(16px, 4vw, 60px);
+        }
+
         /* Cards */
         .hp-card { position:relative; overflow:hidden; border-radius:2px; }
         .hp-card-img { transition:transform 0.65s cubic-bezier(0.4,0,0.2,1); }
@@ -101,9 +156,6 @@ export default function HomePage() {
         .hp-arrow-box { transition:all 0.2s ease; }
         .hp-card:hover .hp-arrow-box { background:#fff; border-color:#fff; }
         .hp-card:hover .hp-arrow-box svg { color:#1a1a1a; }
-
-        /* Hero */
-        .hp-hero-img { transition:transform 8s ease; }
 
         /* Insta */
         .hp-insta { position:relative; overflow:hidden; border-radius:2px; }
@@ -128,50 +180,107 @@ export default function HomePage() {
 
       <Navbar page="Home" />
 
-      {/* ══════════════════════════ HERO ══════════════════════════ */}
+      {/* ══════════════════════════ HERO CAROUSEL ══════════════════════════
+          Styled identically to Corporate Gifting / Step Inside:
+          — full-width image, h-auto (zero crop at any screen size)
+          — dark gradient from bottom
+          — text + CTA pinned to bottom-left via hp-banner-body
+          — nav dots centred at image bottom via absolute positioning
+      ══════════════════════════════════════════════════════════════════════ */}
       <Carousel className="w-full" opts={{ loop: true }} setApi={setApi}>
         <CarouselContent>
           {carouselSlides.map((slide, index) => (
             <CarouselItem key={index}>
-              <div className="relative w-full h-[55vh] sm:h-[65vh] md:h-[85vh] lg:h-[calc(100vh-80px)]">
-                {/* Background Image */}
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="absolute inset-0 w-full h-full object-cover object-center"
+              {/* hp-banner + hp-banner-hero class for the desktop max-height cap */}
+              <div className="hp-banner hp-banner-hero">
+
+                {/* Serve correct Cloudinary size per breakpoint — NO crop transforms */}
+                <picture>
+                  <source
+                    media="(max-width: 640px)"
+                    srcSet={slide.image.replace('/upload/', '/upload/f_auto,q_auto,w_750/')}
+                  />
+                  <source
+                    media="(max-width: 1024px)"
+                    srcSet={slide.image.replace('/upload/', '/upload/f_auto,q_auto,w_1200/')}
+                  />
+                  <img
+                    src={slide.image.replace('/upload/', '/upload/f_auto,q_auto,w_1800/')}
+                    alt={slide.title || 'Arttag Collection'}
+                    className="hp-banner-img"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                </picture>
+
+                {/* bottom-to-top gradient — same style as corporate gifting */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.18) 42%, transparent 100%)' }}
                 />
 
-                {/* Overlay for better text readability */}
-                <div className="absolute inset-0 bg-black/10"></div>
-
-                {/* FIX 2: Hero text — added md:text-[38px] intermediate step for tablet */}
-                <div className="relative max-w-[1300px] mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 flex items-end pb-16 sm:pb-20 md:pb-28 lg:pb-35">
-                  <div className="z-10">
-                    <h1 className="text-2xl sm:text-[32px] md:text-[38px] lg:text-[47px] font-black text-white mb-1 sm:mb-2 tracking-tight leading-tight uppercase drop-shadow-lg">
-                      {slide.title}
-                    </h1>
-                    {/* FIX 3: Subtitle — added explicit md size for tablet */}
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[21px] text-white mb-4 sm:mb-5 md:mb-7 font-light drop-shadow-md">
-                      {slide.subtitle}
-                    </p>
-                    {/* FIX 4: Button — tablet-friendly padding */}
+                {/* Text overlay — always shown, title/subtitle conditional */}
+                <div className="hp-banner-body">
+                  <div style={{ maxWidth: '620px' }}>
+                    {slide.title && (
+                      <>
+                        <p
+                          style={{
+                            fontSize: '10px', fontWeight: 600, letterSpacing: '0.22em',
+                            textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)',
+                            marginBottom: '10px'
+                          }}
+                        >
+                          New Arrival
+                        </p>
+                        <h1
+                          className="font-black text-white tracking-tight uppercase leading-none drop-shadow-lg"
+                          style={{ fontSize: 'clamp(20px, 4.5vw, 54px)', marginBottom: '8px' }}
+                        >
+                          {slide.title}
+                        </h1>
+                        <p
+                          className="text-white font-light drop-shadow-md"
+                          style={{
+                            fontSize: 'clamp(12px, 1.5vw, 20px)',
+                            opacity: 0.85,
+                            marginBottom: 'clamp(14px, 2.2vw, 30px)'
+                          }}
+                        >
+                          {slide.subtitle}
+                        </p>
+                      </>
+                    )}
                     <button
-                      onClick={() => handleShopNow(slide.link)}
-                      className="bg-white text-black px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-xs sm:text-sm md:text-[14px] font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
+                      onClick={() => router.push(slide.link)}
+                      className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] font-bold tracking-wider rounded-[3px] hover:bg-[#1a1a1a] hover:text-white transition-colors shadow-lg group/btn"
+                      style={{
+                        fontSize: 'clamp(10px, 1.1vw, 13px)',
+                        padding: 'clamp(10px,1.2vw,16px) clamp(16px,2.2vw,34px)'
+                      }}
                     >
                       SHOP NOW
+                      <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
                   </div>
                 </div>
 
-                {/* Navigation Dots */}
-                <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20">
+                {/* Dots — absolutely positioned at bottom of image */}
+                <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
                   {carouselSlides.map((_, idx) => (
                     <button
                       key={idx}
-                      className={`h-1.5 sm:h-2 rounded-full transition-all ${idx === index ? 'bg-white w-6 sm:w-8' : 'bg-white/50 w-1.5 sm:w-2'
-                        }`}
-                      onClick={() => setCurrentSlide(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      onClick={() => api?.scrollTo(idx)}
+                      style={{
+                        height: '6px',
+                        width: idx === activeSlide ? '28px' : '8px',
+                        borderRadius: '9999px',
+                        background: idx === activeSlide ? '#fff' : 'rgba(255,255,255,0.45)',
+                        transition: 'all 0.3s ease',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
                     />
                   ))}
                 </div>
@@ -180,12 +289,11 @@ export default function HomePage() {
           ))}
         </CarouselContent>
 
-        <CarouselPrevious className="hidden md:flex absolute left-2 sm:left-4 md:left-6 lg:left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-blue-300 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-0 shadow-lg">
-          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+        <CarouselPrevious className="hidden md:flex absolute left-5 lg:left-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-11 h-11 rounded-full border-0 shadow-lg z-10">
+          <ChevronLeft className="w-5 h-5" />
         </CarouselPrevious>
-
-        <CarouselNext className="hidden md:flex absolute right-2 sm:right-4 md:right-6 lg:right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-blue-300 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-0 shadow-lg">
-          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+        <CarouselNext className="hidden md:flex absolute right-5 lg:right-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white w-11 h-11 rounded-full border-0 shadow-lg z-10">
+          <ChevronRight className="w-5 h-5" />
         </CarouselNext>
       </Carousel>
 
@@ -196,7 +304,7 @@ export default function HomePage() {
         <div className="hp-divider mb-10" />
 
         {/* Mobile slider */}
-        <div className="md:hidden relative group/slider">
+        <div className="md:hidden relative">
           <div ref={categorySliderRef}
             className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory">
             {shopByCategories.map((cat, i) => (
@@ -221,19 +329,7 @@ export default function HomePage() {
           {shopByCategories.map((cat, i) => (
             <Link key={i} href={cat.link}>
               <div className="hp-card aspect-[3/4]">
-                {/*
-                  Cloudinary transformation in the URL:
-                  f_auto → WebP/AVIF depending on browser
-                  q_auto → auto quality (usually 70-80)
-                  w_800  → resize to 800px (enough for a 3-col grid card)
-                  This alone cuts image size by 60-80%
-                */}
-                <img
-                  src={cat.image}
-                  alt={cat.title}
-                  className="hp-card-img w-full h-full object-cover"
-                  loading={i === 0 ? 'eager' : 'lazy'}
-                />
+                <img src={cat.image} alt={cat.title} className="hp-card-img w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                   <div>
@@ -256,7 +352,7 @@ export default function HomePage() {
           <img
             src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1775561347/1_tglkqn.png"
             alt="Arttag Collection"
-            className="w-full h-auto object-cover"
+            className="w-full h-auto block"
             loading="lazy"
           />
         </div>
@@ -318,52 +414,91 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════ CORPORATE GIFTING ══════════════════════════ */}
+      {/* ══════════════════════════ CORPORATE GIFTING ══════════════════════════
+          Uses hp-banner — text is always INSIDE the image via inset:0 overlay
+      ══════════════════════════════════════════════════════════════════════ */}
       <section className="max-w-[1400px] mx-auto px-0 py-2">
-        <div className="hp-card relative w-full cursor-pointer" style={{ aspectRatio: '16/7' }}
-          onClick={() => router.push('/corporateGifting')}>
-          <img
-            src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
-            alt="Corporate Gifting"
-            className="hp-card-img w-full h-full object-cover"
-            loading="lazy"
+        <div className="hp-banner hp-banner-section cursor-pointer" onClick={() => router.push('/corporateGifting')}>
+          <picture>
+            <source
+              media="(max-width: 640px)"
+              srcSet="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_750,ar_4:3,c_fill,g_auto/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
+            />
+            <img
+              src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772197618/Personalized_Corporate_Gift_Set__Custom_Notebook_Pen_Thermos_Card_Holder_Employees_Graduation_znhmr2.jpg"
+              alt="Corporate Gifting"
+              className="hp-banner-img"
+              loading="lazy"
+            />
+          </picture>
+
+          {/* left-to-right gradient so text on left is always readable */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)' }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-end px-6 sm:px-12 lg:px-20 pb-8 sm:pb-12 lg:pb-16 max-w-2xl">
-            <p className="hp-eyebrow text-white/55 mb-2">For Business</p>
-            <h2 className="hp-serif text-3xl sm:text-4xl md:text-5xl font-light text-white leading-tight mb-3">
-              Corporate Gifting
-            </h2>
-            <p className="text-white/70 text-sm font-light mb-6 leading-relaxed hidden sm:block max-w-sm">
-              Build lasting relationships with bespoke corporate gifting solutions.
-            </p>
-            <button className="self-start inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-6 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
-              Enquire Now <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
-            </button>
+
+          <div className="hp-banner-body">
+            <div style={{ maxWidth: '500px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: '10px' }}>
+                For Business
+              </p>
+              <h2
+                className="hp-serif font-light text-white leading-tight"
+                style={{ fontSize: 'clamp(24px, 3.8vw, 52px)', marginBottom: '10px' }}
+              >
+                Corporate Gifting
+              </h2>
+              <p
+                className="text-white/70 font-light leading-relaxed hidden sm:block"
+                style={{ fontSize: 'clamp(12px, 1.2vw, 16px)', marginBottom: 'clamp(16px, 2vw, 28px)', maxWidth: '340px' }}
+              >
+                Build lasting relationships with bespoke corporate gifting solutions.
+              </p>
+              <button className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-5 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
+                Enquire Now <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════ STEP INSIDE ══════════════════════════ */}
       <section className="max-w-[1400px] mx-auto px-0 py-2">
-        <div className="hp-card relative w-full cursor-pointer" style={{ aspectRatio: '16/7' }}
-          onClick={() => router.push('/findstore')}>
-          <img
-            src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772104937/IMG_5132_g3drr6.png"
-            alt="Visit Arttag Store"
-            className="hp-card-img w-full h-full object-cover"
-            style={{ objectPosition: 'center' }}
-            loading="lazy"
+        <div className="hp-banner hp-banner-section cursor-pointer" onClick={() => router.push('/findstore')}>
+          <picture>
+            <source
+              media="(max-width: 640px)"
+              srcSet="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_750,ar_4:3,c_fill,g_center/v1772104937/IMG_5132_g3drr6.png"
+            />
+            <img
+              src="https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_1400/v1772104937/IMG_5132_g3drr6.png"
+              alt="Visit Arttag Store"
+              className="hp-banner-img"
+              loading="lazy"
+            />
+          </picture>
+
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.30)' }}
           />
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="absolute bottom-8 sm:bottom-14 lg:bottom-20 left-6 sm:left-12 lg:left-20">
-            <p className="hp-eyebrow text-white/55 mb-2">Our Stores</p>
-            <h2 className="hp-serif text-3xl sm:text-4xl md:text-5xl font-light text-white leading-tight mb-5">
-              Step Inside<br />Arttag
-            </h2>
-            <button className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-6 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
-              Find a Store <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
-            </button>
+
+          <div className="hp-banner-body">
+            <div style={{ maxWidth: '460px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: '10px' }}>
+                Our Stores
+              </p>
+              <h2
+                className="hp-serif font-light text-white leading-tight"
+                style={{ fontSize: 'clamp(24px, 3.8vw, 52px)', marginBottom: 'clamp(16px, 2vw, 28px)' }}
+              >
+                Step Inside<br />Arttag
+              </h2>
+              <button className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] px-5 py-3 text-[10px] tracking-[0.18em] uppercase font-semibold rounded-sm hover:bg-[#1a1a1a] hover:text-white transition-all group/btn">
+                Find a Store <ArrowRight size={11} className="group-hover/btn:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
