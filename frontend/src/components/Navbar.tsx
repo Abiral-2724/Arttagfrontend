@@ -1,53 +1,47 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronRight, Search, ShoppingCart, User, Menu, X, Package, UserRound } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react'
+import { Search, ShoppingCart, User, Menu, X, ChevronRight, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 
-type Props = {
-  userId?: string;
-  cartCount?: number;
-}
-
-
 const navItems = [
   {
-    name: 'TRAVEL & LIFESTYLE',
+    name: 'Travel & Lifestyle',
+    eyebrow: 'Explore the Collection',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_400/v1773209284/IMG_5611_wygjc4.jpg',
     items: [
-      { name: '⁠Travel Bags', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2bcf9905-3bb2-4eb9-92f2-a9bb43015959/TECH%20ACCESSORIES' },
-      { name: '⁠Sling Bags', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2df4bd6f-a8e8-4aec-97e7-f014bef4dab1/TECH%20ACCESSORIES' },
-      { name: '⁠⁠Tote Bags', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/TECH%20ACCESSORIES' },
-      { name: '⁠Sports Bags', link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/932e3c8a-d458-4f0c-bbf2-7da238a46a3b/TECH%20ACCESSORIES' },
-      
+      { name: 'Travel Bags',  link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2bcf9905-3bb2-4eb9-92f2-a9bb43015959/TECH%20ACCESSORIES' },
+      { name: 'Sling Bags',   link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/2df4bd6f-a8e8-4aec-97e7-f014bef4dab1/TECH%20ACCESSORIES' },
+      { name: 'Tote Bags',    link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/22da583b-23c7-446f-869b-674998ecc54f/TECH%20ACCESSORIES' },
+      { name: 'Sports Bags',  link: '/product/category/88b6c5ef-5ab0-41b8-97fb-c2099be6fb13/subcategory/932e3c8a-d458-4f0c-bbf2-7da238a46a3b/TECH%20ACCESSORIES' },
     ],
-    id: "88b6c5ef-5ab0-41b8-97fb-c2099be6fb13"
-  },
-
-  
-  {
-    name: 'BACKPACKS',
-    items: [
-      { name: '⁠⁠Laptop Backpacks', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS' },
-      { name: '⁠School Backpacks', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS' },
-      { name: '⁠⁠⁠College Backpacks', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/017079fa-b6fb-40d1-8c2e-f582dab7fba7/BAGS%20&%20WALLETS' },
-      { name: '⁠⁠⁠⁠Travel Backpacks', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/172af898-c565-4987-b715-a8d1fb1ad776/BAGS%20&%20WALLETS' },
-      
-    ],
-    id: "6be4fe65-560d-4c66-8aa8-e5a478e02632"
+    id: '88b6c5ef-5ab0-41b8-97fb-c2099be6fb13',
   },
   {
-    name: 'WORK BAGS',
+    name: 'Backpacks',
+    eyebrow: 'Carry Everything',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_400/v1773209479/IMG_5592_fms8zt.jpg',
     items: [
-      { name: '⁠⁠Office Bags' , link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/ac53bff1-72ff-4587-8eb5-7435a0892ec1/WORK%20ESSENTIALS' },
-      { name: 'Laptop sleeves' , link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/WORK%20ESSENTIALS' },
-      { name: '⁠⁠Messenger Bags' , link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/f7d95b01-3279-4b59-aa28-20f249d2d508/WORK%20ESSENTIALS' },
-      
+      { name: 'Laptop Backpacks',  link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/724675b8-811c-42aa-ac9b-d1e52c3223ec/BAGS%20&%20WALLETS' },
+      { name: 'School Backpacks',  link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/3e3a56aa-b8d7-412b-8d37-399139cace76/BAGS%20&%20WALLETS' },
+      { name: 'College Backpacks', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/017079fa-b6fb-40d1-8c2e-f582dab7fba7/BAGS%20&%20WALLETS' },
+      { name: 'Travel Backpacks',  link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/172af898-c565-4987-b715-a8d1fb1ad776/BAGS%20&%20WALLETS' },
     ],
-    id: "d7928347-cf87-4f84-ac22-71614aa6e629"
-  }
+    id: '6be4fe65-560d-4c66-8aa8-e5a478e02632',
+  },
+  {
+    name: 'Work Bags',
+    eyebrow: 'Built for Professionals',
+    image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/f_auto,q_auto,w_400/v1773209386/IMG_5609_zjwnfq.jpg',
+    items: [
+      { name: 'Office Bags',      link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/ac53bff1-72ff-4587-8eb5-7435a0892ec1/WORK%20ESSENTIALS' },
+      { name: 'Laptop Sleeves',   link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/9b29784b-655c-40a5-a6d6-9fbdeef208b5/WORK%20ESSENTIALS' },
+      { name: 'Messenger Bags',   link: '/product/category/d7928347-cf87-4f84-ac22-71614aa6e629/subcategory/f7d95b01-3279-4b59-aa28-20f249d2d508/WORK%20ESSENTIALS' },
+    ],
+    id: 'd7928347-cf87-4f84-ac22-71614aa6e629',
+  },
 ];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -59,384 +53,414 @@ const Navbar = ({ page }: any) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [cartCount, setCartCount] = useState(0);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("arttagtoken");
-    const id = localStorage.getItem("arttagUserId");
-
+    const token = localStorage.getItem('arttagtoken');
+    const id = localStorage.getItem('arttagUserId');
     if (token && id) {
       setUserId(id);
       setIsAuthenticated(true);
       checkAdmin(id);
       fetchCartCount(id);
-    } else {
-      setUserId(null);
-      setIsAuthenticated(false);
     }
   }, []);
 
   const checkAdmin = async (id: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/user/${id}/get/profile`);
-      if (response.data.user.role === "ADMIN") {
-        setIsAdmin(true);
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
+      const res = await axios.get(`${API_BASE_URL}/user/${id}/get/profile`);
+      if (res.data.user.role === 'ADMIN') setIsAdmin(true);
+    } catch {}
   };
 
   const fetchCartCount = async (id: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/cart/${id}/get/product/total/count`);
-      if (response.data.success) {
-        setCartCount(response.data.totalCount);
-      }
-    } catch (error) {
-      console.error('Error fetching cart count:', error);
-    }
+      const res = await axios.get(`${API_BASE_URL}/cart/${id}/get/product/total/count`);
+      if (res.data.success) setCartCount(res.data.totalCount);
+    } catch {}
   };
 
-  const handleAdminPage = () => {
-    if (userId) {
-      router.push(`/${userId}/admin`);
-    }
+  const openDropdown = (idx: number) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setActiveDropdown(idx);
+  };
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setActiveDropdown(null), 120);
+  };
+  const cancelClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
   };
 
-  const handleLoginClick = () => {
-    router.push('/login');
-  };
-
-  const handleCartClick = () => {
-    if (userId) {
-      router.push(`/${userId}/cart`);
-    } else {
-      router.push('/login');
-    }
-  };
-
-  const handleProfileClick = () => {
-    if (userId) {
-      router.push(`/${userId}/profile`);
-    } else {
-      router.push('/login');
-    }
-  };
-
-  const toggleCategory = (idx: number) => {
-    setExpandedCategory(expandedCategory === idx ? null : idx);
-  };
+  const handleCartClick    = () => router.push(userId ? `/${userId}/cart`    : '/login');
+  const handleProfileClick = () => router.push(userId ? `/${userId}/profile` : '/login');
+  const handleLoginClick   = () => router.push('/login');
+  const handleAdminPage    = () => { if (userId) router.push(`/${userId}/admin`); };
 
   return (
-    <div>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-[1600px] mx-auto pl-4 pr-4 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-12">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo - Responsive sizing */}
-            <Link href={'/'} className="flex-shrink-0 -ml-10 sm:-ml-11 lg:-ml-12">
-              <div className="flex items-center">
-                <div className="w-auto h-12 sm:h-13 md:h-15 lg:h-14 xl:h-[50px]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 270 54"
-                    className="h-full w-auto"
-                  >
-                    <defs>
-                      <style>
-                        {`
-                        .st0 {
-                          font-family: MuktaMahee-Regular, 'Mukta Mahee';
-                          font-size: 49.69px;
-                        }
-                        `}
-                      </style>
-                    </defs>
-                    <g>
-                      <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
-                      <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
-                      <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
-                    </g>
-                    
-                  </svg>
-                </div>
-              </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+        .nb-root { font-family: 'DM Sans', sans-serif; }
+        .nb-serif { font-family: 'Cormorant Garamond', serif; }
+
+        /* Nav link underline animation */
+        .nb-navlink {
+          position: relative;
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #3a3a3a;
+          transition: color 0.2s;
+          padding-bottom: 2px;
+        }
+        .nb-navlink::after {
+          content: '';
+          position: absolute;
+          bottom: -2px; left: 0;
+          width: 0; height: 1px;
+          background: #1a1a1a;
+          transition: width 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
+        .nb-navlink:hover { color: #1a1a1a; }
+        .nb-navlink:hover::after,
+        .nb-navlink.active::after { width: 100%; }
+
+        /* Mega dropdown */
+        .nb-mega {
+          position: absolute;
+          top: calc(100% + 1px);
+          left: 50%;
+          transform: translateX(-50%);
+          width: 520px;
+          background: #fff;
+          border: 1px solid #e8e4de;
+          border-top: 2px solid #1a1a1a;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+          padding: 0;
+          opacity: 0;
+          pointer-events: none;
+          transform: translateX(-50%) translateY(8px);
+          transition: opacity 0.22s ease, transform 0.22s ease;
+          z-index: 100;
+        }
+        .nb-mega.open {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateX(-50%) translateY(0);
+        }
+        .nb-mega-link {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 0;
+          font-size: 13px;
+          font-weight: 400;
+          color: #4a4a4a;
+          border-bottom: 1px solid #f2efe9;
+          transition: color 0.15s, padding-left 0.15s;
+          cursor: pointer;
+        }
+        .nb-mega-link:last-child { border-bottom: none; }
+        .nb-mega-link:hover { color: #1a1a1a; padding-left: 4px; }
+        .nb-mega-link svg { opacity: 0; transition: opacity 0.15s; }
+        .nb-mega-link:hover svg { opacity: 1; }
+
+        /* Icon button */
+        .nb-icon {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px;
+          color: #4a4a4a;
+          border-radius: 50%;
+          transition: background 0.15s, color 0.15s;
+          position: relative;
+        }
+        .nb-icon:hover { background: #f5f3ef; color: #1a1a1a; }
+
+        /* Cart badge */
+        .nb-badge {
+          position: absolute;
+          top: 1px; right: 1px;
+          width: 16px; height: 16px;
+          background: #1a1a1a;
+          color: #fff;
+          font-size: 9px;
+          font-weight: 700;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          border: 1.5px solid #fff;
+        }
+
+        /* Mobile menu item */
+        .nb-mob-cat {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 18px 24px;
+          border-bottom: 1px solid #f0ede8;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .nb-mob-cat:hover { background: #faf9f7; }
+        .nb-mob-sub {
+          background: #faf9f7;
+          border-bottom: 1px solid #f0ede8;
+          overflow: hidden;
+          max-height: 0;
+          transition: max-height 0.3s ease;
+        }
+        .nb-mob-sub.open { max-height: 400px; }
+        .nb-mob-sub-link {
+          display: flex; align-items: center; gap: 8px;
+          padding: 12px 24px 12px 36px;
+          font-size: 13px;
+          color: #5a5a5a;
+          border-bottom: 1px solid #f0ede8;
+          transition: color 0.15s, background 0.15s;
+        }
+        .nb-mob-sub-link:last-child { border-bottom: none; }
+        .nb-mob-sub-link:hover { color: #1a1a1a; background: #f0ede8; }
+      `}</style>
+
+      <header className="nb-root bg-white sticky top-0 z-50" style={{ borderBottom: '1px solid #e8e4de' }}>
+
+        {/* ── Top bar (optional promo strip) ── */}
+        <div style={{ background: '#1a1a1a', color: '#e8e4de', textAlign: 'center', fontSize: '11px', letterSpacing: '0.18em', padding: '7px 0', fontWeight: 500 }}>
+          FREE SHIPPING ON ORDERS ABOVE ₹999 &nbsp;·&nbsp; USE CODE <span style={{ color: '#fff', fontWeight: 700 }}>ARTTAG10</span>
+        </div>
+
+        {/* ── Main bar ── */}
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+
+            {/* Logo */}
+            <Link href="/" style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 54" style={{ height: '44px', width: 'auto' }}>
+                <defs>
+                  <style>{`.st0{font-family:MuktaMahee-Regular,'Mukta Mahee';font-size:49.69px;}`}</style>
+                </defs>
+                <g>
+                  <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+                  <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+                  <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+                </g>
+              </svg>
             </Link>
 
-            {/* Desktop Navigation */}
-            {page !== "cart" && (
-              <nav className="hidden xl:flex items-center gap-4 2xl:gap-6">
-                {navItems.map((item, idx) : any => (
-                  item.items.length > 0 ? (
-                    <DropdownMenu key={idx}>
-                      <DropdownMenuTrigger
-                        className="group flex items-center gap-1 text-[13px] 2xl:text-[14px] font-medium text-gray-700 tracking-wide hover:text-teal-600 transition-all outline-none relative after:absolute after:bottom-[-8px] after:left-0 after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-teal-600 after:to-cyan-600 after:transition-all hover:after:w-full data-[state=open]:text-teal-600 data-[state=open]:after:w-full"
-                        onMouseEnter={(e) => e.currentTarget.click()}
-                      >
-                        {item.name}
-                        <ChevronDown className="w-3.5 h-3.5 transition-transform group-data-[state=open]:rotate-180" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="w-64 mt-2 bg-white border border-gray-100 shadow-xl rounded-2xl p-2 animate-in fade-in-0 slide-in-from-top-2 duration-200"
-                        onMouseLeave={(e) => {
-                          const trigger: any = e.currentTarget.previousElementSibling;
-                          if (trigger) trigger.click();
-                        }}
-                      >
-                        <div className="mb-2 px-4 pt-3 pb-2">
-                          <div className="flex items-center gap-2">
-                            <Package className="w-4 h-4 text-teal-600" />
-                            <h3 className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">
-                              {item.name}
-                            </h3>
+            {/* Desktop nav */}
+            {page !== 'cart' && (
+              <nav style={{ display: 'flex', alignItems: 'center', gap: '40px' }} className="hidden xl:flex">
+                {navItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{ position: 'relative' }}
+                    onMouseEnter={() => openDropdown(idx)}
+                    onMouseLeave={scheduleClose}
+                  >
+                    <button className={`nb-navlink ${activeDropdown === idx ? 'active' : ''}`}>
+                      {item.name}
+                    </button>
+
+                    {/* Mega dropdown */}
+                    <div
+                      className={`nb-mega ${activeDropdown === idx ? 'open' : ''}`}
+                      onMouseEnter={cancelClose}
+                      onMouseLeave={scheduleClose}
+                    >
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px' }}>
+                        {/* Left: links */}
+                        <div style={{ padding: '28px 32px' }}>
+                          <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#aaa', marginBottom: '16px' }}>
+                            {item.eyebrow}
+                          </p>
+                          <div>
+                            {item.items.map((sub, si) => (
+                              <Link key={si} href={sub.link} onClick={() => setActiveDropdown(null)}>
+                                <div className="nb-mega-link">
+                                  <span>{sub.name}</span>
+                                  <ChevronRight size={13} />
+                                </div>
+                              </Link>
+                            ))}
                           </div>
-                          <div className="h-px bg-gradient-to-r from-teal-500 to-cyan-500 mt-2" />
-                        </div>
-                        <div className="space-y-1 max-h-[400px] overflow-y-auto">
-                          {item.items.map((subItem, subIdx) => (
-                            <Link key={subIdx} href={subItem.link}>
-                              <DropdownMenuItem
-                                className="cursor-pointer px-4 py-3 text-[14px] font-medium text-gray-800 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 hover:text-teal-700 rounded-xl transition-all group/item"
-                              >
-                                <span className="flex items-center justify-between w-full">
-                                  <span>{subItem.name}</span>
-                                  <ChevronRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all text-teal-600" />
-                                </span>
-                              </DropdownMenuItem>
-                            </Link>
-                          ))}
-                        </div>
-                        <div className="mt-2 pt-2 border-t border-gray-100">
-                          <Link href={item.id ? `/product/category/${item.id}` : '/allcategory'}>
-                            <DropdownMenuItem className="px-4 py-3 cursor-pointer rounded-xl transition-all text-[13px] font-bold bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md hover:shadow-lg hover:from-teal-700 hover:to-cyan-700">
-                              <span className="flex items-center justify-center w-full gap-2">
-                                View All {item.name}
-                                <ChevronRight className="w-4 h-4" />
-                              </span>
-                            </DropdownMenuItem>
+                          <Link href={`/product/category/${item.id}`} onClick={() => setActiveDropdown(null)}>
+                            <div style={{ marginTop: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a1a1a', borderBottom: '1px solid #1a1a1a', paddingBottom: '1px' }}>
+                              View All <ChevronRight size={11} />
+                            </div>
                           </Link>
                         </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <Link key={idx} href={item.link  || '/allcategory'}>
-                      <button className="text-[13px] 2xl:text-[14px] font-medium text-gray-700 tracking-wide hover:text-teal-600 transition-all relative after:absolute after:bottom-[-8px] after:left-0 after:w-0 after:h-[2px] after:bg-gradient-to-r after:from-teal-600 after:to-cyan-600 after:transition-all hover:after:w-full">
-                        {item.name}
-                      </button>
-                    </Link>
-                  )
+
+                        {/* Right: category image */}
+                        <div style={{ position: 'relative', overflow: 'hidden' }}>
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)' }} />
+                          <p className="nb-serif" style={{ position: 'absolute', bottom: '14px', left: '14px', right: '14px', color: '#fff', fontSize: '18px', fontWeight: 400, lineHeight: 1.2 }}>
+                            {item.name}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
+
+                {/* Static links */}
+                <Link href="/corporateGifting">
+                  <span className="nb-navlink">Corporate</span>
+                </Link>
               </nav>
             )}
 
-            {/* Desktop Icons */}
-            <div className="hidden md:flex items-center gap-4 lg:gap-7">
+            {/* Desktop icons */}
+            <div className="hidden md:flex items-center" style={{ gap: '4px' }}>
+              {page !== 'cart' && (
+                <Link href="/search">
+                  <button className="nb-icon"><Search size={18} strokeWidth={1.6} /></button>
+                </Link>
+              )}
+
               {isAuthenticated ? (
                 <>
-                  {page !== "cart" && (
-                    <button className="relative group" onClick={handleCartClick}>
-                      <ShoppingCart className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
-                      {cartCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg">
-                          {cartCount}
-                        </span>
-                      )}
+                  {page !== 'cart' && (
+                    <button className="nb-icon" onClick={handleCartClick}>
+                      <ShoppingCart size={18} strokeWidth={1.6} />
+                      {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
                     </button>
                   )}
-
-                  <button onClick={handleProfileClick} className="group">
-                    <User className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
+                  <button className="nb-icon" onClick={handleProfileClick}>
+                    <User size={18} strokeWidth={1.6} />
                   </button>
-
-                  {page !== "cart" && (
-                    <Link href={'/search'}>
-                      <button className="group">
-                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
-                      </button>
-                    </Link>
-                  )}
-
                   {isAdmin && (
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={handleAdminPage}
-                      className='bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-xs lg:text-sm px-3 lg:px-5 border-0 shadow-md hover:shadow-lg transition-all'
+                      style={{ marginLeft: '8px', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', background: '#1a1a1a', color: '#fff', padding: '8px 18px', border: 'none', cursor: 'pointer', transition: 'background 0.15s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#333')}
+                      onMouseLeave={e => (e.currentTarget.style.background = '#1a1a1a')}
                     >
                       Admin
-                    </Button>
+                    </button>
                   )}
                 </>
               ) : (
-                <>
-                  {page !== "cart" && (
-                    <Link href={'/search'}>
-                      <button className="group">
-                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
-                      </button>
-                    </Link>
-                  )}
-<div className="relative group inline-block">
-<UserRound
-    className="w-5 h-5 mb-1 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] cursor-pointer group-hover:text-teal-600 transition-colors"
-    onClick={handleLoginClick}
-  />
-
-  <div className="absolute left-1/2 -translate-x-1/2 mt-2 
-                  hidden group-hover:block
-                  bg-black text-white text-xs px-2 py-1 rounded">
-    Login
-  </div>
-</div>
- 
-                </>
+                <div style={{ position: 'relative', display: 'inline-block' }} className="group">
+                  <button className="nb-icon" onClick={handleLoginClick}>
+                    <UserRound size={18} strokeWidth={1.6} />
+                  </button>
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#1a1a1a', color: '#fff', fontSize: '11px', letterSpacing: '0.1em', padding: '5px 10px', whiteSpace: 'nowrap', pointerEvents: 'none' }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    Sign In
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* Mobile Icons & Menu Button */}
-            <div className="flex md:hidden items-center gap-4">
-              {isAuthenticated && page !== "cart" && (
-                <button className="relative" onClick={handleCartClick}>
-                  <ShoppingCart className="w-5 h-5 text-gray-700 stroke-[1.5]" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold">
-                      {cartCount}
-                    </span>
-                  )}
+            {/* Mobile: cart + hamburger */}
+            <div className="flex md:hidden items-center gap-3">
+              {isAuthenticated && page !== 'cart' && (
+                <button className="nb-icon" onClick={handleCartClick}>
+                  <ShoppingCart size={18} strokeWidth={1.6} />
+                  {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
                 </button>
               )}
-
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-gray-700" />
-                ) : (
-                  <Menu className="w-6 h-6 text-gray-700" />
-                )}
+              <button className="nb-icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                {mobileMenuOpen ? <X size={20} strokeWidth={1.6} /> : <Menu size={20} strokeWidth={1.6} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* ── Mobile Menu ── */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg max-h-[calc(90vh-4rem)] overflow-y-auto">
-            <div className="px-0 py-0">
-              {/* Mobile Navigation Items - Large Cards */}
-              {page !== "cart" && navItems.map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.id ? `/product/category/${item.id}` : '/allcategory'}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <div className="relative h-38 border-b border-gray-200 overflow-hidden group cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 hover:from-teal-50 hover:to-cyan-50 transition-all duration-300">
-                    {/* Background with product image placeholder */}
-                    <div className="absolute inset-0 flex items-center justify-between px-8">
-                      {/* Category Name */}
-                      <div className="z-10">
-                        <h2 className="text-sm font-bold text-gray-950 mb-2 group-hover:text-teal-600 transition-colors">
-                          {item.name}
-                        </h2>
-                        
-                      </div>
-                      
-                      {/* Placeholder for product image */}
-                      <div className="w-20 h-20 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                        {idx === 0 && (
-                          <div className="text-6xl">
-                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485944/MagSafe_Power_Bank_10800mAh_Magnetic_Power_Bank_Portable_USB_C_Battery_Charger_B705_tdeqjv.jpg" alt="" />
-                          </div>
-                        )}
-                        {idx === 1 && (
-                          <div className="">
-                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485986/Casual_Backpack_Large_Capacity_Korean_Style_-_Light_Gray_bvqxtd.jpg" alt="" />
-                          </div>
-                        )}
-                        {idx === 2 && (
-                          <div className="text-6xl">
-                            <img src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1771485998/Bravo_Totepack_uadwmw.jpg" alt="" />
-                          </div>
-                        )}
-                        
-                      </div>
-                    </div>
-                    
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-600/0 to-cyan-600/0 group-hover:from-teal-600/5 group-hover:to-cyan-600/5 transition-all duration-300" />
+          <div className="md:hidden" style={{ background: '#fff', borderTop: '1px solid #e8e4de', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto' }}>
+
+            {/* Categories */}
+            {page !== 'cart' && navItems.map((item, idx) => (
+              <div key={idx}>
+                <div className="nb-mob-cat" onClick={() => setExpandedCategory(expandedCategory === idx ? null : idx)}>
+                  <div>
+                    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a1a1a' }}>{item.name}</p>
+                    <p style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>{item.items.length} styles</p>
                   </div>
-                </Link>
-              ))}
+                  <ChevronRight
+                    size={16}
+                    style={{ color: '#aaa', transition: 'transform 0.2s', transform: expandedCategory === idx ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  />
+                </div>
 
-              {/* Additional Category - GIFTING */}
-              
-
-              {/* COLLECTIONS */}
-              
-
-              {/* Mobile User Actions */}
-              <div className="p-6 space-y-3 bg-gray-50">
-                {isAuthenticated ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        handleProfileClick();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm"
-                    >
-                      <User className="w-5 h-5 text-teal-600" />
-                      Profile
-                    </button>
-
-                    {page !== "cart" && (
-                      <Link href={'/search'}>
-                        <button className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
-                          <Search className="w-5 h-5 text-teal-600" />
-                          Search
-                        </button>
-                      </Link>
-                    )}
-
-                    {isAdmin && (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          handleAdminPage();
-                          setMobileMenuOpen(false);
-                        }}
-                        className='w-full mt-4 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl shadow-md text-base font-semibold'
-                      >
-                        Admin Panel
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {page !== "cart" && (
-                      <Link href={'/search'}>
-                        <button className="flex items-center gap-3 w-full py-4 px-5 mb-2 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
-                          <Search className="w-5 h-5 text-teal-600" />
-                          Search
-                        </button>
-                      </Link>
-                    )}
-
-                    <Button
-                      onClick={() => {
-                        handleLoginClick();
-                        setMobileMenuOpen(false);
-                      }}
-                      className='w-full py-4 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-md rounded-xl text-base font-semibold'
-                    >
-                      Login
-                    </Button>
-                  </>
-                )}
+                <div className={`nb-mob-sub ${expandedCategory === idx ? 'open' : ''}`}>
+                  {item.items.map((sub, si) => (
+                    <Link key={si} href={sub.link} onClick={() => setMobileMenuOpen(false)}>
+                      <div className="nb-mob-sub-link">
+                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#ccc', flexShrink: 0 }} />
+                        {sub.name}
+                      </div>
+                    </Link>
+                  ))}
+                  <Link href={`/product/category/${item.id}`} onClick={() => setMobileMenuOpen(false)}>
+                    <div className="nb-mob-sub-link" style={{ fontWeight: 600, color: '#1a1a1a' }}>
+                      <ChevronRight size={13} />
+                      View All {item.name}
+                    </div>
+                  </Link>
+                </div>
               </div>
+            ))}
+
+            {/* Corporate link */}
+            <Link href="/corporateGifting" onClick={() => setMobileMenuOpen(false)}>
+              <div className="nb-mob-cat">
+                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a1a1a' }}>Corporate Gifting</p>
+                <ChevronRight size={16} style={{ color: '#aaa' }} />
+              </div>
+            </Link>
+
+            {/* Bottom actions */}
+            <div style={{ padding: '20px 24px', borderTop: '1px solid #e8e4de', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {page !== 'cart' && (
+                <Link href="/search" onClick={() => setMobileMenuOpen(false)}>
+                  <button style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '13px 16px', border: '1px solid #e8e4de', background: '#faf9f7', fontSize: '13px', fontWeight: 500, color: '#3a3a3a', cursor: 'pointer' }}>
+                    <Search size={15} /> Search Products
+                  </button>
+                </Link>
+              )}
+
+              {isAuthenticated ? (
+                <>
+                  <button
+                    onClick={() => { handleProfileClick(); setMobileMenuOpen(false); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '13px 16px', border: '1px solid #e8e4de', background: '#faf9f7', fontSize: '13px', fontWeight: 500, color: '#3a3a3a', cursor: 'pointer' }}
+                  >
+                    <User size={15} /> My Profile
+                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => { handleAdminPage(); setMobileMenuOpen(false); }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '13px 16px', background: '#1a1a1a', color: '#fff', fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}
+                    >
+                      Admin Panel
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  onClick={() => { handleLoginClick(); setMobileMenuOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '14px 16px', background: '#1a1a1a', color: '#fff', fontSize: '12px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}
+                >
+                  Sign In / Register
+                </button>
+              )}
             </div>
           </div>
         )}
       </header>
-    </div>
-  )
-}
+    </>
+  );
+};
 
-export default Navbar
+export default Navbar;
