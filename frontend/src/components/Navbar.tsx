@@ -1,10 +1,9 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-import { Search, ShoppingCart, User, Menu, X, ChevronRight, UserRound } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, ChevronRight, UserRound, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
-import { Button } from '@/components/ui/button';
 
 const navItems = [
   {
@@ -57,6 +56,16 @@ const Navbar = ({ page }: any) => {
   const [cartCount, setCartCount] = useState(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     const token = localStorage.getItem('arttagtoken');
     const id = localStorage.getItem('arttagUserId');
@@ -98,6 +107,11 @@ const Navbar = ({ page }: any) => {
   const handleLoginClick   = () => router.push('/login');
   const handleAdminPage    = () => { if (userId) router.push(`/${userId}/admin`); };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    setExpandedCategory(null);
+  };
+
   return (
     <>
       <style>{`
@@ -106,7 +120,7 @@ const Navbar = ({ page }: any) => {
         .nb-root { font-family: 'DM Sans', sans-serif; }
         .nb-serif { font-family: 'Cormorant Garamond', serif; }
 
-        /* Nav link underline animation */
+        /* ── Desktop nav link ── */
         .nb-navlink {
           position: relative;
           font-size: 12px;
@@ -116,6 +130,9 @@ const Navbar = ({ page }: any) => {
           color: #3a3a3a;
           transition: color 0.2s;
           padding-bottom: 2px;
+          background: none;
+          border: none;
+          cursor: pointer;
         }
         .nb-navlink::after {
           content: '';
@@ -129,18 +146,16 @@ const Navbar = ({ page }: any) => {
         .nb-navlink:hover::after,
         .nb-navlink.active::after { width: 100%; }
 
-        /* Mega dropdown */
+        /* ── Mega dropdown ── */
         .nb-mega {
           position: absolute;
           top: calc(100% + 1px);
           left: 50%;
-          transform: translateX(-50%);
           width: 520px;
           background: #fff;
           border: 1px solid #e8e4de;
           border-top: 2px solid #1a1a1a;
           box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-          padding: 0;
           opacity: 0;
           pointer-events: none;
           transform: translateX(-50%) translateY(8px);
@@ -163,27 +178,32 @@ const Navbar = ({ page }: any) => {
           border-bottom: 1px solid #f2efe9;
           transition: color 0.15s, padding-left 0.15s;
           cursor: pointer;
+          text-decoration: none;
         }
         .nb-mega-link:last-child { border-bottom: none; }
         .nb-mega-link:hover { color: #1a1a1a; padding-left: 4px; }
         .nb-mega-link svg { opacity: 0; transition: opacity 0.15s; }
         .nb-mega-link:hover svg { opacity: 1; }
 
-        /* Icon button */
+        /* ── Icon button ── */
         .nb-icon {
           display: flex; align-items: center; justify-content: center;
-          width: 36px; height: 36px;
+          width: 38px; height: 38px;
           color: #4a4a4a;
           border-radius: 50%;
           transition: background 0.15s, color 0.15s;
           position: relative;
+          background: none;
+          border: none;
+          cursor: pointer;
+          flex-shrink: 0;
         }
         .nb-icon:hover { background: #f5f3ef; color: #1a1a1a; }
 
-        /* Cart badge */
+        /* ── Cart badge ── */
         .nb-badge {
           position: absolute;
-          top: 1px; right: 1px;
+          top: 2px; right: 2px;
           width: 16px; height: 16px;
           background: #1a1a1a;
           color: #fff;
@@ -192,53 +212,222 @@ const Navbar = ({ page }: any) => {
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           border: 1.5px solid #fff;
+          pointer-events: none;
         }
 
-        /* Mobile menu item */
-        .nb-mob-cat {
+        /* ── Mobile overlay ── */
+        .nb-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.4);
+          z-index: 998;
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ── Mobile drawer ── */
+        .nb-drawer {
+          position: fixed;
+          top: 0; right: 0;
+          width: min(82vw, 340px);
+          height: 100dvh;
+          background: #fff;
+          z-index: 999;
+          display: flex;
+          flex-direction: column;
+          transform: translateX(100%);
+          transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+          box-shadow: -8px 0 32px rgba(0,0,0,0.14);
+        }
+        .nb-drawer.open {
+          transform: translateX(0);
+        }
+
+        /* Drawer header */
+        .nb-drawer-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 18px 24px;
+          padding: 0 20px;
+          height: 56px;
+          border-bottom: 1px solid #e8e4de;
+          flex-shrink: 0;
+        }
+
+        /* Drawer scroll area */
+        .nb-drawer-body {
+          flex: 1;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Drawer footer */
+        .nb-drawer-footer {
+          flex-shrink: 0;
+          padding: 16px 20px;
+          border-top: 1px solid #e8e4de;
+          background: #faf9f7;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        /* Category row */
+        .nb-cat-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
           border-bottom: 1px solid #f0ede8;
           cursor: pointer;
           transition: background 0.15s;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
         }
-        .nb-mob-cat:hover { background: #faf9f7; }
-        .nb-mob-sub {
-          background: #faf9f7;
-          border-bottom: 1px solid #f0ede8;
+        .nb-cat-row:hover,
+        .nb-cat-row:active { background: #faf9f7; }
+
+        .nb-cat-row-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .nb-cat-thumb {
+          width: 40px;
+          height: 40px;
+          border-radius: 4px;
+          object-fit: cover;
+          flex-shrink: 0;
+          border: 1px solid #e8e4de;
+        }
+
+        .nb-cat-chevron {
+          color: #bbb;
+          transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), color 0.15s;
+          flex-shrink: 0;
+        }
+        .nb-cat-chevron.rotated {
+          transform: rotate(90deg);
+          color: #1a1a1a;
+        }
+
+        /* Subcategory accordion */
+        .nb-sub-panel {
           overflow: hidden;
           max-height: 0;
-          transition: max-height 0.3s ease;
+          transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1);
+          background: #faf9f7;
         }
-        .nb-mob-sub.open { max-height: 400px; }
-        .nb-mob-sub-link {
-          display: flex; align-items: center; gap: 8px;
-          padding: 12px 24px 12px 36px;
+        .nb-sub-panel.open {
+          max-height: 320px;
+        }
+
+        .nb-sub-link {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 13px 20px 13px 72px;
           font-size: 13px;
           color: #5a5a5a;
-          border-bottom: 1px solid #f0ede8;
+          border-bottom: 1px solid #eeebe5;
           transition: color 0.15s, background 0.15s;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
         }
-        .nb-mob-sub-link:last-child { border-bottom: none; }
-        .nb-mob-sub-link:hover { color: #1a1a1a; background: #f0ede8; }
+        .nb-sub-link:last-child { border-bottom: none; }
+        .nb-sub-link:hover,
+        .nb-sub-link:active { color: #1a1a1a; background: #eeebe5; }
+
+        .nb-sub-dot {
+          width: 4px; height: 4px;
+          border-radius: 50%;
+          background: #ccc;
+          flex-shrink: 0;
+        }
+
+        .nb-sub-viewall {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 13px 20px 13px 52px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #1a1a1a;
+          border-bottom: 1px solid #eeebe5;
+          transition: background 0.15s;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .nb-sub-viewall:active { background: #eeebe5; }
+
+        /* Static link row */
+        .nb-static-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          border-bottom: 1px solid #f0ede8;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s;
+        }
+        .nb-static-row:active { background: #faf9f7; }
+
+        /* Footer action buttons */
+        .nb-action-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          padding: 14px 16px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          cursor: pointer;
+          border: none;
+          transition: background 0.15s, opacity 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .nb-action-btn:active { opacity: 0.85; }
+        .nb-action-btn.outline {
+          background: #fff;
+          color: #3a3a3a;
+          border: 1px solid #e8e4de;
+        }
+        .nb-action-btn.outline:hover { background: #f5f3ef; }
+        .nb-action-btn.solid {
+          background: #1a1a1a;
+          color: #fff;
+        }
+        .nb-action-btn.solid:hover { background: #333; }
       `}</style>
 
-      <header className="nb-root bg-white sticky top-0 z-50" style={{ borderBottom: '1px solid #e8e4de' }}>
+      <header className="nb-root bg-white sticky top-0" style={{ zIndex: 50, borderBottom: '1px solid #e8e4de' }}>
 
-        {/* ── Top bar (optional promo strip) ── */}
-        <div style={{ background: '#1a1a1a', color: '#e8e4de', textAlign: 'center', fontSize: '11px', letterSpacing: '0.18em', padding: '7px 0', fontWeight: 500 }}>
-          FREE SHIPPING ON ORDERS ABOVE ₹999 &nbsp;·&nbsp; USE CODE <span style={{ color: '#fff', fontWeight: 700 }}>ARTTAG10</span>
+        {/* ── Promo strip ── */}
+        <div style={{
+          background: '#1a1a1a', color: '#e8e4de',
+          textAlign: 'center', fontSize: '11px',
+          letterSpacing: '0.16em', padding: '7px 12px',
+          fontWeight: 500, lineHeight: 1.4,
+        }}>
+          FREE SHIPPING ON ORDERS ABOVE ₹999 &nbsp;·&nbsp; USE CODE{' '}
+          <span style={{ color: '#fff', fontWeight: 700 }}>ARTTAG10</span>
         </div>
 
         {/* ── Main bar ── */}
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px' }}>
 
             {/* Logo */}
-            <Link href="/" style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 54" style={{ height: '44px', width: 'auto' }}>
+            <Link href="/" style={{ flexShrink: 0, display: 'flex', alignItems: 'center' ,marginLeft:'-34px' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 54" style={{ height: '40px', width: 'auto' }}>
                 <defs>
                   <style>{`.st0{font-family:MuktaMahee-Regular,'Mukta Mahee';font-size:49.69px;}`}</style>
                 </defs>
@@ -250,9 +439,9 @@ const Navbar = ({ page }: any) => {
               </svg>
             </Link>
 
-            {/* Desktop nav */}
+            {/* ── Desktop nav (xl+) ── */}
             {page !== 'cart' && (
-              <nav style={{ display: 'flex', alignItems: 'center', gap: '40px' }} className="hidden xl:flex">
+              <nav className="hidden xl:flex" style={{ alignItems: 'center', gap: '40px' }}>
                 {navItems.map((item, idx) => (
                   <div
                     key={idx}
@@ -264,25 +453,21 @@ const Navbar = ({ page }: any) => {
                       {item.name}
                     </button>
 
-                    {/* Mega dropdown */}
                     <div
                       className={`nb-mega ${activeDropdown === idx ? 'open' : ''}`}
                       onMouseEnter={cancelClose}
                       onMouseLeave={scheduleClose}
                     >
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px' }}>
-                        {/* Left: links */}
                         <div style={{ padding: '28px 32px' }}>
                           <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#aaa', marginBottom: '16px' }}>
                             {item.eyebrow}
                           </p>
                           <div>
                             {item.items.map((sub, si) => (
-                              <Link key={si} href={sub.link} onClick={() => setActiveDropdown(null)}>
-                                <div className="nb-mega-link">
-                                  <span>{sub.name}</span>
-                                  <ChevronRight size={13} />
-                                </div>
+                              <Link key={si} href={sub.link} onClick={() => setActiveDropdown(null)} className="nb-mega-link">
+                                <span>{sub.name}</span>
+                                <ChevronRight size={13} />
                               </Link>
                             ))}
                           </div>
@@ -292,14 +477,8 @@ const Navbar = ({ page }: any) => {
                             </div>
                           </Link>
                         </div>
-
-                        {/* Right: category image */}
                         <div style={{ position: 'relative', overflow: 'hidden' }}>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          />
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)' }} />
                           <p className="nb-serif" style={{ position: 'absolute', bottom: '14px', left: '14px', right: '14px', color: '#fff', fontSize: '18px', fontWeight: 400, lineHeight: 1.2 }}>
                             {item.name}
@@ -310,21 +489,19 @@ const Navbar = ({ page }: any) => {
                   </div>
                 ))}
 
-                {/* Static links */}
                 <Link href="/corporateGifting">
                   <span className="nb-navlink">Corporate</span>
                 </Link>
               </nav>
             )}
 
-            {/* Desktop icons */}
+            {/* ── Desktop icons (md+) ── */}
             <div className="hidden md:flex items-center" style={{ gap: '4px' }}>
               {page !== 'cart' && (
                 <Link href="/search">
                   <button className="nb-icon"><Search size={18} strokeWidth={1.6} /></button>
                 </Link>
               )}
-
               {isAuthenticated ? (
                 <>
                   {page !== 'cart' && (
@@ -352,113 +529,171 @@ const Navbar = ({ page }: any) => {
                   <button className="nb-icon" onClick={handleLoginClick}>
                     <UserRound size={18} strokeWidth={1.6} />
                   </button>
-                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#1a1a1a', color: '#fff', fontSize: '11px', letterSpacing: '0.1em', padding: '5px 10px', whiteSpace: 'nowrap', pointerEvents: 'none' }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ position: 'absolute', top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', background: '#1a1a1a', color: '#fff', fontSize: '11px', letterSpacing: '0.1em', padding: '5px 10px', whiteSpace: 'nowrap', pointerEvents: 'none' }}
+                  >
                     Sign In
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile: cart + hamburger */}
-            <div className="flex md:hidden items-center gap-3">
+            {/* ── Mobile right cluster ── */}
+            <div className="flex md:hidden items-center" style={{ gap: '2px' }}>
+              {/* Cart icon always visible if authenticated */}
               {isAuthenticated && page !== 'cart' && (
                 <button className="nb-icon" onClick={handleCartClick}>
-                  <ShoppingCart size={18} strokeWidth={1.6} />
+                  <ShoppingCart size={19} strokeWidth={1.6} />
                   {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
                 </button>
               )}
-              <button className="nb-icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                {mobileMenuOpen ? <X size={20} strokeWidth={1.6} /> : <Menu size={20} strokeWidth={1.6} />}
+              {/* Search icon on mobile */}
+              {page !== 'cart' && (
+                <Link href="/search">
+                  <button className="nb-icon"><Search size={19} strokeWidth={1.6} /></button>
+                </Link>
+              )}
+              {/* Hamburger — always shows Menu icon; X lives inside the drawer */}
+              <button
+                className="nb-icon"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open menu"
+                style={{ width: '42px', height: '42px' }}
+              >
+                <Menu size={20} strokeWidth={1.6} />
               </button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* ── Mobile Menu ── */}
-        {mobileMenuOpen && (
-          <div className="md:hidden" style={{ background: '#fff', borderTop: '1px solid #e8e4de', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto' }}>
+      {/* ── Mobile overlay ── */}
+      {mobileMenuOpen && (
+        <div className="nb-overlay md:hidden" onClick={closeMobileMenu} style={{ zIndex: 998 }} />
+      )}
 
-            {/* Categories */}
-            {page !== 'cart' && navItems.map((item, idx) => (
-              <div key={idx}>
-                <div className="nb-mob-cat" onClick={() => setExpandedCategory(expandedCategory === idx ? null : idx)}>
+      {/* ── Mobile drawer (slides in from right) ── */}
+      <div className={`nb-drawer md:hidden ${mobileMenuOpen ? 'open' : ''}`} style={{ zIndex: 999 }}>
+
+        {/* Drawer header */}
+        <div className="nb-drawer-header">
+          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#aaa' }}>
+            Menu
+          </p>
+          <button className="nb-icon" onClick={closeMobileMenu} style={{ marginRight: '-8px' }}>
+            <X size={20} strokeWidth={1.6} />
+          </button>
+        </div>
+
+        {/* Drawer body — scrollable */}
+        <div className="nb-drawer-body">
+
+          {/* User greeting strip if authenticated */}
+          {isAuthenticated && (
+            <div style={{ padding: '14px 20px', background: '#faf9f7', borderBottom: '1px solid #e8e4de', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={15} color="#fff" strokeWidth={1.6} />
+              </div>
+              <div>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#1a1a1a', letterSpacing: '0.04em' }}>My Account</p>
+                <p style={{ fontSize: '11px', color: '#aaa', marginTop: '1px' }}>View profile & orders</p>
+              </div>
+              <button
+                className="nb-icon"
+                onClick={() => { handleProfileClick(); closeMobileMenu(); }}
+                style={{ marginLeft: 'auto' }}
+              >
+                <ChevronRight size={16} strokeWidth={1.6} />
+              </button>
+            </div>
+          )}
+
+          {/* Category accordions */}
+          {page !== 'cart' && navItems.map((item, idx) => (
+            <div key={idx}>
+              <div
+                className="nb-cat-row"
+                onClick={() => setExpandedCategory(expandedCategory === idx ? null : idx)}
+              >
+                <div className="nb-cat-row-left">
+                  <img src={item.image} alt={item.name} className="nb-cat-thumb" />
                   <div>
-                    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a1a1a' }}>{item.name}</p>
-                    <p style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>{item.items.length} styles</p>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#1a1a1a', letterSpacing: '0.02em' }}>
+                      {item.name}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>
+                      {item.items.length} styles
+                    </p>
                   </div>
-                  <ChevronRight
-                    size={16}
-                    style={{ color: '#aaa', transition: 'transform 0.2s', transform: expandedCategory === idx ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                  />
                 </div>
+                <ChevronDown
+                  size={16}
+                  className={`nb-cat-chevron ${expandedCategory === idx ? 'rotated' : ''}`}
+                  style={{ transform: expandedCategory === idx ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                />
+              </div>
 
-                <div className={`nb-mob-sub ${expandedCategory === idx ? 'open' : ''}`}>
-                  {item.items.map((sub, si) => (
-                    <Link key={si} href={sub.link} onClick={() => setMobileMenuOpen(false)}>
-                      <div className="nb-mob-sub-link">
-                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#ccc', flexShrink: 0 }} />
-                        {sub.name}
-                      </div>
-                    </Link>
-                  ))}
-                  <Link href={`/product/category/${item.id}`} onClick={() => setMobileMenuOpen(false)}>
-                    <div className="nb-mob-sub-link" style={{ fontWeight: 600, color: '#1a1a1a' }}>
-                      <ChevronRight size={13} />
-                      View All {item.name}
-                    </div>
+              <div className={`nb-sub-panel ${expandedCategory === idx ? 'open' : ''}`}>
+                {item.items.map((sub, si) => (
+                  <Link key={si} href={sub.link} onClick={closeMobileMenu} className="nb-sub-link">
+                    <span className="nb-sub-dot" />
+                    {sub.name}
                   </Link>
-                </div>
-              </div>
-            ))}
-
-            {/* Corporate link */}
-            <Link href="/corporateGifting" onClick={() => setMobileMenuOpen(false)}>
-              <div className="nb-mob-cat">
-                <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#1a1a1a' }}>Corporate Gifting</p>
-                <ChevronRight size={16} style={{ color: '#aaa' }} />
-              </div>
-            </Link>
-
-            {/* Bottom actions */}
-            <div style={{ padding: '20px 24px', borderTop: '1px solid #e8e4de', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {page !== 'cart' && (
-                <Link href="/search" onClick={() => setMobileMenuOpen(false)}>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '13px 16px', border: '1px solid #e8e4de', background: '#faf9f7', fontSize: '13px', fontWeight: 500, color: '#3a3a3a', cursor: 'pointer' }}>
-                    <Search size={15} /> Search Products
-                  </button>
+                ))}
+                <Link href={`/product/category/${item.id}`} onClick={closeMobileMenu} className="nb-sub-viewall">
+                  <ChevronRight size={13} />
+                  View All {item.name}
                 </Link>
-              )}
+              </div>
+            </div>
+          ))}
 
-              {isAuthenticated ? (
-                <>
-                  <button
-                    onClick={() => { handleProfileClick(); setMobileMenuOpen(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '13px 16px', border: '1px solid #e8e4de', background: '#faf9f7', fontSize: '13px', fontWeight: 500, color: '#3a3a3a', cursor: 'pointer' }}
-                  >
-                    <User size={15} /> My Profile
-                  </button>
-                  {isAdmin && (
-                    <button
-                      onClick={() => { handleAdminPage(); setMobileMenuOpen(false); }}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '13px 16px', background: '#1a1a1a', color: '#fff', fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}
-                    >
-                      Admin Panel
-                    </button>
-                  )}
-                </>
-              ) : (
+          {/* Corporate link */}
+          <Link href="/corporateGifting" onClick={closeMobileMenu} className="nb-static-row">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: '#f0ede8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: '18px' }}>🎁</span>
+              </div>
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#1a1a1a' }}>Corporate Gifting</p>
+                <p style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>Bulk orders & customization</p>
+              </div>
+            </div>
+            <ChevronRight size={16} style={{ color: '#bbb', flexShrink: 0 }} />
+          </Link>
+
+        </div>
+
+        {/* Drawer footer — fixed at bottom */}
+        <div className="nb-drawer-footer">
+          {isAuthenticated ? (
+            <>
+              {isAdmin && (
                 <button
-                  onClick={() => { handleLoginClick(); setMobileMenuOpen(false); }}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '14px 16px', background: '#1a1a1a', color: '#fff', fontSize: '12px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', border: 'none' }}
+                  className="nb-action-btn solid"
+                  onClick={() => { handleAdminPage(); closeMobileMenu(); }}
                 >
-                  Sign In / Register
+                  Admin Panel
                 </button>
               )}
-            </div>
-          </div>
-        )}
-      </header>
+              <button
+                className="nb-action-btn outline"
+                onClick={() => { handleProfileClick(); closeMobileMenu(); }}
+              >
+                <User size={15} /> My Profile
+              </button>
+            </>
+          ) : (
+            <button
+              className="nb-action-btn solid"
+              onClick={() => { handleLoginClick(); closeMobileMenu(); }}
+            >
+              <UserRound size={15} /> Sign In / Register
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 };
