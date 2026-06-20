@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Package, Eye, RefreshCw, CheckCircle2, XCircle, Clock,
   Truck, PackageCheck, AlertCircle, Search, ChevronLeft,
-  ChevronRight, LayoutGrid, ShoppingBag, X, IndianRupee,
+  ChevronRight, LayoutGrid, ShoppingBag, X, IndianRupee, MapPin,
 } from 'lucide-react';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
@@ -82,6 +82,38 @@ const OrderDetail = ({ order, onClose, updating, onUpdate }: any) => {
             <p className="text-xs text-[#888] mt-0.5">Status: {order.payment?.status || 'PENDING'}</p>
             <p className="ord-serif text-xl font-light text-[#1a1a1a] mt-1">{fmtCurrency(order.totalAmount)}</p>
           </div>
+        </div>
+
+        {/* Shipping Address */}
+        <div>
+          <p className="text-[9px] tracking-[0.18em] uppercase text-[#aaa] font-semibold mb-3">Shipping Address</p>
+          {order.address ? (
+            <div className="bg-[#faf9f7] border border-[#e8e4de] rounded-sm p-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 text-[#aaa]"><MapPin size={14} /></span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#1a1a1a]">{order.address.fullname}</p>
+                  <p className="text-xs text-[#888] mt-0.5">{order.address.mobile} · {order.address.email}</p>
+                  <p className="text-xs text-[#555] mt-2 leading-relaxed">
+                    {order.address.streetAddress}, {order.address.locality}
+                    {order.address.landmark ? `, ${order.address.landmark}` : ''}
+                    <br />
+                    {order.address.city}, {order.address.state} – {order.address.pincode}
+                    <br />
+                    {order.address.country}
+                  </p>
+                  {order.address.GSTIN && (
+                    <p className="text-[11px] text-[#aaa] mt-2">GSTIN: {order.address.GSTIN}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-[#fdecea] border border-[#f5b7b1] rounded-sm p-4 text-xs text-[#922b21]">
+              <AlertCircle size={14} />
+              No address on file for this order
+            </div>
+          )}
         </div>
 
         {/* Order items */}
