@@ -544,15 +544,15 @@ export default function HomePage() {
         <div className="hp-divider mb-8" />
         <div className="rounded-sm overflow-hidden bg-black border border-[#e8e4de]">
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/CVM8Ly19iyg?rel=0&modestbranding=1&color=white"
-              title="How to Paste Laptop Skins?"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
+          <iframe
+  className="absolute inset-0 w-full h-full"
+  src="https://www.youtube.com/embed/FxZS85MqSe0"
+  title="How to Paste Laptop Skins?"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+  loading="lazy"
+/>
           </div>
         </div>
       </section>

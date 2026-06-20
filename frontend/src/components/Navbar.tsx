@@ -417,8 +417,8 @@ const Navbar = ({ page }: any) => {
           letterSpacing: '0.16em', padding: '7px 12px',
           fontWeight: 500, lineHeight: 1.4,
         }}>
-          FREE SHIPPING ON ORDERS ABOVE ₹999 &nbsp;·&nbsp; USE CODE{' '}
-          <span style={{ color: '#fff', fontWeight: 700 }}>ARTTAG10</span>
+          FLAT 5% OFF ON ALL ORDERS &nbsp;·&nbsp; USE CODE{' '}
+          <span style={{ color: '#fff', fontWeight: 700 }}>ARTTAG5</span>
         </div>
 
         {/* ── Main bar ── */}
