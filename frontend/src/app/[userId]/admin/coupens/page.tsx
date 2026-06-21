@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Plus, Tag, Calendar, Percent, IndianRupee, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Tag, Calendar, Percent, IndianRupee, X, CheckCircle2, AlertCircle, Pencil, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 
@@ -13,6 +13,14 @@ const getCouponStatus = (validFrom: string, validUntil: string, isActive: boolea
   if (now < start) return { label: 'Upcoming', dot: '#2980b9', text: '#1a5276', bg: '#eaf3fb', border: '#aed6f1' };
   if (now > end)   return { label: 'Expired',  dot: '#c0392b', text: '#922b21', bg: '#fdecea', border: '#f5b7b1' };
   return             { label: 'Active',   dot: '#27ae60', text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf' };
+};
+
+/* For the edit form, datetime-local inputs need "YYYY-MM-DDTHH:mm" */
+const toDateTimeLocal = (iso: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 /* ─────────────────────────────────────────────
@@ -55,6 +63,19 @@ export default function CouponManagement() {
     code: '', discountPercentage: '', minOrderAmount: '', validFrom: '', validUntil: '',
   });
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
+
+  /* ── Edit state ── */
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editLoading, setEditLoading]       = useState(false);
+  const [editingCoupon, setEditingCoupon]   = useState<any>(null);
+  const [editFormData, setEditFormData]     = useState({
+    code: '', discountPercentage: '', minOrderAmount: '', validFrom: '', validUntil: '', isActive: true,
+  });
+
+  /* ── Delete state ── */
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingCoupon, setDeletingCoupon]      = useState<any>(null);
+  const [deleteLoading, setDeleteLoading]        = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { userId }   = useParams();
@@ -105,6 +126,78 @@ export default function CouponManagement() {
     finally { setSubmitLoading(false); }
   };
 
+  /* ── Open edit modal, prefill form ── */
+  const openEditDialog = (coupon: any) => {
+    setEditingCoupon(coupon);
+    setEditFormData({
+      code: coupon.code,
+      discountPercentage: String(coupon.discountPercentage),
+      minOrderAmount: String(coupon.minOrderAmount),
+      validFrom: toDateTimeLocal(coupon.validFrom),
+      validUntil: toDateTimeLocal(coupon.validUntil),
+      isActive: coupon.isActive,
+    });
+    setEditDialogOpen(true);
+  };
+
+  /* ── Submit edit ── */
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCoupon) return;
+    setEditLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/coupen/${editingCoupon.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: editFormData.code,
+          discountPercentage: parseInt(editFormData.discountPercentage),
+          minOrderAmount: parseInt(editFormData.minOrderAmount),
+          validFrom: editFormData.validFrom,
+          validUntil: editFormData.validUntil,
+          isActive: editFormData.isActive,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('Coupon updated successfully!');
+        setEditDialogOpen(false);
+        setEditingCoupon(null);
+        fetchCoupons();
+      } else {
+        showAlert(data.message || 'Failed to update coupon', 'error');
+      }
+    } catch { showAlert('Failed to update coupon', 'error'); }
+    finally { setEditLoading(false); }
+  };
+
+  /* ── Open delete confirmation ── */
+  const openDeleteDialog = (coupon: any) => {
+    setDeletingCoupon(coupon);
+    setDeleteDialogOpen(true);
+  };
+
+  /* ── Confirm delete ── */
+  const handleDeleteConfirm = async () => {
+    if (!deletingCoupon) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/coupen/${deletingCoupon.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('Coupon deleted successfully!');
+        setDeleteDialogOpen(false);
+        setDeletingCoupon(null);
+        fetchCoupons();
+      } else {
+        showAlert(data.message || 'Failed to delete coupon', 'error');
+      }
+    } catch { showAlert('Failed to delete coupon', 'error'); }
+    finally { setDeleteLoading(false); }
+  };
+
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
 
   /* Stat counts */
@@ -147,6 +240,17 @@ export default function CouponManagement() {
         .cpn-primary-btn:hover:not(:disabled) { background: #333; }
         .cpn-primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        .cpn-danger-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: #c0392b; color: #fff; border: none;
+          padding: 9px 20px; font-size: 10px; font-weight: 600;
+          letter-spacing: 0.14em; text-transform: uppercase;
+          border-radius: 2px; cursor: pointer; transition: background 0.2s;
+          font-family: 'DM Sans', sans-serif; white-space: nowrap;
+        }
+        .cpn-danger-btn:hover:not(:disabled) { background: #a5311f; }
+        .cpn-danger-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
         .cpn-outline-btn {
           display: inline-flex; align-items: center; gap: 6px;
           background: transparent; color: #888; border: 1px solid #e8e4de;
@@ -164,6 +268,16 @@ export default function CouponManagement() {
           cursor: pointer; color: #888; transition: all 0.15s;
         }
         .cpn-icon-btn:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+        .cpn-icon-btn.danger:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+        /* Checkbox row (Active toggle in edit modal) */
+        .cpn-checkbox-row {
+          display: flex; align-items: center; gap: 8px;
+          padding: 9px 12px; border: 1px solid #e8e4de; border-radius: 2px;
+          background: #fff; cursor: pointer; user-select: none;
+        }
+        .cpn-checkbox-row input { width: 14px; height: 14px; accent-color: #1a1a1a; cursor: pointer; }
 
         /* Table */
         .cpn-th {
@@ -299,7 +413,7 @@ export default function CouponManagement() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
-                    {['Code', 'Discount', 'Min Order', 'Valid From', 'Valid Until', 'Status'].map(h => (
+                    {['Code', 'Discount', 'Min Order', 'Valid From', 'Valid Until', 'Status', 'Actions'].map(h => (
                       <th key={h} className="cpn-th">{h}</th>
                     ))}
                   </tr>
@@ -339,6 +453,24 @@ export default function CouponManagement() {
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.dot }} />
                             {s.label}
                           </span>
+                        </td>
+                        <td className="cpn-td">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="cpn-icon-btn"
+                              title="Edit coupon"
+                              onClick={() => openEditDialog(c)}
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              className="cpn-icon-btn danger"
+                              title="Delete coupon"
+                              onClick={() => openDeleteDialog(c)}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -441,6 +573,141 @@ export default function CouponManagement() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* ════════ EDIT COUPON MODAL ════════ */}
+      <Modal open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-[#e8e4de]">
+          <div>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#888] mb-0.5">Promotions</p>
+            <h2 className="cpn-serif text-2xl font-light text-[#1a1a1a]">Edit Coupon</h2>
+          </div>
+          <button className="cpn-icon-btn mt-0.5" onClick={() => setEditDialogOpen(false)}><X size={14} /></button>
+        </div>
+
+        <form onSubmit={handleEditSubmit} className="px-6 py-5 space-y-4">
+          <Field label="Coupon Code" required>
+            <input
+              name="code"
+              value={editFormData.code}
+              onChange={e => setEditFormData(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+              placeholder="e.g. SUMMER2025"
+              className="cpn-input"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Courier New', monospace" }}
+              required
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Discount (%)" required>
+              <div className="relative">
+                <Percent size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaa]" />
+                <input
+                  name="discountPercentage"
+                  type="number"
+                  min="1" max="100"
+                  value={editFormData.discountPercentage}
+                  onChange={e => setEditFormData(p => ({ ...p, discountPercentage: e.target.value }))}
+                  placeholder="10"
+                  className="cpn-input pl-8"
+                  required
+                />
+              </div>
+            </Field>
+            <Field label="Min Order (₹)" required>
+              <div className="relative">
+                <IndianRupee size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaa]" />
+                <input
+                  name="minOrderAmount"
+                  type="number"
+                  min="0"
+                  value={editFormData.minOrderAmount}
+                  onChange={e => setEditFormData(p => ({ ...p, minOrderAmount: e.target.value }))}
+                  placeholder="500"
+                  className="cpn-input pl-8"
+                  required
+                />
+              </div>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Valid From" required>
+              <input
+                name="validFrom"
+                type="datetime-local"
+                value={editFormData.validFrom}
+                onChange={e => setEditFormData(p => ({ ...p, validFrom: e.target.value }))}
+                className="cpn-input"
+                required
+              />
+            </Field>
+            <Field label="Valid Until" required>
+              <input
+                name="validUntil"
+                type="datetime-local"
+                value={editFormData.validUntil}
+                onChange={e => setEditFormData(p => ({ ...p, validUntil: e.target.value }))}
+                className="cpn-input"
+                required
+              />
+            </Field>
+          </div>
+
+          <Field label="Status">
+            <label className="cpn-checkbox-row">
+              <input
+                type="checkbox"
+                checked={editFormData.isActive}
+                onChange={e => setEditFormData(p => ({ ...p, isActive: e.target.checked }))}
+              />
+              <span className="text-sm text-[#444]">Coupon is active</span>
+            </label>
+          </Field>
+
+          <div className="cpn-divider" />
+
+          <div className="flex justify-end gap-3 pt-1">
+            <button type="button" className="cpn-outline-btn" onClick={() => setEditDialogOpen(false)}>Cancel</button>
+            <button type="submit" disabled={editLoading} className="cpn-primary-btn">
+              {editLoading
+                ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Saving…</>
+                : <><Tag size={13} />Save Changes</>
+              }
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ════════ DELETE CONFIRM MODAL ════════ */}
+      <Modal open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-[#e8e4de]">
+          <div>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#888] mb-0.5">Promotions</p>
+            <h2 className="cpn-serif text-2xl font-light text-[#1a1a1a]">Delete Coupon</h2>
+          </div>
+          <button className="cpn-icon-btn mt-0.5" onClick={() => setDeleteDialogOpen(false)}><X size={14} /></button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <p className="text-sm text-[#444]">
+            Are you sure you want to delete{' '}
+            {deletingCoupon && <span className="cpn-code">{deletingCoupon.code}</span>}
+            ? This action cannot be undone.
+          </p>
+
+          <div className="cpn-divider" />
+
+          <div className="flex justify-end gap-3 pt-1">
+            <button type="button" className="cpn-outline-btn" onClick={() => setDeleteDialogOpen(false)}>Cancel</button>
+            <button type="button" disabled={deleteLoading} className="cpn-danger-btn" onClick={handleDeleteConfirm}>
+              {deleteLoading
+                ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Deleting…</>
+                : <><Trash2 size={13} />Delete Coupon</>
+              }
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
