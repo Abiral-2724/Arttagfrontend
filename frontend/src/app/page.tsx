@@ -539,8 +539,10 @@ export default function HomePage() {
       {/* ══════════════════════════ VIDEO ══════════════════════════ */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20 bg-white">
         <p className="hp-eyebrow mb-1.5">Guide</p>
-        <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-1">How to Paste Laptop Skins</h2>
-        <p className="text-[#888] text-sm mb-8">Step-by-step guide for a perfect, bubble-free finish every time.</p>
+        <h2 className="hp-serif text-3xl sm:text-4xl font-light text-[#1a1a1a] mb-1">
+India’s Next Generation Backpack.
+</h2>
+        <p className="text-[#888] text-sm mb-8">Thoughtfully designed with smart features, premium materials, and modern aesthetics.</p>
         <div className="hp-divider mb-8" />
         <div className="rounded-sm overflow-hidden bg-black border border-[#e8e4de]">
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>

@@ -7,6 +7,7 @@ import {
 
 interface ReturnItem {
   id: string; orderId: string; status: string; reason: string; amount: number; createdAt: string;
+  approvedAt?: string; rejectedAt?: string; pickedAt?: string; refundedAt?: string;
   order: { id: string; orderStatus: string; createdAt: string; updatedAt: string;
     items: Array<{ id: string; quantity: number; price: number; product: { id: string; name: string; primaryImage1: string } }> };
   product: { id: string; name: string; primaryImage1: string };
@@ -26,6 +27,37 @@ const STATUS_MSGS: Record<string, { bg: string; border: string; text: string; bo
   PICKED:    { bg: '#f4ecf7', border: '#d2b4de', text: '#6c3483', body: 'Item picked up. Refund will be initiated after verification.' },
   REFUNDED:  { bg: '#eafaf1', border: '#a9dfbf', text: '#1e8449', body: 'Refund has been completed and credited to your account.' },
   REJECTED:  { bg: '#fdecea', border: '#f5b7b1', text: '#922b21', body: 'Return rejected. Please contact support for more information.' },
+};
+
+/* Icons + colors for each possible timeline stage, driven by real stage timestamps */
+const TIMELINE_ICON: Record<string, React.ReactNode> = {
+  REQUESTED: <Clock size={10} className="text-[#2980b9]" />,
+  APPROVED:  <CheckCircle2 size={10} className="text-[#27ae60]" />,
+  REJECTED:  <XCircle size={10} className="text-[#c0392b]" />,
+  PICKED:    <Truck size={10} className="text-[#8e44ad]" />,
+  REFUNDED:  <PackageCheck size={10} className="text-[#27ae60]" />,
+};
+const TIMELINE_BG: Record<string, { bg: string; border: string }> = {
+  REQUESTED: { bg: '#eaf3fb', border: '#aed6f1' },
+  APPROVED:  { bg: '#eafaf1', border: '#a9dfbf' },
+  REJECTED:  { bg: '#fdecea', border: '#f5b7b1' },
+  PICKED:    { bg: '#f4ecf7', border: '#d2b4de' },
+  REFUNDED:  { bg: '#eafaf1', border: '#a9dfbf' },
+};
+
+/* Builds the timeline strictly from the return's own stage timestamps — not the order's */
+const buildTimeline = (item: ReturnItem) => {
+  const steps: { key: string; label: string; date: string }[] = [
+    { key: 'REQUESTED', label: 'Return Requested', date: item.createdAt },
+  ];
+  if (item.status === 'REJECTED' && item.rejectedAt) {
+    steps.push({ key: 'REJECTED', label: 'Rejected', date: item.rejectedAt });
+    return steps;
+  }
+  if (item.approvedAt) steps.push({ key: 'APPROVED', label: 'Approved', date: item.approvedAt });
+  if (item.pickedAt)   steps.push({ key: 'PICKED',   label: 'Picked Up', date: item.pickedAt });
+  if (item.refundedAt) steps.push({ key: 'REFUNDED', label: 'Refunded', date: item.refundedAt });
+  return steps;
 };
 
 const StatusBadge = ({ status }: any) => {
@@ -138,6 +170,7 @@ export default function ReturnSection({ returns, showAlert }: any) {
             const isOpen    = expanded.has(item.id);
             const retItem   = item.order.items.find(i => i.product.id === item.product.id);
             const statusMsg = STATUS_MSGS[item.status];
+            const timeline  = buildTimeline(item);
 
             return (
               <div key={item.id} className="border border-[#e8e4de] rounded-sm overflow-hidden">
@@ -190,30 +223,22 @@ export default function ReturnSection({ returns, showAlert }: any) {
                       </div>
                     )}
 
-                    {/* Timeline */}
+                    {/* Timeline — built from the return's own stage timestamps, not the order's */}
                     <div>
                       <p className="text-[9px] tracking-[0.14em] uppercase font-semibold text-[#aaa] mb-2">Timeline</p>
                       <div className="space-y-2">
-                        <div className="flex items-start gap-2">
-                          <div className="w-5 h-5 rounded-full bg-[#eaf3fb] border border-[#aed6f1] flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <Clock size={10} className="text-[#2980b9]" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-[#1a1a1a]">Return Requested</p>
-                            <p className="text-[10px] text-[#aaa]">{fmtDate(item.createdAt)}</p>
-                          </div>
-                        </div>
-                        {item.order.updatedAt !== item.order.createdAt && (
-                          <div className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-[#eafaf1] border border-[#a9dfbf] flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <CheckCircle2 size={10} className="text-[#27ae60]" />
+                        {timeline.map((step, idx) => (
+                          <div key={step.key} className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                              style={{ background: TIMELINE_BG[step.key].bg, border: `1px solid ${TIMELINE_BG[step.key].border}` }}>
+                              {TIMELINE_ICON[step.key]}
                             </div>
                             <div>
-                              <p className="text-xs font-medium text-[#1a1a1a]">Last Updated</p>
-                              <p className="text-[10px] text-[#aaa]">{fmtDate(item.order.updatedAt)}</p>
+                              <p className="text-xs font-medium text-[#1a1a1a]">{step.label}</p>
+                              <p className="text-[10px] text-[#aaa]">{fmtDate(step.date)}</p>
                             </div>
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
 

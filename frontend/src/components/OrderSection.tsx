@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const RETURN_WINDOW_DAYS = 15;
 
 /* ─────────────────────────────────────────────
    STATUS CONFIG
@@ -26,6 +27,46 @@ const RETURN_META: Record<string, { label: string; dot: string; text: string; bg
   APPROVED:  { label: 'Approved',  dot: '#2980b9', text: '#1a5276', bg: '#eaf3fb', border: '#aed6f1' },
   PICKED:    { label: 'Picked Up', dot: '#8e44ad', text: '#6c3483', bg: '#f4ecf7', border: '#d2b4de' },
   REFUNDED:  { label: 'Refunded',  dot: '#27ae60', text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf' },
+};
+
+/* Timeline step icons/colors for a return record's progress */
+const TIMELINE_ICON: Record<string, React.ReactNode> = {
+  REQUESTED: <Clock size={9} className="text-[#2980b9]" />,
+  APPROVED:  <CheckCircle2 size={9} className="text-[#27ae60]" />,
+  REJECTED:  <XCircle size={9} className="text-[#c0392b]" />,
+  PICKED:    <Truck size={9} className="text-[#8e44ad]" />,
+  REFUNDED:  <PackageCheck size={9} className="text-[#27ae60]" />,
+};
+const TIMELINE_BG: Record<string, { bg: string; border: string }> = {
+  REQUESTED: { bg: '#eaf3fb', border: '#aed6f1' },
+  APPROVED:  { bg: '#eafaf1', border: '#a9dfbf' },
+  REJECTED:  { bg: '#fdecea', border: '#f5b7b1' },
+  PICKED:    { bg: '#f4ecf7', border: '#d2b4de' },
+  REFUNDED:  { bg: '#eafaf1', border: '#a9dfbf' },
+};
+
+/* Builds the ordered list of timeline steps that actually happened, from real timestamps */
+const buildTimeline = (ret: any) => {
+  const steps: { key: string; label: string; date: string }[] = [
+    { key: 'REQUESTED', label: 'Return Requested', date: ret.createdAt },
+  ];
+  if (ret.status === 'REJECTED' && ret.rejectedAt) {
+    steps.push({ key: 'REJECTED', label: 'Rejected', date: ret.rejectedAt });
+    return steps;
+  }
+  if (ret.approvedAt) steps.push({ key: 'APPROVED', label: 'Approved', date: ret.approvedAt });
+  if (ret.pickedAt)   steps.push({ key: 'PICKED',   label: 'Picked Up', date: ret.pickedAt });
+  if (ret.refundedAt) steps.push({ key: 'REFUNDED', label: 'Refunded', date: ret.refundedAt });
+  return steps;
+};
+
+/* 15-day return window, measured from order.deliveryDate */
+const getReturnWindow = (order: any) => {
+  if (!order?.deliveryDate) return { withinWindow: false, daysLeft: 0 };
+  const deliveredAt = new Date(order.deliveryDate).getTime();
+  const elapsedDays = (Date.now() - deliveredAt) / (1000 * 60 * 60 * 24);
+  const daysLeft = Math.max(0, Math.ceil(RETURN_WINDOW_DAYS - elapsedDays));
+  return { withinWindow: elapsedDays <= RETURN_WINDOW_DAYS, daysLeft };
 };
 
 const StatusBadge = ({ status, meta }: any) => {
@@ -212,6 +253,7 @@ const OrderDetailModal = ({ order, open, onClose, onCancelRequest }: any) => {
 
   if (!order) return null;
   const canCancel = order.orderStatus === 'CREATED' || order.orderStatus === 'CONFIRMED';
+  const { withinWindow, daysLeft } = getReturnWindow(order);
 
   const handleConfirmCancel = async () => {
     setProcessing(true);
@@ -246,7 +288,10 @@ const OrderDetailModal = ({ order, open, onClose, onCancelRequest }: any) => {
             <div className="space-y-2">
               {order.items?.map((item: any) => {
                 const returnMeta = RETURN_META[item.returnStatus];
-                const canReturn = item.isReturnable && !item.returnStatus && order.orderStatus === 'DELIVERED';
+                const itemReturn = order.returns?.find((r: any) => r.productId === item.product?.id);
+                const canReturn = item.isReturnable && !item.returnStatus && order.orderStatus === 'DELIVERED' && withinWindow;
+                const windowExpired = item.isReturnable && !item.returnStatus && order.orderStatus === 'DELIVERED' && !withinWindow;
+
                 return (
                   <div key={item.id} className="flex gap-3 p-3 bg-[#faf9f7] border border-[#e8e4de] rounded-sm">
                     <img src={item.product?.primaryImage1} alt={item.product?.name}
@@ -254,13 +299,46 @@ const OrderDetailModal = ({ order, open, onClose, onCancelRequest }: any) => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[#1a1a1a] line-clamp-1">{item.product?.name}</p>
                       <p className="text-xs text-[#888] mt-0.5">Qty: {item.quantity} · ₹{item.price}</p>
+
                       {returnMeta && <div className="mt-1.5"><StatusBadge status={item.returnStatus} meta={RETURN_META} /></div>}
                       {!item.isReturnable && !item.returnStatus && <p className="text-[10px] text-[#aaa] mt-1">Not eligible for return</p>}
+
                       {canReturn && (
-                        <button onClick={() => { setSelectedProduct(item); setReturnDialog(true); }}
-                          className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] hover:opacity-60 transition-opacity">
-                          <RotateCcw size={10} /> Request Return
-                        </button>
+                        <>
+                          <button onClick={() => { setSelectedProduct(item); setReturnDialog(true); }}
+                            className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] hover:opacity-60 transition-opacity">
+                            <RotateCcw size={10} /> Request Return
+                          </button>
+                          <p className="text-[10px] text-[#aaa] mt-1">
+                            {daysLeft} day{daysLeft !== 1 ? 's' : ''} left to request a return
+                          </p>
+                        </>
+                      )}
+                      {windowExpired && (
+                        <p className="text-[10px] text-[#c0392b] mt-1.5 flex items-center gap-1">
+                          <Clock size={10} /> Return window closed (15 days after delivery)
+                        </p>
+                      )}
+
+                      {/* Return timeline for items already in the return process */}
+                      {itemReturn && (
+                        <div className="mt-3 pt-3 border-t border-[#e8e4de]">
+                          <p className="text-[9px] tracking-[0.14em] uppercase font-semibold text-[#aaa] mb-2">Return Timeline</p>
+                          <div className="space-y-1.5">
+                            {buildTimeline(itemReturn).map(step => (
+                              <div key={step.key} className="flex items-start gap-2">
+                                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                                  style={{ background: TIMELINE_BG[step.key].bg, border: `1px solid ${TIMELINE_BG[step.key].border}` }}>
+                                  {TIMELINE_ICON[step.key]}
+                                </div>
+                                <div>
+                                  <p className="text-[11px] font-medium text-[#1a1a1a]">{step.label}</p>
+                                  <p className="text-[9px] text-[#aaa]">{fmtDate(step.date)}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
