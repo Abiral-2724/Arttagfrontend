@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Package, CheckCircle2, XCircle, AlertCircle, Clock,
   RefreshCw, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  Mail, Phone, X, IndianRupee,
+  Mail, Phone, X, IndianRupee, MapPin,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
@@ -218,6 +218,7 @@ const ReturnManagementPage = () => {
               const sm = STATUS[r.status] || STATUS.REQUESTED;
               const isExpanded = expandedId === r.id;
               const isActing   = actionLoading === r.id;
+              const addr = r.order?.address;
 
               return (
                 <div key={r.id} className="ret-card">
@@ -244,12 +245,22 @@ const ReturnManagementPage = () => {
                     </div>
 
                     {/* Info grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                       <div>
                         <p className="text-[9px] tracking-[0.16em] uppercase text-[#aaa] font-semibold mb-1.5">Customer</p>
                         <p className="text-sm font-semibold text-[#1a1a1a]">{r.order?.user?.name || '—'}</p>
                         {r.order?.user?.email && <p className="text-[11px] text-[#888] flex items-center gap-1 mt-0.5"><Mail size={10} />{r.order.user.email}</p>}
                         {r.order?.user?.phoneNumber && <p className="text-[11px] text-[#888] flex items-center gap-1 mt-0.5"><Phone size={10} />{r.order.user.phoneNumber}</p>}
+                      </div>
+                      <div>
+                        <p className="text-[9px] tracking-[0.16em] uppercase text-[#aaa] font-semibold mb-1.5">Product</p>
+                        <div className="flex items-center gap-2">
+                          {r.product?.primaryImage1 && (
+                            <img src={r.product.primaryImage1} alt={r.product.name}
+                              className="w-9 h-9 object-cover rounded-sm border border-[#e8e4de] flex-shrink-0" />
+                          )}
+                          <p className="text-sm font-medium text-[#1a1a1a] line-clamp-2">{r.product?.name || '—'}</p>
+                        </div>
                       </div>
                       <div>
                         <p className="text-[9px] tracking-[0.16em] uppercase text-[#aaa] font-semibold mb-1.5">Return Amount</p>
@@ -265,7 +276,34 @@ const ReturnManagementPage = () => {
 
                     {/* Expanded */}
                     {isExpanded && (
-                      <div className="border-t border-[#f0ece6] pt-4 mb-5 space-y-3">
+                      <div className="border-t border-[#f0ece6] pt-4 mb-5 space-y-4">
+                        <div>
+                          <p className="text-[9px] tracking-[0.16em] uppercase text-[#aaa] font-semibold mb-1.5">Pickup Address</p>
+                          {addr ? (
+                            <div className="bg-[#faf9f7] border border-[#e8e4de] rounded-sm p-3.5">
+                              <div className="flex items-start gap-2.5">
+                                <span className="mt-0.5 text-[#aaa]"><MapPin size={13} /></span>
+                                <div>
+                                  <p className="text-sm font-semibold text-[#1a1a1a]">{addr.fullname}</p>
+                                  <p className="text-[11px] text-[#888] mt-0.5">{addr.mobile}</p>
+                                  <p className="text-sm text-[#444] mt-1.5 leading-relaxed">
+                                    {addr.streetAddress}, {addr.locality}
+                                    {addr.landmark ? `, ${addr.landmark}` : ''}
+                                    <br />
+                                    {addr.city}, {addr.state} – {addr.pincode}
+                                    <br />
+                                    {addr.country}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 bg-[#fdecea] border border-[#f5b7b1] rounded-sm p-3.5 text-xs text-[#922b21]">
+                              <AlertCircle size={13} />
+                              No address on file for this order
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <p className="text-[9px] tracking-[0.16em] uppercase text-[#aaa] font-semibold mb-1">Reason</p>
                           <p className="text-sm text-[#444] leading-relaxed">{r.reason}</p>
