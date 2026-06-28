@@ -4,6 +4,7 @@ import {
   Package, Grid3x3, ShoppingCart, PinIcon, IndianRupeeIcon,
   TicketSlash, Undo2, Store, Gift, Wind, ChevronRight,
   ArrowUpRight,
+  TrendingUp,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -53,6 +54,10 @@ const NAV_ITEMS = (userId: any, router: any) => [
     id: 'blogs',      label: 'Blogs',              sub: 'Create & manage blog posts',
     icon: Wind,       path: `/${userId}/admin/blog`,
   },
+  {
+    id: 'engagement', label: 'Engagement', sub: 'Wishlist & cart activity per product',
+    icon: TrendingUp, path: `/${userId}/admin/engagement`,
+  },
 ];
 
 /* ─────────────────────────────────────────────
@@ -61,7 +66,7 @@ const NAV_ITEMS = (userId: any, router: any) => [
 const SECTIONS = [
   {
     heading: 'Catalogue',
-    ids: ['products', 'categories'],
+    ids: ['products', 'categories' ,'engagement'],
   },
   {
     heading: 'Commerce',
