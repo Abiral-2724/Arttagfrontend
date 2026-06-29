@@ -24,7 +24,14 @@ export default function RootLayout({
   return (
     <AuthProvider>
       <html lang="en">
+      <head>
+    <meta
+      name="facebook-domain-verification"
+      content="vsmlz0plxr3lqahpx8hdpxgy7jm9nc"
+    />
+  </head>
         <body className="">
+
           <Script
             src="https://checkout.razorpay.com/v1/checkout.js"
             strategy="beforeInteractive"
