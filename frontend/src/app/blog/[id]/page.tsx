@@ -32,13 +32,33 @@ const BlogDetail = () => {
     return () => window.removeEventListener('scroll', h);
   }, []);
 
+  const formatPlainContent = (raw: string) => {
+    // If it already contains real HTML tags, leave it alone
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|br)[\s>]/i.test(raw)) return raw;
+  
+    // Split into sentences (avoids breaking on "e.g." style abbreviations most of the time)
+    const sentences = raw
+      .replace(/([.!?])\s+(?=[A-Z])/g, '$1|||')
+      .split('|||')
+      .map(s => s.trim())
+      .filter(Boolean);
+  
+    // Group ~3 sentences per paragraph so it's not one giant block
+    const paragraphs: string[] = [];
+    for (let i = 0; i < sentences.length; i += 3) {
+      paragraphs.push(sentences.slice(i, i + 3).join(' '));
+    }
+  
+    return paragraphs.map(p => `<p>${p}</p>`).join('');
+  };
+
   const fetchBlog = async (id: string) => {
     setLoading(true); setError(null);
     try {
       const res  = await fetch(`${API_BASE}/blog/details/blog/${id}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (data.success) setBlog(data.data);
+      if (data.success) setBlog({...data.data ,content: formatPlainContent(data.data.content)});
       else setError(data.message || 'Blog not found');
     } catch (e: any) { setError(e.message || 'Failed to load blog'); }
     finally { setLoading(false); }
