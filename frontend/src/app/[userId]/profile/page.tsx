@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   User, Package, MapPin, Heart, LogOut, ChevronRight,
   CheckCircle2, RefreshCw, AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -13,6 +14,7 @@ import WishlistSection from '@/components/WishlistSection';
 import LogoutSection from '@/components/LogoutSection';
 import ReturnSection from '@/components/Return';
 import Link from 'next/link';
+import WarrantyClaimSection from '@/components/WarrantyClaimSection';
 import FooterPart from '@/components/FooterPart';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -23,6 +25,7 @@ const MENU = [
   { id: 'order',    label: 'Orders',          icon: Package },
   { id: 'returns',  label: 'Returns',         icon: RefreshCw },
   { id: 'wishlist', label: 'Wishlist',        icon: Heart },
+  // { id: 'warranty',          label: 'Warranty Claims',   icon: ShieldCheck },
   { id: 'logout',   label: 'Logout',          icon: LogOut },
 ];
 
@@ -36,6 +39,7 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState([]);
   const [wishlist, setWishlist]   = useState([]);
   const [returns, setReturns]     = useState([]);
+  const [warrantyClaims, setWarrantyClaims] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [alert, setAlert]         = useState<any>(null);
 
@@ -58,7 +62,7 @@ export default function ProfilePage() {
 
   const loadInitialData = async () => {
     setPageLoading(true);
-    await Promise.all([fetchUserData(), fetchOrders(), fetchAddresses(), fetchWishlist(), fetchReturns()]);
+    await Promise.all([fetchUserData(), fetchOrders(), fetchAddresses(), fetchWishlist(), fetchReturns(), fetchWarrantyClaims()]);
     setPageLoading(false);
   };
 
@@ -82,6 +86,11 @@ export default function ProfilePage() {
     try { const { data } = await axios.get(`${API_BASE_URL}/return/get/user/${userId}/return`); if (data.returns) setReturns(data.returns); }
     catch { console.error('returns fetch failed'); }
   };
+
+  const fetchWarrantyClaims = async () => {
+       try { const { data } = await axios.get(`${API_BASE_URL}/warranty/my-claims/${userId}`); if (data.success) setWarrantyClaims(data.claims); }
+       catch { console.error('warranty claims fetch failed'); }
+     };
 
   /* ── Loading ── */
   if (pageLoading) {
@@ -257,6 +266,10 @@ export default function ProfilePage() {
             {activeSection === 'logout' && (
               <LogoutSection onCancel={() => setActiveSection('personal')} />
             )}
+
+{activeSection === 'warranty' && (
+   <WarrantyClaimSection warrantyClaims={warrantyClaims} showAlert={showAlert} />
+ )}
           </div>
         </div>
       </div>

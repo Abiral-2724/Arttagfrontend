@@ -58,6 +58,10 @@ const NAV_ITEMS = (userId: any, router: any) => [
     id: 'engagement', label: 'Engagement', sub: 'Wishlist & cart activity per product',
     icon: TrendingUp, path: `/${userId}/admin/engagement`,
   },
+  {
+    id: 'warrentyClaims', label: 'warrentyClaims', sub: 'Warrenty claim details',
+    icon: TrendingUp, path: `/${userId}/admin/warrentyClaims`,
+  },
 ];
 
 /* ─────────────────────────────────────────────
@@ -78,7 +82,7 @@ const SECTIONS = [
   },
   {
     heading: 'Engage',
-    ids: ['stores', 'gifting', 'blogs'],
+    ids: ['stores', 'gifting', 'blogs' ,'warrentyClaims'],
   },
 ];
 

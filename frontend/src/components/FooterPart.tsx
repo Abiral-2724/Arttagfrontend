@@ -46,6 +46,8 @@ const FooterPart = (props: Props) => {
                   <li><a href="/privacyandSecurity" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy & Security Policy</a></li>
                   <li><a href="/return/replacementpolicy" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Return & Replacement Policy
                   </a></li>
+                  <li><a href="/claimWarrenty" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors"> Claim Warranty
+                  </a></li>
                 </ul>
               </div>
             </div>
