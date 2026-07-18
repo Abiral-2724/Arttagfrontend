@@ -28,8 +28,7 @@ const OPEN_STATUSES = ['CLAIM_RECEIVED', 'UNDER_REVIEW', 'ADDITIONAL_INFO_REQUIR
 const CLOSED_STATUSES = ['RESOLVED', 'REJECTED'];
 
 // TODO: wire this up to your real admin auth/session
-// const storedUserId = localStorage.getItem('arttagUserId');
-const ADMIN_USER_ID = localStorage.getItem('arttagUserId');
+const ADMIN_USER_ID = localStorage.getItem('arttagUserId'); 
 
 const AdminWarrantyPage = () => {
   const [claims, setClaims]           = useState<any[]>([]);
@@ -162,6 +161,10 @@ const AdminWarrantyPage = () => {
   const attachmentLabel: Record<string, string> = {
     INVOICE: 'Invoice / Bill', WARRANTY_CARD: 'Warranty Card',
     PRODUCT_IMAGE: 'Product Image', PRODUCT_VIDEO: 'Product Video',
+  };
+  const platformLabel: Record<string, string> = {
+    AMAZON: 'Amazon', FLIPKART: 'Flipkart', OFFICIAL_WEBSITE: 'Official Website',
+    MYNTRA: 'Myntra', OFFLINE: 'Offline (Store)',
   };
 
   return (
@@ -356,7 +359,7 @@ const AdminWarrantyPage = () => {
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>
-                      {['Claim ID', 'Customer', 'Product', 'Submitted', 'Status'].map((h) => (
+                      {['Claim ID', 'Customer', 'Product', 'Model', 'Bought From', 'Submitted', 'Status'].map((h) => (
                         <th key={h} className="wa-th">{h}</th>
                       ))}
                     </tr>
@@ -384,7 +387,12 @@ const AdminWarrantyPage = () => {
                           </td>
                           <td className="wa-td">
                             <p className="text-sm text-[#1a1a1a]">{c.productName}</p>
-                            <p className="text-[11px] text-[#aaa]">{c.productModel}</p>
+                          </td>
+                          <td className="wa-td">
+                            <p className="text-xs text-[#555]">{c.productModel}</p>
+                          </td>
+                          <td className="wa-td">
+                            <p className="text-xs text-[#555]">{platformLabel[c.purchasedFrom] || c.purchasedFrom || '—'}</p>
                           </td>
                           <td className="wa-td">
                             <p className="text-[11px] text-[#888] whitespace-nowrap">{fmtDate(c.createdAt)}</p>
@@ -417,7 +425,9 @@ const AdminWarrantyPage = () => {
                       </div>
                       <p className="text-sm text-[#1a1a1a] font-medium">{c.fullName}</p>
                       <p className="text-[11px] text-[#aaa] mb-1">{c.mobileNumber}</p>
-                      <p className="text-xs text-[#555]">{c.productName} · {c.productModel}</p>
+                      <p className="text-xs text-[#555]">{c.productName}</p>
+                      <p className="text-[11px] text-[#888]">Model: {c.productModel}</p>
+                      <p className="text-[11px] text-[#888]">Bought from: {platformLabel[c.purchasedFrom] || c.purchasedFrom || '—'}</p>
                       <p className="text-[11px] text-[#bbb] mt-1">{fmtDate(c.createdAt)}</p>
                     </div>
                   );
@@ -451,6 +461,9 @@ const AdminWarrantyPage = () => {
                   <div>
                     <p className="text-[10px] tracking-[0.14em] uppercase text-[#aaa] font-semibold mb-2">Product</p>
                     <p className="text-sm text-[#1a1a1a]">{selectedClaim.productName} · {selectedClaim.productModel}</p>
+                    {selectedClaim.purchasedFrom && (
+                      <p className="text-xs text-[#888] mt-1">Bought on: {platformLabel[selectedClaim.purchasedFrom] || selectedClaim.purchasedFrom}</p>
+                    )}
                     {selectedClaim.orderId && <p className="text-xs text-[#888] mt-1">Order ID: {selectedClaim.orderId}</p>}
                     {selectedClaim.purchaseDate && <p className="text-xs text-[#888]">Purchased: {fmtDate(selectedClaim.purchaseDate)}</p>}
                   </div>

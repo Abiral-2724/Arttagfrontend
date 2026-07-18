@@ -23,9 +23,18 @@ const STATUS_META: Record<string, { label: string; dot: string; text: string; bg
   RESOLVED:                 { label: 'Resolved',                  dot: '#1a1a1a', text: '#1a1a1a', bg: '#f0ece6', border: '#d4cfc8' },
 };
 
+const PURCHASE_PLATFORMS = [
+  { value: '', label: 'Select where you bought it' },
+  { value: 'AMAZON', label: 'Amazon' },
+  { value: 'FLIPKART', label: 'Flipkart' },
+  { value: 'OFFICIAL_WEBSITE', label: 'Official Website' },
+  { value: 'MYNTRA', label: 'Myntra' },
+  { value: 'OFFLINE', label: 'Offline (Store)' },
+];
+
 const EMPTY_FORM = {
   fullName: '', mobileNumber: '', email: '',
-  productName: '', productModel: '', orderId: '', purchaseDate: '', reason: '',
+  productName: '', productModel: '', orderId: '', purchaseDate: '', purchasedFrom: '', reason: '',
 };
 
 const WarrantyClaimPage = () => {
@@ -61,7 +70,7 @@ const WarrantyClaimPage = () => {
     e.preventDefault();
     setSubmitError('');
 
-    const required = ['fullName', 'mobileNumber', 'email', 'productName', 'productModel', 'reason'] as const;
+    const required = ['fullName', 'mobileNumber', 'email', 'productName', 'productModel', 'purchasedFrom', 'reason'] as const;
     const missing = required.filter((k) => !form[k].trim());
     if (missing.length) {
       setSubmitError('Please fill in all required fields.');
@@ -299,6 +308,14 @@ const WarrantyClaimPage = () => {
                           <label className="wc-label">Purchase Date (optional)</label>
                           <input type="date" className="wc-input" value={form.purchaseDate} onChange={(e) => updateField('purchaseDate', e.target.value)} />
                         </div>
+                        <div className="sm:col-span-2">
+                          <label className="wc-label">Where Did You Buy It? *</label>
+                          <select className="wc-input" value={form.purchasedFrom} onChange={(e) => updateField('purchasedFrom', e.target.value)}>
+                            {PURCHASE_PLATFORMS.map((p) => (
+                              <option key={p.value} value={p.value}>{p.label}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 
@@ -411,7 +428,10 @@ const WarrantyClaimPage = () => {
                       <div>
                         <p className="text-[10px] tracking-[0.14em] uppercase text-[#aaa] font-semibold mb-1">{trackedClaim.claimId}</p>
                         <h3 className="wc-serif text-xl font-light text-[#1a1a1a]">{trackedClaim.productName}</h3>
-                        <p className="text-xs text-[#888]">{trackedClaim.productModel}</p>
+                        <p className="text-xs text-[#888]">
+                          {trackedClaim.productModel}
+                          {trackedClaim.purchasedFrom && ` · Bought on ${PURCHASE_PLATFORMS.find((p) => p.value === trackedClaim.purchasedFrom)?.label || trackedClaim.purchasedFrom}`}
+                        </p>
                       </div>
                       {(() => {
                         const sm = STATUS_META[trackedClaim.status] || STATUS_META.CLAIM_RECEIVED;
